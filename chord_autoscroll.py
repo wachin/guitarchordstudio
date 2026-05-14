@@ -5,16 +5,432 @@ import re
 import json
 import chardet
 from PyQt6.QtGui import (QFont, QAction, QActionGroup, QDragEnterEvent, QDropEvent, QTextCursor,
-                         QShortcut, QKeySequence)
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QTextEdit, QVBoxLayout, QHBoxLayout,
-                             QWidget, QPushButton, QLabel, QSlider, QFileDialog, QMenuBar,
-                             QMenu, QMessageBox, QInputDialog, QFontDialog, QTabWidget)
-from PyQt6.QtCore import Qt, QTimer, QUrl, QTranslator, QLocale, QLibraryInfo
+                         QShortcut, QKeySequence, QTextDocument, QColor)
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QTextEdit, QVBoxLayout, QHBoxLayout,
+    QWidget, QPushButton, QLabel, QSlider, QFileDialog, QMenuBar,
+    QMenu, QMessageBox, QInputDialog, QFontDialog, QTabWidget,
+    QDialog, QLineEdit, QCheckBox, QGridLayout, QTableWidget,
+    QTableWidgetItem, QHeaderView, QListWidget, QListWidgetItem,
+    QComboBox
+)
+from PyQt6.QtCore import (
+    Qt, QTimer, QUrl, QTranslator, QLocale, QLibraryInfo,
+    QRegularExpression
+)
 
 class CustomTextEdit(QTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAcceptDrops(False)  # Desactivar el manejo de drops por defecto
+
+
+class FindInFilesDialog(QDialog):
+    """
+    Búsqueda/Reemplazo en archivos (recursiva con filtros).
+    """
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.parent_widget = parent
+        self.setWindowTitle("Buscar en archivos")
+        self.resize(700, 520)
+
+        layout = QVBoxLayout(self)
+
+        form = QGridLayout()
+        layout.addLayout(form)
+
+        form.addWidget(QLabel("Carpeta:"), 0, 0)
+        self.dir_edit = QLineEdit(os.getcwd())
+        form.addWidget(self.dir_edit, 0, 1)
+        btn_browse = QPushButton("Examinar…")
+        form.addWidget(btn_browse, 0, 2)
+
+        form.addWidget(QLabel("Patrones (sep. por ;):"), 1, 0)
+        self.patterns = QLineEdit("*.txt;*.md;*.chord;*.pro")
+        form.addWidget(self.patterns, 1, 1, 1, 2)
+
+        form.addWidget(QLabel("Buscar:"), 2, 0)
+        self.find_edit = QLineEdit()
+        form.addWidget(self.find_edit, 2, 1, 1, 2)
+
+        form.addWidget(QLabel("Reemplazar con:"), 3, 0)
+        self.replace_edit = QLineEdit()
+        form.addWidget(self.replace_edit, 3, 1, 1, 2)
+
+        opts = QHBoxLayout()
+        layout.addLayout(opts)
+        self.case_cb = QCheckBox("Mayúsculas/minúsculas")
+        self.word_cb = QCheckBox("Palabra completa")
+        self.regex_cb = QCheckBox("Usar expresiones regulares")
+        self.recursive_cb = QCheckBox("Buscar recursivamente")
+        self.recursive_cb.setChecked(True)
+        opts.addWidget(self.case_cb)
+        opts.addWidget(self.word_cb)
+        opts.addWidget(self.regex_cb)
+        opts.addWidget(self.recursive_cb)
+        opts.addStretch(1)
+
+        self.table = QTableWidget(0, 4)
+        self.table.setHorizontalHeaderLabels(["Archivo", "Línea", "Col", "Vista previa"])
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        layout.addWidget(self.table, 1)
+
+        btns = QHBoxLayout()
+        layout.addLayout(btns)
+        self.btn_search = QPushButton("Buscar")
+        self.btn_replace_sel = QPushButton("Reemplazar en archivos")
+        self.btn_close = QPushButton("Cerrar")
+        btns.addWidget(self.btn_search)
+        btns.addWidget(self.btn_replace_sel)
+        btns.addStretch(1)
+        btns.addWidget(self.btn_close)
+
+        btn_browse.clicked.connect(self._browse)
+        self.btn_search.clicked.connect(self._do_search)
+        self.btn_replace_sel.clicked.connect(self._do_replace_all)
+        self.btn_close.clicked.connect(self.close)
+        self.table.cellDoubleClicked.connect(self._open_match)
+
+    def _browse(self):
+        directory = QFileDialog.getExistingDirectory(
+            self, "Elegir carpeta", self.dir_edit.text() or os.getcwd()
+        )
+        if directory:
+            self.dir_edit.setText(directory)
+
+    def _iter_files(self, root, patterns, recursive=True):
+        import fnmatch
+        pats = [p.strip() for p in patterns.split(";") if p.strip()]
+        if not pats:
+            pats = ["*"]
+
+        if recursive:
+            for base, _dirs, files in os.walk(root):
+                for name in files:
+                    if any(fnmatch.fnmatch(name, pat) for pat in pats):
+                        yield os.path.join(base, name)
+        else:
+            for name in os.listdir(root):
+                file_path = os.path.join(root, name)
+                if os.path.isfile(file_path) and any(fnmatch.fnmatch(name, pat) for pat in pats):
+                    yield file_path
+
+    def _compile(self, text):
+        flags = 0
+        if not self.case_cb.isChecked():
+            flags |= re.IGNORECASE
+
+        pattern = text if self.regex_cb.isChecked() else re.escape(text)
+        if self.word_cb.isChecked():
+            pattern = r"\b" + pattern + r"\b"
+        return re.compile(pattern, flags)
+
+    def _do_search(self):
+        self.table.setRowCount(0)
+        root = self.dir_edit.text().strip() or os.getcwd()
+        query = self.find_edit.text()
+        if not query:
+            return
+
+        try:
+            rx = self._compile(query)
+        except re.error as e:
+            QMessageBox.warning(self, "Expresión inválida", str(e))
+            return
+
+        for file_path in self._iter_files(root, self.patterns.text(), self.recursive_cb.isChecked()):
+            try:
+                with open(file_path, "rb") as file:
+                    raw = file.read()
+                encoding = chardet.detect(raw).get("encoding") or "utf-8"
+                text = raw.decode(encoding, errors="ignore")
+            except Exception:
+                continue
+
+            for line_number, line in enumerate(text.splitlines(), start=1):
+                for match in rx.finditer(line):
+                    row = self.table.rowCount()
+                    self.table.insertRow(row)
+                    self.table.setItem(row, 0, QTableWidgetItem(file_path))
+                    self.table.setItem(row, 1, QTableWidgetItem(str(line_number)))
+                    self.table.setItem(row, 2, QTableWidgetItem(str(match.start() + 1)))
+                    self.table.setItem(row, 3, QTableWidgetItem(line.strip()))
+
+    def _do_replace_all(self):
+        root = self.dir_edit.text().strip() or os.getcwd()
+        query = self.find_edit.text()
+        replacement = self.replace_edit.text()
+        if not query:
+            return
+
+        try:
+            rx = self._compile(query)
+        except re.error as e:
+            QMessageBox.warning(self, "Expresión inválida", str(e))
+            return
+
+        count_total = 0
+        files_changed = 0
+        for file_path in self._iter_files(root, self.patterns.text(), self.recursive_cb.isChecked()):
+            try:
+                with open(file_path, "rb") as file:
+                    raw = file.read()
+                encoding = chardet.detect(raw).get("encoding") or "utf-8"
+                text = raw.decode(encoding, errors="ignore")
+                new_text, count = rx.subn(replacement, text)
+                if count > 0:
+                    with open(file_path, "w", encoding=encoding, newline="") as out:
+                        out.write(new_text)
+                    count_total += count
+                    files_changed += 1
+            except Exception:
+                continue
+
+        QMessageBox.information(
+            self,
+            "Reemplazo en archivos",
+            f"Reemplazos: {count_total}\nArchivos modificados: {files_changed}"
+        )
+
+    def _open_match(self, row, _col):
+        file_path = self.table.item(row, 0).text()
+        line = int(self.table.item(row, 1).text())
+        col = int(self.table.item(row, 2).text())
+        self.parent_widget.open_file_at(file_path, line, col)
+
+
+class MythesThesaurus:
+    def __init__(self):
+        self.languages = self._find_languages()
+        self.cache = {}
+
+    def _find_languages(self):
+        labels = {
+            "es": "Español (Ecuador)",
+            "de": "Alemán",
+            "en": "Inglés (Estados Unidos)",
+        }
+        best_by_path = {}
+        search_dirs = [
+            "/usr/share/mythes",
+            "/usr/share/hunspell",
+            "/usr/share/myspell/dicts",
+        ]
+
+        for base in search_dirs:
+            if not os.path.isdir(base):
+                continue
+            for name in sorted(os.listdir(base)):
+                if not (name.startswith("th_") and name.endswith(".dat")):
+                    continue
+                dat_path = os.path.join(base, name)
+                idx_path = dat_path[:-4] + ".idx"
+                if not os.path.exists(idx_path):
+                    continue
+                code = name[3:-4]
+                if code.endswith("_v2"):
+                    code = code[:-3]
+                key = os.path.realpath(dat_path)
+                lang = code.split("_")[0]
+                label = labels.get(lang, code.replace("_", "-"))
+                language = {
+                    "code": code,
+                    "label": label,
+                    "dat": dat_path,
+                }
+                current = best_by_path.get(key)
+                if current is None or self._language_priority(code) < self._language_priority(current["code"]):
+                    best_by_path[key] = language
+
+        languages = list(best_by_path.values())
+        languages.sort(key=lambda item: (item["code"] != "es_ES", item["label"]))
+        return languages
+
+    def _language_priority(self, code):
+        if code == "es_ES":
+            return 0
+        if code == "es_EC":
+            return 1
+        if code.startswith("es_"):
+            return 2
+        return 3
+
+    def _read_entries(self, language):
+        dat_path = language["dat"]
+        if dat_path in self.cache:
+            return self.cache[dat_path]
+
+        entries = {}
+        with open(dat_path, "rb") as file:
+            raw = file.read()
+
+        first_line, _, body = raw.partition(b"\n")
+        encoding = first_line.decode("ascii", errors="ignore").strip() or "ISO8859-1"
+        text = body.decode(encoding, errors="replace")
+        lines = iter(text.splitlines())
+
+        for line in lines:
+            if "|" not in line:
+                continue
+            word, count_text = line.split("|", 1)
+            try:
+                count = int(count_text)
+            except ValueError:
+                continue
+
+            groups = []
+            for _ in range(count):
+                try:
+                    group_line = next(lines)
+                except StopIteration:
+                    break
+                parts = [part.strip() for part in group_line.split("|") if part.strip()]
+                if parts and parts[0] == "-":
+                    parts = parts[1:]
+                if parts:
+                    groups.append(parts)
+
+            entries[word.casefold()] = groups
+
+        self.cache[dat_path] = entries
+        return entries
+
+    def lookup(self, word, language_index=0):
+        if not word or not self.languages:
+            return []
+        language = self.languages[language_index]
+        entries = self._read_entries(language)
+        return entries.get(word.casefold(), [])
+
+    def language_label(self, language_index=0):
+        if not self.languages:
+            return "Sin diccionario Mythes"
+        return self.languages[language_index]["label"]
+
+
+class SynonymsDialog(QDialog):
+    def __init__(self, parent, word, language_index=0):
+        super().__init__(parent)
+        self.parent_widget = parent
+        self.word = word
+        self.language_index = language_index
+        self.setWindowTitle(f"Sinónimos ({self.parent_widget.thesaurus.language_label(language_index)})")
+        self.resize(560, 430)
+
+        layout = QVBoxLayout(self)
+
+        form = QGridLayout()
+        layout.addLayout(form)
+
+        form.addWidget(QLabel("Palabra actual:"), 0, 1)
+
+        back_button = QPushButton("←")
+        back_button.setEnabled(False)
+        form.addWidget(back_button, 1, 0)
+
+        self.word_edit = QLineEdit(word)
+        self.word_edit.returnPressed.connect(self.refresh_results)
+        form.addWidget(self.word_edit, 1, 1)
+
+        search_button = QPushButton("▼")
+        search_button.clicked.connect(self.refresh_results)
+        form.addWidget(search_button, 1, 2)
+
+        self.language_combo = QComboBox()
+        for language in self.parent_widget.thesaurus.languages:
+            self.language_combo.addItem(language["label"])
+        if self.parent_widget.thesaurus.languages:
+            self.language_combo.setCurrentIndex(language_index)
+        self.language_combo.currentIndexChanged.connect(self.change_language)
+        form.addWidget(self.language_combo, 1, 3)
+
+        layout.addWidget(QLabel("Alternativas:"))
+
+        self.results = QListWidget()
+        self.results.itemClicked.connect(self.select_synonym)
+        self.results.itemDoubleClicked.connect(self.replace_selected)
+        layout.addWidget(self.results, 1)
+
+        layout.addWidget(QLabel("Reemplazar por:"))
+        self.replace_edit = QLineEdit()
+        layout.addWidget(self.replace_edit)
+
+        buttons = QHBoxLayout()
+        layout.addLayout(buttons)
+        help_button = QPushButton("Ayuda")
+        help_button.clicked.connect(self.show_help)
+        buttons.addWidget(help_button)
+        buttons.addStretch(1)
+
+        cancel_button = QPushButton("Cancelar")
+        cancel_button.clicked.connect(self.reject)
+        buttons.addWidget(cancel_button)
+
+        replace_button = QPushButton("Reemplazar")
+        replace_button.clicked.connect(self.replace_selected)
+        buttons.addWidget(replace_button)
+
+        self.refresh_results()
+
+    def change_language(self, index):
+        self.language_index = index
+        self.setWindowTitle(f"Sinónimos ({self.parent_widget.thesaurus.language_label(index)})")
+        self.refresh_results()
+
+    def refresh_results(self):
+        self.results.clear()
+        self.word = self.word_edit.text().strip()
+        groups = self.parent_widget.thesaurus.lookup(self.word, self.language_index)
+
+        if not groups:
+            item = QListWidgetItem("No se encontraron sinónimos")
+            item.setFlags(Qt.ItemFlag.NoItemFlags)
+            self.results.addItem(item)
+            self.replace_edit.clear()
+            return
+
+        first_synonym = ""
+        for index, group in enumerate(groups, start=1):
+            header_text = f"{index}. - {group[0]}"
+            header = QListWidgetItem(header_text)
+            font = header.font()
+            font.setBold(True)
+            header.setFont(font)
+            header.setFlags(Qt.ItemFlag.NoItemFlags)
+            self.results.addItem(header)
+
+            for synonym in group:
+                item = QListWidgetItem(synonym)
+                item.setData(Qt.ItemDataRole.UserRole, synonym)
+                self.results.addItem(item)
+                if not first_synonym:
+                    first_synonym = synonym
+
+        self.replace_edit.setText(first_synonym)
+        if self.results.count() > 1:
+            self.results.setCurrentRow(1)
+
+    def select_synonym(self, item):
+        synonym = item.data(Qt.ItemDataRole.UserRole)
+        if synonym:
+            self.replace_edit.setText(synonym)
+
+    def replace_selected(self):
+        replacement = self.replace_edit.text()
+        if not replacement:
+            return
+        self.parent_widget.replace_selected_word(replacement)
+        self.accept()
+
+    def show_help(self):
+        QMessageBox.information(
+            self,
+            "Sinónimos",
+            "Selecciona una alternativa y pulsa Reemplazar para cambiar la palabra seleccionada."
+        )
+
 
 class TextScrollerApp(QMainWindow):
 # Dentro de la clase `TextScrollerApp`
@@ -69,11 +485,15 @@ class TextScrollerApp(QMainWindow):
         # Inicializar configuración antes de usarla
         self.config = {}
         self.load_config()
+        self.thesaurus = MythesThesaurus()
 
         # Diccionario para rastrear archivos abiertos en pestañas
         self.opened_files = {}
 
         self.init_ui()
+
+        self.replace_btn.clicked.connect(self.replace_one)
+        self.replace_all_btn.clicked.connect(self.replace_all)
 
         # Actualizar el menú "Abrir reciente" después de cargar la configuración
         self.update_recent_files_menu()
@@ -156,6 +576,168 @@ class TextScrollerApp(QMainWindow):
 
         self.setAcceptDrops(True)
 
+        # =========================
+        # Panel de Buscar / Reemplazar
+        # =========================
+
+        self.search_panel = QWidget()
+        self.search_panel.setVisible(False)  # empieza oculto
+
+        search_layout = QVBoxLayout(self.search_panel)
+
+        # ---- Buscar ----
+        find_layout = QHBoxLayout()
+
+        self.find_input = QLineEdit()
+        self.find_input.setPlaceholderText("Buscar")
+
+        self.find_prev_btn = QPushButton("Anterior")
+        self.find_next_btn = QPushButton("Siguiente")
+
+        # Conexiones
+        self.find_next_btn.clicked.connect(self.find_next)
+        self.find_prev_btn.clicked.connect(self.find_previous)
+        self.find_input.returnPressed.connect(self.find_next)
+
+        # Añadir al layout
+        find_layout.addWidget(QLabel("Buscar:"))
+        find_layout.addWidget(self.find_input)
+        find_layout.addWidget(self.find_prev_btn)
+        find_layout.addWidget(self.find_next_btn)
+
+        search_layout.addLayout(find_layout)
+
+        # Opciones
+        options_layout = QHBoxLayout()
+
+        self.match_case_cb = QCheckBox("Coincidir mayúsculas")
+        self.regex_cb = QCheckBox("Expresiones regulares")
+
+        options_layout.addWidget(self.match_case_cb)
+        options_layout.addWidget(self.regex_cb)
+
+        search_layout.addLayout(options_layout)
+
+        # ---- Reemplazar ----
+        replace_layout = QHBoxLayout()
+
+        self.replace_input = QLineEdit()
+        self.replace_input.setPlaceholderText("Reemplazar")
+
+        self.replace_btn = QPushButton("Reemplazar")
+        self.replace_all_btn = QPushButton("Reemplazar todo")
+
+        self.replace_label = QLabel("Reemplazar:")
+        replace_layout.addWidget(self.replace_label)
+        replace_layout.addWidget(self.replace_input)
+        replace_layout.addWidget(self.replace_btn)
+        replace_layout.addWidget(self.replace_all_btn)
+
+        search_layout.addLayout(replace_layout)
+
+        # Reemplazar oculto al inicio
+        self.replace_label.setVisible(False)
+        self.replace_input.setVisible(False)
+        self.replace_btn.setVisible(False)
+        self.replace_all_btn.setVisible(False)
+
+        # Añadir panel al layout principal
+        layout.addWidget(self.search_panel)
+
+    def find_previous(self):
+        editor = self.get_current_text_widget()
+        if not editor:
+            return
+
+        text = self.find_input.text()
+        if not text:
+            return
+
+        flags = QTextDocument.FindFlag.FindBackward
+
+        if self.match_case_cb.isChecked():
+            flags |= QTextDocument.FindFlag.FindCaseSensitively
+
+        found = editor.find(text, flags)
+
+        # Si llega al inicio, vuelve al final
+        if not found:
+            cursor = editor.textCursor()
+            cursor.movePosition(QTextCursor.MoveOperation.End)
+            editor.setTextCursor(cursor)
+            editor.find(text, flags)
+
+    def replace_one(self):
+        editor = self.get_current_text_widget()
+        if not editor:
+            return
+
+        cursor = editor.textCursor()
+        if cursor.hasSelection():
+            cursor.insertText(self.replace_input.text())
+            self.find_next()
+
+    def replace_all(self):
+        editor = self.get_current_text_widget()
+        if not editor:
+            return
+
+        text = editor.toPlainText()
+        find = self.find_input.text()
+        replace = self.replace_input.text()
+
+        if self.regex_cb.isChecked():
+            flags = 0 if self.match_case_cb.isChecked() else re.IGNORECASE
+            text = re.sub(find, replace, text, flags=flags)
+        else:
+            if self.match_case_cb.isChecked():
+                text = text.replace(find, replace)
+            else:
+                text = re.sub(re.escape(find), replace, text, flags=re.IGNORECASE)
+
+        editor.setPlainText(text)
+
+    def highlight_all_matches(self):
+        editor = self.get_current_text_widget()
+        if not editor:
+            return
+
+        text = self.find_input.text()
+        if not text:
+            editor.setExtraSelections([])
+            return
+
+        cursor = editor.textCursor()
+        cursor.beginEditBlock()
+
+        selections = []
+
+        doc = editor.document()
+        flags = QTextDocument.FindFlag(0)
+
+        if self.match_case_cb.isChecked():
+            flags |= QTextDocument.FindFlag.FindCaseSensitively
+
+        # Empezar desde el inicio del documento
+        cursor = QTextCursor(doc)
+        while True:
+            if self.regex_cb.isChecked():
+                pattern = QRegularExpression(text)
+                cursor = doc.find(pattern, cursor)
+            else:
+                cursor = doc.find(text, cursor, flags)
+
+            if cursor.isNull():
+                break
+
+            selection = QTextEdit.ExtraSelection()
+            selection.cursor = cursor
+            selection.format.setBackground(QColor("#fff59d"))  # amarillo suave
+            selections.append(selection)
+
+        editor.setExtraSelections(selections)
+        cursor.endEditBlock()
+
     def update_encoding_label(self, index):
         print(f"Actualizando etiqueta para la pestaña {index}")
         file_path = self.opened_files.get(index, None)
@@ -170,11 +752,53 @@ class TextScrollerApp(QMainWindow):
             self.encoding_label.setText("Codificación: N/A | Terminador de línea: N/A")
             self.setWindowTitle("Lector y Editor de Texto con acordes")
 
+    def show_find_panel(self):
+        self.search_panel.setVisible(True)
+
+        self.replace_label.setVisible(False)
+        self.replace_input.setVisible(False)
+        self.replace_btn.setVisible(False)
+        self.replace_all_btn.setVisible(False)
+
+        self.find_input.setFocus()
+
+    def show_replace_panel(self):
+        self.search_panel.setVisible(True)
+
+        self.replace_label.setVisible(True)
+        self.replace_input.setVisible(True)
+        self.replace_btn.setVisible(True)
+        self.replace_all_btn.setVisible(True)
+
+        self.find_input.setFocus()
+
     def toggle_scroll(self):
         if self.is_scrolling:
             self.pause_scrolling()
         else:
             self.start_scrolling()
+
+    def find_next(self):
+        self.highlight_all_matches()
+
+        editor = self.get_current_text_widget()
+        if not editor:
+            return
+
+        flags = QTextDocument.FindFlag(0)
+
+        if self.match_case_cb.isChecked():
+            flags |= QTextDocument.FindFlag.FindCaseSensitively
+
+        text = self.find_input.text()
+        if not text:
+            return
+
+        if self.regex_cb.isChecked():
+            pattern = QRegularExpression(text)
+            editor.find(pattern)
+        else:
+            editor.find(text, flags)
 
     def add_new_tab(self, file_name=None, content="", file_path=None):
         # Crear un nuevo área de texto
@@ -369,6 +993,23 @@ class TextScrollerApp(QMainWindow):
         redo_action.setShortcut("Ctrl+Shift+Z")  # Atajo: Ctrl+Shift+Z
         edit_menu.addAction(redo_action)
 
+        edit_menu.addSeparator()
+
+        find_action = QAction("Buscar", self)
+        find_action.setShortcut("Ctrl+F")
+        find_action.triggered.connect(self.show_find_panel)
+        edit_menu.addAction(find_action)
+
+        replace_action = QAction("Reemplazar", self)
+        replace_action.setShortcut("Ctrl+H")
+        replace_action.triggered.connect(self.show_replace_panel)
+        edit_menu.addAction(replace_action)
+
+        find_in_files_action = QAction("Buscar/Reemplazar en archivos…", self)
+        find_in_files_action.setShortcut("Ctrl+Shift+F")
+        find_in_files_action.triggered.connect(self.show_find_in_files_dialog)
+        edit_menu.addAction(find_in_files_action)
+
         # Añadir un separador
         edit_menu.addSeparator()
 
@@ -395,6 +1036,14 @@ class TextScrollerApp(QMainWindow):
         select_all_action.triggered.connect(lambda: self.get_current_text_widget().selectAll())
         select_all_action.setShortcut("Ctrl+A")  # Atajo: Ctrl+A
         edit_menu.addAction(select_all_action)
+
+        # Menú Herramientas
+        tools_menu = menu_bar.addMenu("Herramientas")
+
+        synonyms_action = QAction("Sinónimos...", self)
+        synonyms_action.setShortcut("Ctrl+F7")
+        synonyms_action.triggered.connect(self.show_synonyms_dialog)
+        tools_menu.addAction(synonyms_action)
 
         # Menú Opciones
         options_menu = menu_bar.addMenu("Opciones")
@@ -424,7 +1073,7 @@ class TextScrollerApp(QMainWindow):
         # ... Opción de cambiar la fuente
         change_font_action = QAction("Cambiar fuente", self)
         change_font_action.triggered.connect(self.select_font)
-        change_font_action.setShortcut("Ctrl+F")
+        change_font_action.setShortcut("Ctrl+Alt+F")
         options_menu.addAction(change_font_action)
 
         # ... Opción de cambiar la velocidad máxima
@@ -440,6 +1089,81 @@ class TextScrollerApp(QMainWindow):
         about_action.triggered.connect(self.show_about_dialog)
         about_action.setShortcut("Ctrl+H")
         help_menu.addAction(about_action)
+
+    def selected_word_for_synonyms(self):
+        text_widget = self.get_current_text_widget()
+        if not text_widget:
+            return ""
+
+        cursor = text_widget.textCursor()
+        selected = cursor.selectedText().strip()
+        if selected:
+            return selected
+
+        cursor.select(QTextCursor.SelectionType.WordUnderCursor)
+        selected = cursor.selectedText().strip()
+        if selected:
+            text_widget.setTextCursor(cursor)
+        return selected
+
+    def show_synonyms_dialog(self):
+        if not self.thesaurus.languages:
+            QMessageBox.warning(
+                self,
+                "Sinónimos",
+                "No se encontraron diccionarios Mythes en /usr/share/mythes."
+            )
+            return
+
+        word = self.selected_word_for_synonyms()
+        if not word:
+            QMessageBox.information(self, "Sinónimos", "Selecciona una palabra para buscar sinónimos.")
+            return
+
+        dialog = SynonymsDialog(self, word)
+        dialog.exec()
+
+    def replace_selected_word(self, replacement):
+        text_widget = self.get_current_text_widget()
+        if not text_widget:
+            return
+
+        cursor = text_widget.textCursor()
+        if not cursor.hasSelection():
+            cursor.select(QTextCursor.SelectionType.WordUnderCursor)
+
+        cursor.insertText(replacement)
+        text_widget.setTextCursor(cursor)
+        text_widget.setFocus()
+
+    def show_find_in_files_dialog(self):
+        try:
+            self._fif_dialog.show()
+            self._fif_dialog.raise_()
+            self._fif_dialog.activateWindow()
+            return
+        except AttributeError:
+            pass
+
+        self._fif_dialog = FindInFilesDialog(self)
+        self._fif_dialog.show()
+
+    def open_file_at(self, file_path: str, line: int, col: int):
+        """Abre un archivo y posiciona el cursor en la línea/columna dadas (1-based)."""
+        self.open_dropped_file(file_path)
+        text_widget = self.get_current_text_widget()
+        if not text_widget:
+            return
+
+        line = max(1, line)
+        block = text_widget.document().findBlockByLineNumber(line - 1)
+        if not block.isValid():
+            return
+
+        cursor = text_widget.textCursor()
+        cursor.setPosition(block.position() + max(0, col - 1))
+        text_widget.setTextCursor(cursor)
+        text_widget.setFocus()
 
     def update_recent_files_menu(self):
         self.recent_menu.clear()

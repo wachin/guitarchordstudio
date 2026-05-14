@@ -1,281 +1,213 @@
-# Manual de Instalación y Uso del Programa para Guitarristas en Linux Debian 12, MX Linux 23, antiX 23
+# Chord Autoscroll
 
-Este programa es ideal para guitarristas que necesitan gestionar archivos de canciones en formato de texto .txt y ajustar los acordes rápidamente durante ensayos. Con características de auto-scroll y transposición, tendrás todas las herramientas necesarias a tu disposición para poder adaptar una canción para tu voz.
+Editor de letras con acordes para guitarristas, cantantes y músicos que trabajan con canciones en archivos de texto. Permite abrir canciones, transponer acordes, desplazarse automáticamente durante el ensayo, buscar y reemplazar texto, buscar en varios archivos y consultar sinónimos usando diccionarios Mythes instalados en Linux.
 
-## Probado en los siguientes Linux:
-- Linux Debian 12 de 32 bit
-- MX Linux 23 de 32 y 64 bit
+El programa está pensado para Debian 12, MX Linux 23, antiX 23 y distribuciones derivadas.
 
+## Características
 
----
+- Editor de texto con pestañas.
+- Apertura de archivos `.txt`.
+- Arrastrar y soltar archivos sobre la ventana.
+- Guardado normal, `Guardar como...` y guardado con codificación elegida.
+- Detección de codificación y terminadores de línea.
+- Lista de archivos recientes.
+- Desplazamiento automático para ensayos.
+- Control de velocidad del desplazamiento.
+- Transposición de acordes por semitonos.
+- Opción para usar sostenidos o bemoles.
+- Búsqueda y reemplazo dentro del documento.
+- Búsqueda y reemplazo en archivos desde `Editar > Buscar/Reemplazar en archivos...`.
+- Sinónimos desde `Herramientas > Sinónimos...`, usando diccionarios Mythes como `mythes-es`.
+- Selección de fuente.
+- Atajos de teclado para las acciones principales.
 
-# Instrucciones de Instalación
+## Sistemas Probados
 
-## 1. Instalación de dependencias
-Antes de ejecutar el programa, necesitas asegurarte de que ciertos paquetes estén instalados en tu sistema. Ejecuta el siguiente comando en la terminal para instalar las dependencias necesarias:
+- Debian 12 de 32 bits.
+- MX Linux 23 de 32 y 64 bits.
 
-**Para Debian 12, MX Linux 23, antiX 23)**
+## Instalación De Dependencias
+
+En Debian 12, MX Linux 23, antiX 23 y derivados, instala las dependencias con:
 
 ```bash
-sudo apt-get install python3 python3-pyqt6 python3-mpmath \
-    python3-simplejson python3-all-dev qt6-translations-l10n \
-    fonts-noto-mono python3-chardet
+sudo apt-get update
+sudo apt-get install python3 python3-pyqt6 python3-chardet \
+    qt6-translations-l10n fonts-noto-mono mythes mythes-es
 ```
 
-**Nota:** Al final dejo explicaciones de para qué sirven algunos de estos paquetes.
+Para tener sinónimos en otro idioma, instala el paquete Mythes correspondiente. Por ejemplo:
 
----
+```bash
+sudo apt-get install mythes-de
+```
 
-## 2. Ejecutar el programa
-Una vez instaladas las dependencias, puedes ejecutar el programa desde la terminal. Navega a la carpeta donde se encuentra el archivo `chord_autoscroll.py` y usa el siguiente comando:
+## Ejecutar El Programa
 
-Para Debian 12:
+Desde la carpeta del proyecto:
 
 ```bash
 python3 chord_autoscroll.py
 ```
 
-así como en la siguiente captura de pantalla:
+También puedes ejecutarlo desde un gestor de archivos si tu distribución tiene una opción para lanzar scripts de Python.
 
-![](src/vx_images/01-lanzando-chord_autoscroll.py.webp)
+![Lanzando Chord Autoscroll](src/vx_images/01-lanzando-chord_autoscroll.py.webp)
 
-o si tu Distribución Linux cuenta con un lanzador de programas escritos en python como en MX Linux 23 con clic derecho en Thunar, o si deseas hacerlo en Dolphin instala mi [lanzador](https://facilitarelsoftwarelibre.blogspot.com/2024/08/anadir-dolphin-una-opcion-para-ejecutar-scrpts-en-python.html):
+## Uso Básico
 
+### Abrir Canciones
 
-![](src/vx_images/05-lanzador-python-para-dolphin.png)
+Puedes abrir canciones de dos formas:
 
----
+- Arrastrando un archivo `.txt` sobre la ventana.
+- Usando `Archivo > Abrir`.
 
-## Modo de Uso
+El proyecto incluye canciones de ejemplo en la carpeta `Ejemplo/`.
 
-### 1. Abrir canciones
-Existen dos maneras de cargar tus archivos de texto con acordes en el programa:
-- **Arrastrar y soltar archivos**: Simplemente arrastra un archivo de texto (con extensión `.txt`) hacia la ventana del programa.
-- **Abrir desde el menú**: Haz clic en "Archivo > Abrir" en la barra de menú para seleccionar y cargar tus archivos.
+### Transponer Acordes
 
-**Ejemplos de archivos incluidos:**
+Usa el botón `Transponer` para subir o bajar semitonos. Esto sirve para adaptar una canción a tu voz o a la afinación del instrumento.
 
-🗀 Ejemplos/A quien iré - Luis Enrrique Espinosa (C).txt  
-🗀 Ejemplos/A quien iré - Luis Enrrique Espinosa (D).txt  
-🗀 Ejemplos/Canta al Señor - Vertical (C#).txt  
-🗀 Ejemplos/De tal manera - Abel Zabala (A#).txt  
-🗀 Ejemplos/El Espíritu de Dios - Hector Pinilla (E).txt  
-🗀 Ejemplos/La niña de tus ojos - Daniel Calveti (A).txt  
-🗀 Ejemplos/La niña de tus ojos - Daniel Calveti (C).txt  
-🗀 Ejemplos/No hay lugar mas alto - Miel San Marcos (A).txt  
-🗀 Ejemplos/Renuévame - Marcos Witt (C).txt  
-🗀 Ejemplos/Renuévame - Marcos Witt (D).txt  
-🗀 Ejemplos/Sumergeme - Jesus A.R (A#).txt   
+En `Opciones` puedes elegir si la transposición usará sostenidos o bemoles.
 
-![](src/vx_images/04--Portada-la-niña-de-tus-ojos.png)
+### Desplazamiento Automático
 
-### 2. Transponer acordes
-El programa cuenta con un botón **"Transponer"**, ubicado en la esquina inferior derecha. Al hacer clic, se abrirá un menú donde puedes ajustar los semitonos de tus acordes:
-- **Subir semitonos**: Desplázate hacia arriba para aumentar el tono.
-- **Bajar semitonos**: Desplázate hacia abajo para reducir el tono.
+El programa puede desplazar la letra automáticamente mientras tocas o cantas.
 
-Esto es especialmente útil cuando necesitas adaptar una canción a tu voz o a la afinación de tu guitarra.
+- `Iniciar`: empieza el desplazamiento.
+- `Pausar`: detiene el desplazamiento.
+- Control de velocidad: ajusta qué tan rápido avanza el texto.
+- `Opciones > Cambiar velocidad máxima`: cambia el rango de velocidad disponible.
 
-### 3. Control de desplazamiento
-El programa te permite desplazarte automáticamente por la letra y acordes de la canción, facilitando la lectura durante la interpretación.
+### Buscar Y Reemplazar
 
-- **Iniciar/Pausar desplazamiento**: Usa los botones **"Iniciar"** y **"Pausar"** para controlar el desplazamiento automático.
-- **Ajustar velocidad**: Usa el deslizador de velocidad para ajustar la rapidez del desplazamiento según tu necesidad.
+En el menú `Editar` tienes:
 
-### 4. Cambiar fuente
-El programa ofrece la posibilidad de personalizar la fuente de los acordes. En el menú "Opciones > Cambiar fuente", puedes seleccionar la fuente de tu preferencia. Por defecto, se utiliza una fuente monoespaciada **Noto Mono**, perfecta para asegurar la correcta alineación de los acordes.
+- `Buscar`: muestra el panel de búsqueda.
+- `Reemplazar`: muestra el panel de búsqueda y reemplazo.
+- `Buscar/Reemplazar en archivos...`: busca o reemplaza texto en varios archivos de una carpeta.
 
-### 5. Cambiar y guardar la velocidad de desplazamiento
-El programa ofrece la posibilidad de cambiar la velociad. En el menú "Opciones > Cambiar velocidad máxima", puedes seleccionar puedes aumentar el número que allí aparece lo que hará que la velocidad de desplazamiento sea más baja, esto funciona bien en Sistemas Operativos Debian 12 y basados en el como MX Linux 23, antiX 23, etc
+La búsqueda permite coincidencia de mayúsculas/minúsculas y expresiones regulares.
 
----
+### Sinónimos
 
-### 6. Opciones de guardado de archivos
+Si tienes instalados paquetes como `mythes` y `mythes-es`, puedes seleccionar una palabra y usar:
 
-El programa incluye tres opciones para guardar archivos en el menú "Archivo":
+```text
+Herramientas > Sinónimos...
+```
 
-**1. Guardar**
+o el atajo:
 
-Esta opción guarda el archivo utilizando la misma codificación y terminador de línea que tenía originalmente el archivo abierto o editado. Es útil para conservar la compatibilidad con otros programas o sistemas.
+```text
+Ctrl+F7
+```
 
-**2. Guardar como...**
+Se abrirá una ventana similar a la de LibreOffice, con alternativas y un campo para reemplazar la palabra seleccionada.
 
-Permite guardar el archivo en una nueva ubicación, pero conserva la codificación y el terminador de línea originales del archivo abierto o editado. No muestra opciones para cambiar la codificación.
+### Cambiar Fuente
 
-**3. Guardar Codificación como...**
+En `Opciones > Cambiar fuente` puedes elegir la fuente del editor. Se recomienda una fuente monoespaciada para mantener alineados los acordes con la letra. Por defecto se usa `Noto Mono`.
 
-Esta opción te permite guardar el archivo seleccionando una codificación y terminador de línea diferentes. Al elegir esta opción, aparecerá un cuadro de diálogo donde puedes seleccionar entre las siguientes codificaciones:
+## Guardado De Archivos
 
-* **UTF-8**
- 
-* **UTF-16 LE**
- 
-* **UTF-16 BE**
- 
-* **UTF-8 con BOM**
- 
-* **ANSI**
+El menú `Archivo` incluye tres opciones de guardado:
 
-* **ISO-8859-1**
+### Guardar
 
-Y también puedes seleccionar el tipo de terminador de línea:
+Guarda el archivo usando la misma codificación y el mismo terminador de línea detectados al abrirlo.
 
-* **Windows (CRLF)**
+### Guardar Como...
 
-* **Unix (LF)**
+Guarda el archivo en otra ubicación conservando la codificación y el terminador de línea originales.
 
-* **Mac (CR)**
+### Guardar Codificación Como...
 
-Esto es especialmente útil si necesitas que el archivo sea compatible con diferentes sistemas operativos o programas que requieren una codificación específica.
+Permite elegir codificación y terminador de línea antes de guardar.
 
+Codificaciones disponibles:
 
+- UTF-8
+- UTF-16 LE
+- UTF-16 BE
+- UTF-8 con BOM
+- ANSI
+- ISO-8859-1
 
-### 7. He hecho un Cancionero con muchas alabanzas que usamos en la Iglesia
+Terminadores de línea disponibles:
 
- En la siguiente dirección está mi cancionero con letras y acordes de guitarra:
+- Windows (CRLF)
+- Unix (LF)
+- Mac (CR)
+
+## Atajos De Teclado
+
+| Función | Atajo |
+| --- | --- |
+| Nuevo archivo | `Ctrl+N` |
+| Abrir archivo | `Ctrl+O` |
+| Guardar archivo | `Ctrl+S` |
+| Guardar como | `Ctrl+Shift+S` |
+| Salir | `Ctrl+Q` |
+| Buscar | `Ctrl+F` |
+| Buscar/Reemplazar en archivos | `Ctrl+Shift+F` |
+| Sinónimos | `Ctrl+F7` |
+| Seleccionar todo | `Ctrl+A` |
+| Cambiar fuente | `Ctrl+Alt+F` |
+| Cambiar velocidad máxima | `Ctrl+Shift+V` |
+| Acerca de | `Ctrl+H` |
+| Deshacer | `Ctrl+Z` |
+| Rehacer | `Ctrl+Shift+Z` |
+| Iniciar/Pausar desplazamiento | `Ctrl+Barra espaciadora` |
+
+## Cancionero Recomendado
+
+También puedes usar este programa con el cancionero de letras y acordes disponible en:
 
 [https://github.com/wachin/Cancionero](https://github.com/wachin/Cancionero)
 
-lo puedes descargar así:
+![Descargar cancionero](src/vx_images/03-descarga-mi-cancionero-de-canciones-con-acordes-de-guitarra.webp)
 
-![](src/vx_images/03-descarga-mi-cancionero-de-canciones-con-acordes-de-guitarra.webp)
+Las canciones están en la carpeta:
 
-Las canciones están en la carpeta:  
-
-
-🗀 Acordes de Guitarra para celular (63x110mm)
-
-
-y debes instalar la siguiente fuente tipográfica que la dejé allí mismo para varias canciones que uso:
-
-
-🗀 Cancionero/Fonts/iosevka-wps-linux/  
-
-
-allí están las instrucciones de instalación. Aunque ultimamente he llegado a la conclusión que para las nuevas usaré la fuente de Microsoft llama Consolas pues pensando en los usuarios de Windows que usan Microsoft Office Word, y además para usarlas online en [https://www.office.com/](https://www.office.com/)
-
-Para editar los archivos .docx puedes usar LibreOffice, WPS Office, Microsoft Windows (si lo tenga instalado en Wine o PlayOnLinux)
-
----
-
-#### Temas sobre instalación de fuentes tipográficas
-Le dejo los siguientes temas importantes que he escrito sobre las fuentes tipográficas en mi Blog:
-
-**Instalar fuentes tipográficas de Windows en Linux(Ubuntu, Debian, Fedora, etc) para compatibilidad de archivos de Midrosoft Office en LibreOffice, WPS Office**  
-[https://facilitarelsoftwarelibre.blogspot.com/2018/11/instalar-fuentes-de-windows-en.html](https://facilitarelsoftwarelibre.blogspot.com/2018/11/instalar-fuentes-de-windows-en.html)
-
-
-**Cómo instalar fuentes tipográficas descargadas desde Internet en Linux + Análisis de las fuentes de los repositorios de Debian, Ubuntu: Ibm, Noto, Liberation, Dejavu, Bitstream Vera , Freefont**  
-[https://facilitarelsoftwarelibre.blogspot.com/2021/01/como-instalar-fuentes-tipograficas-en-linux.html](https://facilitarelsoftwarelibre.blogspot.com/2021/01/como-instalar-fuentes-tipograficas-en-linux.html)
-
-**Fuentes monoespaciadas (mono fonts) en WPS Office no están alineadas**  
-[https://facilitarelsoftwarelibre.blogspot.com/2022/05/problema-con-las-fuentes-monoespaciadas.html](https://facilitarelsoftwarelibre.blogspot.com/2022/05/problema-con-las-fuentes-monoespaciadas.html)
-
----
-
-## Atajos Asignados  
-Los siguientes son los atajos de teclado que le he puesto:
-
-|         Función          |          Atajo           |
-| ------------------------ | ------------------------ |
-| Nuevo archivo            | `Ctrl+N`                 |
-| Abrir archivo            | `Ctrl+O`                 |
-| Guardar archivo          | `Ctrl+S`                 |
-| Guardar como             | `Ctrl+Shift+S`           |
-| Salir                    | `Ctrl+Q`                 |
-| Seleccionar todo         | `Ctrl+A`                 |
-| Cambiar fuente           | `Ctrl+F`                 |
-| Cambiar velocidad máxima | `Ctrl+Shift+V`           |
-| Acerca de                | `Ctrl+H`                 |
-| Deshacer	               | `Ctrl+Z`                 |
-| Rehacer	               | `Ctrl+Shift+Z`           |
-| Iniciar Scroll	       | `Ctrl+Barra espaciadora` |
-| Pausar Scroll	           | `Ctrl+Barra espaciadora` |
-
----
-
-## Notas sobre las dependencias:
-Explicación de para qué sirve cada una de las dependencias instaladas 😊:
-
----
-
-### 1. `python3`
-   - **Descripción:** Instala el intérprete de Python 3.
-   - **Función:** Es la base para ejecutar programas escritos en Python.
-
----
-
-### 2. `python3-pyqt6`
-   - **Descripción:** Es un conjunto de enlaces de Python para Qt 6, una biblioteca popular para crear interfaces gráficas.
-   - **Función:** Proporciona los componentes gráficos (ventanas, botones, menús, etc.) que se utilizan en el programa.
-   - **Ejemplo:** Permite crear ventanas principales, pestañas, etiquetas, y controles como el botón de "Iniciar" o la barra de desplazamiento.
-
----
-
-### 3. `python3-mpmath`
-   - **Descripción:** Biblioteca para cálculos matemáticos con precisión arbitraria.
----
-
-### 4. `python3-simplejson`
-   - **Descripción:** Biblioteca para trabajar con datos en formato JSON (JavaScript Object Notation).
-   - **Función:** Facilita la lectura y escritura de archivos de configuración o datos estructurados en JSON. Sirve para guardar configuraciones como la fuente, velocidad de desplazamiento, o preferencias del usuario.
-
----
-
-### 5. `python3-all-dev`
-   - **Descripción:** Incluye archivos de desarrollo para Python 3, como cabeceras y herramientas necesarias para compilar extensiones en C/C++.
-   - **Función:** Es útil si necesitas compilar bibliotecas adicionales o trabajar en el desarrollo de módulos personalizados para Python.
-
----
-
-### 6. `fonts-noto-mono`
-   - **Descripción:** Es un conjunto de fuentes monoespaciadas de alta calidad de la familia Noto.
-   - **Función:** Proporciona una fuente monoespaciada (usada comúnmente en editores de texto y código) para mostrar contenido de manera clara y legible. Es la fuente predeterminada para mostrar letras y acordes en el editor de texto.
-
----
-
-### 7. `python3-chardet`
-   - **Descripción:** Biblioteca para detectar la codificación de archivos de texto.
-   - **Función:** Permite que el programa identifique automáticamente la codificación de un archivo al abrirlo, asegurando que pueda manejar archivos en formatos como UTF-8, ISO-8859-1, o Windows-1252, y otros.
-
-### 8. `qt6-translations-l10n`
-El paquete `qt6-translations-l10n` en Debian 12 proporciona archivos de traducción para la biblioteca Qt6, lo que significa que añade soporte para múltiples idiomas en las aplicaciones desarrolladas con Qt6, incluyendo el español, entre otros idiomas.
-
-Qt es un framework ampliamente utilizado para crear interfaces gráficas de usuario (GUI) y aplicaciones multiplataforma. Los cuadros de diálogo como "Abrir", "Guardar como", y otros mensajes de sistema que ves en el editor en Python se generan mediante la interfaz de Qt, y esos mensajes pueden estar traducidos dependiendo de la configuración de idioma del sistema.
-
-**Función del paquete `qt6-translations-l10n`:**
-- **Traducción de la interfaz**: Cuando instalas el paquete `qt6-translations-l10n`, estás proporcionando las traducciones necesarias para que los elementos de la interfaz de Qt, como los diálogos de archivo, botones, menús, etc., aparezcan en el idioma configurado en tu sistema (en este caso, español).
-
-La parte del código agregado para que funcione esto es:
-
-```
-import sys
-import os
-import math
-
-# Resto del código
-
-from PyQt6.QtCore import Qt, QTimer, QUrl, QTranslator, QLocale, QLibraryInfo
-
-    # Resto del código
-
-    def __init__(self):
-        super().__init__()
-        self.translator = QTranslator()
-
-        translations_path = QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)
-        print(f"Ruta de traducciones: {translations_path}")  # Depuración
-
-        # Cargar traducción al español
-        if self.translator.load("qtbase_es", translations_path):
-            QApplication.installTranslator(self.translator)
-            print("Traducción al español cargada correctamente.")
-        else:
-            print("No se pudo cargar la traducción al español.")
-            
-    # Resto del código
+```text
+Acordes de Guitarra para celular (63x110mm)
 ```
 
----
+## Fuentes Tipográficas
 
-Que Dios les bendiga
+Para editar canciones con acordes, conviene usar fuentes monoespaciadas. Algunas recomendaciones:
+
+- Noto Mono
+- Consolas
+- Iosevka
+- Liberation Mono
+- DejaVu Sans Mono
+
+Artículos relacionados:
+
+- [Instalar fuentes tipográficas de Windows en Linux](https://facilitarelsoftwarelibre.blogspot.com/2018/11/instalar-fuentes-de-windows-en.html)
+- [Cómo instalar fuentes tipográficas descargadas desde Internet en Linux](https://facilitarelsoftwarelibre.blogspot.com/2021/01/como-instalar-fuentes-tipograficas-en-linux.html)
+- [Fuentes monoespaciadas en WPS Office no están alineadas](https://facilitarelsoftwarelibre.blogspot.com/2022/05/problema-con-las-fuentes-monoespaciadas.html)
+
+## Notas Sobre Las Dependencias
+
+- `python3`: intérprete necesario para ejecutar el programa.
+- `python3-pyqt6`: biblioteca gráfica usada para la interfaz.
+- `python3-chardet`: detección automática de codificación de archivos.
+- `qt6-translations-l10n`: traducciones de diálogos Qt al español y otros idiomas.
+- `fonts-noto-mono`: fuente monoespaciada recomendada.
+- `mythes`: soporte base para diccionarios de sinónimos.
+- `mythes-es`: diccionario de sinónimos en español.
+
+## Hoja De Ruta
+
+Consulta [ROADMAP.md](ROADMAP.md) para ver lo que ya está implementado y las ideas previstas para futuras versiones.
+
+## Licencia
+
+El programa está pensado para publicarse bajo GPL 3.
+
+Que Dios les bendiga.
