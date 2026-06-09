@@ -1,4 +1,32 @@
-# Chord Autoscroll
+# GuitarChordStudio
+
+Este repositorio puede organizarse como una suite con varias aplicaciones, de
+forma parecida a WPS Office. Ahora mismo incluye:
+
+- `guitarchordstudio-autoscroll`: editor de letras con acordes y autoscroll.
+- `chordpages`: editor WYSIWYG orientado a páginas.
+
+`ChordPages/` no debe copiarse a la raíz. Lo correcto es mantener cada
+aplicación en su propia carpeta o módulo y unificarlas en el empaquetado del
+proyecto y luego en el paquete Debian.
+
+## Ejecutar Las Aplicaciones
+
+Desde la raíz del repositorio:
+
+```bash
+python3 chord_autoscroll.py
+python3 -m chordpages
+```
+
+Si instalas el proyecto como paquete Python, quedarán dos lanzadores:
+
+```bash
+guitarchordstudio-autoscroll
+chordpages
+```
+
+## Aplicación Chord Autoscroll
 
 Editor de letras con acordes para guitarristas, cantantes y músicos que trabajan con canciones en archivos de texto. Permite abrir canciones, transponer acordes, desplazarse automáticamente durante el ensayo, buscar y reemplazar texto, buscar en varios archivos y consultar sinónimos usando diccionarios Mythes instalados en Linux.
 

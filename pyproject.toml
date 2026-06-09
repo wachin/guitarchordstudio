@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=66"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "guitarchordstudio"
+version = "0.1.0"
+description = "Suite de aplicaciones para acordes y canciones de guitarra."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "chardet",
+    "PyQt6",
+]
+
+[project.gui-scripts]
+guitarchordstudio-autoscroll = "chord_autoscroll:main"
+chordpages = "chordpages.app:main"
+
+[tool.setuptools]
+py-modules = ["chord_autoscroll"]
+
+[tool.setuptools.packages.find]
+where = ["ChordPages"]
+include = ["chordpages*"]
+
+[tool.setuptools.package-data]
+chordpages = ["assets/*.svg"]
+
+[tool.setuptools.data-files]
+"share/chordpages/translations" = ["ChordPages/translations/*.qm"]

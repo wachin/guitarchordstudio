@@ -1649,8 +1649,11 @@ class TextScrollerApp(QMainWindow):
         self.config['use_sharps'] = use_sharps
         self.save_config()
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
+def main(argv=None):
+    app = QApplication(list(argv) if argv is not None else sys.argv)
     window = TextScrollerApp()
     window.show()
-    sys.exit(app.exec())
+    return app.exec()
+
+if __name__ == "__main__":
+    sys.exit(main())
