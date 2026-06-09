@@ -7,7 +7,7 @@ from pathlib import Path
 from PyQt6.QtGui import QIcon
 
 
-APP_ICON_PATH = Path(__file__).with_name("assets") / "chordpages.svg"
+APP_ICON_PATH = Path(__file__).with_name("assets") / "chordflow.svg"
 
 
 def app_icon() -> QIcon:

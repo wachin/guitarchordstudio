@@ -50,7 +50,7 @@ def test_build_application_sets_application_icon(qtbot, tmp_path):
 
     app = build_application([], settings=settings)
 
-    assert app.applicationName() == "ChordPages"
+    assert app.applicationName() == "ChordFlow"
     assert app.organizationName() == ORGANIZATION_NAME
     assert app.applicationName() == APPLICATION_NAME
     assert app.applicationVersion() == __version__
@@ -180,7 +180,7 @@ def test_main_window_starts_with_page_editor(qtbot, tmp_path):
     window = MainWindow(settings=temporary_settings(tmp_path))
     qtbot.addWidget(window)
 
-    assert window.windowTitle() == "ChordPages - Untitled"
+    assert window.windowTitle() == "ChordFlow Guitar - Untitled"
     assert not window.windowIcon().isNull()
     assert window.editor.text() == ""
     assert window.editor.page_layout().page_size == CHORDPAGES_PAGE_SIZE
@@ -198,7 +198,7 @@ def test_main_window_has_about_dialog_action(qtbot, tmp_path):
 
     menu_titles = [action.text() for action in window.menuBar().actions()]
     assert "Help" in menu_titles
-    assert window.about_action.text() == "About ChordPages"
+    assert window.about_action.text() == "About ChordFlow"
 
     help_action = next(action for action in window.menuBar().actions() if action.text() == "Help")
     help_menu = help_action.menu()
@@ -438,8 +438,8 @@ def test_about_dialog_shows_version_and_toolkit_details(qtbot, monkeypatch, tmp_
     window.show_about_dialog()
 
     assert captured["parent"] is window
-    assert captured["title"] == "About ChordPages"
-    assert f"ChordPages {__version__}" in captured["text"]
+    assert captured["title"] == "About ChordFlow"
+    assert f"ChordFlow {__version__}" in captured["text"]
     assert "Qt:" in captured["text"]
     assert "PyQt:" in captured["text"]
 

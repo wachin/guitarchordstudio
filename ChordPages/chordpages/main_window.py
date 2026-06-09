@@ -46,11 +46,13 @@ from chordpages.resources import app_icon
 from chordpages.recovery import RecoveryDraft, RecoveryManager
 from chordpages.settings import (
     DEFAULT_LANGUAGE,
+    APPLICATION_NAME,
     DocumentViewSettings,
     THEME_DARK,
     THEME_LIGHT,
     THEME_SYSTEM,
     SettingsManager,
+    WINDOW_TITLE_NAME,
 )
 from chordpages.theme import apply_theme
 from chordpages.ui.page_editor import (
@@ -124,7 +126,7 @@ class MainWindow(QMainWindow):
         self._autosave_timer.timeout.connect(self.perform_autosave)
         self.setWindowIcon(app_icon())
         self.setCentralWidget(self.tabs)
-        self.setWindowTitle(self.tr("ChordPages - Untitled"))
+        self.setWindowTitle(self._window_title())
 
         self._create_actions()
         self._create_menus()
@@ -263,10 +265,7 @@ class MainWindow(QMainWindow):
 
     def _update_window_title(self) -> None:
         metadata = self.current_document()
-        if metadata.path is None:
-            self.setWindowTitle(self.tr("ChordPages - Untitled"))
-        else:
-            self.setWindowTitle(self.tr("ChordPages - {name}").format(name=metadata.path.name))
+        self.setWindowTitle(self._window_title(metadata.path.name if metadata.path else None))
 
     def _show_file_metadata_message(self) -> None:
         metadata = self.current_document()
@@ -288,7 +287,7 @@ class MainWindow(QMainWindow):
 
     def new_document(self) -> None:
         self.add_document_tab()
-        self.setWindowTitle(self.tr("ChordPages - Untitled"))
+        self.setWindowTitle(self._window_title())
         self.statusBar().showMessage(self.tr("New document"))
 
     def open_document(self) -> None:
@@ -461,7 +460,11 @@ class MainWindow(QMainWindow):
         )
 
     def show_about_dialog(self) -> None:
-        QMessageBox.about(self, self.tr("About ChordPages"), self._about_text())
+        QMessageBox.about(
+            self,
+            self.tr("About {application_name}").format(application_name=APPLICATION_NAME),
+            self._about_text(),
+        )
 
     def show_preferences_dialog(self) -> None:
         dialog = PreferencesDialog(self.settings.language(), self)
@@ -664,11 +667,12 @@ class MainWindow(QMainWindow):
 
     def _about_text(self) -> str:
         return self.tr(
-            "<h2>ChordPages {version}</h2>"
+            "<h2>{application_name} {version}</h2>"
             "<p>A lightweight WYSIWYG ChordPro-oriented word processor.</p>"
             "<p>Designed for page layout, worship songs, and Git-friendly music documents.</p>"
             "<p><b>Qt:</b> {qt_version}<br><b>PyQt:</b> {pyqt_version}</p>"
         ).format(
+            application_name=APPLICATION_NAME,
             version=__version__,
             qt_version=QT_VERSION_STR,
             pyqt_version=PYQT_VERSION_STR,
@@ -764,7 +768,7 @@ class MainWindow(QMainWindow):
         self.use_flats_action.triggered.connect(lambda: self.set_transpose_accidentals(False))
         self.accidental_action_group.addAction(self.use_flats_action)
 
-        self.about_action = QAction(self.tr("About ChordPages"), self)
+        self.about_action = QAction(self.tr("About {application_name}").format(application_name=APPLICATION_NAME), self)
         self.about_action.triggered.connect(self.show_about_dialog)
 
         self.theme_action_group = QActionGroup(self)
@@ -1033,7 +1037,9 @@ class MainWindow(QMainWindow):
         self.fit_page_action.setText(self.tr("Fit Page"))
         self.single_page_view_action.setText(self.tr("Single Page"))
         self.multiple_page_view_action.setText(self.tr("Multiple Pages"))
-        self.about_action.setText(self.tr("About ChordPages"))
+        self.about_action.setText(
+            self.tr("About {application_name}").format(application_name=APPLICATION_NAME)
+        )
         self.system_theme_action.setText(self.tr("System"))
         self.light_theme_action.setText(self.tr("Light"))
         self.dark_theme_action.setText(self.tr("Dark"))
@@ -1052,10 +1058,19 @@ class MainWindow(QMainWindow):
         self.font_size_spin.setToolTip(self.tr("Font size"))
         self._sync_zoom_display()
 
-        if self.current_path is None:
-            self.setWindowTitle(self.tr("ChordPages - Untitled"))
-        else:
-            self.setWindowTitle(self.tr("ChordPages - {name}").format(name=self.current_path.name))
+        self.setWindowTitle(
+            self._window_title(self.current_path.name if self.current_path is not None else None)
+        )
+
+    def _window_title(self, document_name: str | None = None) -> str:
+        if document_name:
+            return self.tr("{application_name} - {name}").format(
+                application_name=WINDOW_TITLE_NAME,
+                name=document_name,
+            )
+        return self.tr("{application_name} - Untitled").format(
+            application_name=WINDOW_TITLE_NAME
+        )
 
     def _schedule_autosave(self) -> None:
         if self._autosave_suspended:

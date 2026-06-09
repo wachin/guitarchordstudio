@@ -12,8 +12,9 @@ from PyQt6.QtCore import QByteArray, QSettings, QSize
 from PyQt6.QtWidgets import QMainWindow
 
 
-ORGANIZATION_NAME = "ChordPages"
-APPLICATION_NAME = "ChordPages"
+ORGANIZATION_NAME = "ChordFlow"
+APPLICATION_NAME = "ChordFlow"
+WINDOW_TITLE_NAME = "ChordFlow Guitar"
 DEFAULT_MAIN_WINDOW_SIZE = (1100, 850)
 DEFAULT_RECENT_FILE_LIMIT = 10
 DEFAULT_LANGUAGE = "system"

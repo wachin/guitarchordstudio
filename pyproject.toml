@@ -3,7 +3,7 @@ requires = ["setuptools>=66"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "guitarchordstudio"
+name = "chordflow"
 version = "0.1.0"
 description = "Suite de aplicaciones para acordes y canciones de guitarra."
 readme = "README.md"
@@ -14,18 +14,18 @@ dependencies = [
 ]
 
 [project.gui-scripts]
-guitarchordstudio-autoscroll = "chord_autoscroll:main"
-chordpages = "chordpages.app:main"
+chordflow-autoscroll = "chord_autoscroll:main"
+chordflow = "ChordFlow.app:main"
 
 [tool.setuptools]
 py-modules = ["chord_autoscroll"]
 
 [tool.setuptools.packages.find]
-where = ["ChordPages"]
-include = ["chordpages*"]
+where = [".", "ChordPages"]
+include = ["ChordFlow*", "chordpages*"]
 
 [tool.setuptools.package-data]
 chordpages = ["assets/*.svg"]
 
 [tool.setuptools.data-files]
-"share/chordpages/translations" = ["ChordPages/translations/*.qm"]
+"share/chordflow/translations" = ["ChordPages/translations/*.qm"]
