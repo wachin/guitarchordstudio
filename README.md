@@ -15,6 +15,7 @@ proyecto y luego en el paquete Debian.
 Desde la raíz del repositorio:
 
 ```bash
+python3 -m ChordFlow
 python3 chord_autoscroll.py
 python3 -m chordpages
 ```
@@ -76,6 +77,7 @@ sudo apt-get install mythes-de
 Desde la carpeta del proyecto:
 
 ```bash
+python3 -m ChordFlow
 python3 chord_autoscroll.py
 ```
 

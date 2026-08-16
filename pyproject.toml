@@ -14,11 +14,7 @@ dependencies = [
 ]
 
 [project.gui-scripts]
-chordflow-autoscroll = "chord_autoscroll:main"
 chordflow = "ChordFlow.app:main"
-
-[tool.setuptools]
-py-modules = ["chord_autoscroll"]
 
 [tool.setuptools.packages.find]
 where = [".", "ChordPages"]
