@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import json
 import math
 import os
 import re
-
-import chardet
 from PyQt6.QtCore import QLibraryInfo, QRegularExpression, Qt, QTimer, QTranslator
 from PyQt6.QtGui import (
     QAction,
@@ -43,6 +40,14 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from .chord_transposer import transpose_text
+from .config_manager import ConfigManager
+from .file_operations import (
+    add_to_recent_files,
+    detect_encoding,
+    read_file,
+    write_file,
+)
 from .search_dialog import FindInFilesDialog, SynonymsDialog
 from .thesaurus import MythesThesaurus
 
@@ -92,11 +97,10 @@ class TextScrollerApp(QMainWindow):
         self.is_scrolling = False
         self.max_speed = 400
         self.scroll_speed = self.calculate_speed(15)
-        self.config_file = "config12.json"
+        self.config_manager = ConfigManager("config12.json")
         self.opened_files = {}
         self.file_encodings = {}
-        self.config = {}
-        self.load_config()
+        self.config = self.config_manager.load()
         self.thesaurus = MythesThesaurus()
         self.opened_files = {}
 
@@ -744,22 +748,9 @@ class TextScrollerApp(QMainWindow):
     def open_dropped_file(self, file_path):
         if os.path.exists(file_path) and file_path.lower().endswith(".txt"):
             try:
-                with open(file_path, "rb") as file:
-                    raw_data = file.read()
-                    detected = chardet.detect(raw_data)
-                    encoding = detected["encoding"] or "utf-8"
-
-                if b"\r\n" in raw_data:
-                    line_ending = "Windows (CRLF)"
-                elif b"\n" in raw_data:
-                    line_ending = "Unix (LF)"
-                elif b"\r" in raw_data:
-                    line_ending = "Mac (CR)"
-                else:
-                    line_ending = "Desconocido"
-
-                with open(file_path, "r", encoding=encoding, errors="replace") as file:
-                    content = file.read()
+                content, info = read_file(file_path)
+                encoding = info["encoding"]
+                line_ending = info["line_ending"]
 
                 self.file_encodings[file_path] = {
                     "encoding": encoding,
@@ -799,13 +790,7 @@ class TextScrollerApp(QMainWindow):
         self.setWindowTitle("Lector y Editor de Texto - Nuevo archivo")
 
     def add_to_recent_files(self, file_path):
-        from datetime import datetime
-
-        recent_files = self.config.get("recent_files", [])
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        recent_files = [item for item in recent_files if item["path"] != file_path]
-        recent_files.insert(0, {"path": file_path, "timestamp": timestamp})
-        self.config["recent_files"] = recent_files[:9]
+        self.config = add_to_recent_files(self.config, file_path)
         self.save_config()
         self.update_recent_files_menu()
 
@@ -816,22 +801,9 @@ class TextScrollerApp(QMainWindow):
         )
         if file_path:
             try:
-                with open(file_path, "rb") as file:
-                    raw_data = file.read()
-                    detected = chardet.detect(raw_data)
-                    encoding = detected["encoding"] or "utf-8"
-
-                if b"\r\n" in raw_data:
-                    line_ending = "Windows (CRLF)"
-                elif b"\n" in raw_data:
-                    line_ending = "Unix (LF)"
-                elif b"\r" in raw_data:
-                    line_ending = "Mac (CR)"
-                else:
-                    line_ending = "Desconocido"
-
-                with open(file_path, "r", encoding=encoding, errors="replace") as file:
-                    content = file.read()
+                content, info = read_file(file_path)
+                encoding = info["encoding"]
+                line_ending = info["line_ending"]
 
                 self.file_encodings[file_path] = {
                     "encoding": encoding,
@@ -890,13 +862,7 @@ class TextScrollerApp(QMainWindow):
                 )
 
                 content = current_widget.toPlainText()
-                if line_ending == "Windows (CRLF)":
-                    content = content.replace("\n", "\r\n")
-                elif line_ending == "Mac (CR)":
-                    content = content.replace("\n", "\r")
-
-                with open(file_path, "w", encoding=encoding) as file:
-                    file.write(content)
+                write_file(file_path, content, encoding, line_ending)
             except Exception as error:
                 QMessageBox.critical(self, "Error", f"No se pudo guardar el archivo: {error}")
         else:
@@ -927,13 +893,7 @@ class TextScrollerApp(QMainWindow):
                 )
 
                 content = current_widget.toPlainText()
-                if line_ending == "Windows (CRLF)":
-                    content = content.replace("\n", "\r\n")
-                elif line_ending == "Mac (CR)":
-                    content = content.replace("\n", "\r")
-
-                with open(file_path, "w", encoding=encoding) as file:
-                    file.write(content)
+                write_file(file_path, content, encoding, line_ending)
 
                 self.opened_files[index] = file_path
                 self.file_encodings[file_path] = {
@@ -980,10 +940,6 @@ class TextScrollerApp(QMainWindow):
 
             try:
                 content = current_widget.toPlainText()
-                if line_ending == "Windows (CRLF)":
-                    content = content.replace("\n", "\r\n")
-                elif line_ending == "Mac (CR)":
-                    content = content.replace("\n", "\r")
 
                 if encoding == "UTF-8 con BOM":
                     with open(file_path, "w", encoding="utf-8-sig") as file:
@@ -992,8 +948,7 @@ class TextScrollerApp(QMainWindow):
                     with open(file_path, "w", encoding="windows-1252") as file:
                         file.write(content)
                 else:
-                    with open(file_path, "w", encoding=encoding.lower().replace(" ", "-")) as file:
-                        file.write(content)
+                    write_file(file_path, content, encoding.lower().replace(" ", "-"), line_ending)
 
                 self.opened_files[index] = file_path
                 self.file_encodings[file_path] = {
@@ -1075,86 +1030,10 @@ class TextScrollerApp(QMainWindow):
         current_widget.verticalScrollBar().setValue(current_scroll_position)
 
     def transpose_text(self, text, semitones):
-        chord_pattern = r"\b[A-G](#|b)?(m|maj|min|dim|aug|sus|add)?[0-9]?(?!\w)"
-        chord_base = [
-            ["C"],
-            ["C#", "Db"],
-            ["D"],
-            ["D#", "Eb"],
-            ["E"],
-            ["F"],
-            ["F#", "Gb"],
-            ["G"],
-            ["G#", "Ab"],
-            ["A"],
-            ["A#", "Bb"],
-            ["B"],
-        ]
-
-        def transpose_chord(chord, spaces_after):
-            root = chord[0]
-            accidental = "#" if "#" in chord else "b" if "b" in chord else ""
-            suffix = chord[len(root + accidental) :]
-
-            current_index = next(
-                i for i, group in enumerate(chord_base) if root + accidental in group
-            )
-            new_index = (current_index + semitones) % len(chord_base)
-            new_root = (
-                chord_base[new_index][0]
-                if self.config["use_sharps"]
-                else chord_base[new_index][-1]
-            )
-            return new_root + suffix, " " * spaces_after
-
-        def is_chord_line(line):
-            words = line.split()
-            matches = [bool(re.fullmatch(chord_pattern, word)) for word in words]
-            return sum(matches) > len(words) / 2
-
-        def process_line(line):
-            chord_positions = list(re.finditer(chord_pattern, line))
-            if not chord_positions:
-                return line
-
-            new_line = []
-            last_end = 0
-
-            for index, match in enumerate(chord_positions):
-                new_line.append(line[last_end : match.start()])
-                next_pos = (
-                    chord_positions[index + 1].start()
-                    if index + 1 < len(chord_positions)
-                    else len(line)
-                )
-                spaces_after = next_pos - match.end()
-                new_chord, new_spaces = transpose_chord(match.group(), spaces_after)
-                new_line.append(new_chord + new_spaces)
-                last_end = next_pos
-
-            new_line.append(line[last_end:])
-            return "".join(new_line)
-
-        lines = text.split("\n")
-        transposed_lines = [process_line(line) if is_chord_line(line) else line for line in lines]
-        return "\n".join(transposed_lines)
-
-    def load_config(self):
-        if os.path.exists(self.config_file):
-            with open(self.config_file, "r") as file:
-                self.config = json.load(file)
-        else:
-            self.config = {
-                "max_speed": 100,
-                "font_family": "Noto Mono",
-                "font_size": 10,
-                "last_opened_path": "",
-                "use_sharps": True,
-            }
+        return transpose_text(text, semitones, self.config["use_sharps"])
 
     def save_config(self):
-        with open(self.config_file, "w") as file:
-            json.dump(self.config, file, indent=4)
+        self.config_manager.save(self.config)
 
     def toggle_accidentals(self, use_sharps):
         self.config["use_sharps"] = use_sharps
