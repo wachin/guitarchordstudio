@@ -25,7 +25,7 @@ chordpages
 
 ---
 
-# Aplicación Chord Autoscroll (chordflow)
+# Aplicación ChordFlow
 
 Editor de letras con acordes para guitarristas, cantantes y músicos que trabajan con canciones en archivos de texto. Permite abrir canciones, transponer acordes, desplazarse automáticamente durante el ensayo, buscar y reemplazar texto, buscar en varios archivos y consultar sinónimos usando diccionarios Mythes instalados en Linux.
 
@@ -80,7 +80,6 @@ python3 -m chordflow
 
 También puedes ejecutarlo desde un gestor de archivos si tu distribución tiene una opción para lanzar scripts de Python.
 
-![Lanzando Chord Autoscroll](src/vx_images/01-lanzando-chord_autoscroll.py.webp)
 
 ## Uso Básico
 
@@ -143,6 +142,8 @@ En `Opciones > Cambiar fuente` puedes elegir la fuente del editor. Se recomienda
 El menú `Archivo` incluye tres opciones de guardado:
 
 ### Guardar
+
+
 
 Guarda el archivo usando la misma codificación y el mismo terminador de línea detectados al abrirlo.
 
@@ -222,16 +223,35 @@ Artículos relacionados:
 ## Notas Sobre Las Dependencias
 
 - `python3`: intérprete necesario para ejecutar el programa.
-- `python3-pyqt6`: biblioteca gráfica usada para la interfaz.
-- `python3-chardet`: detección automática de codificación de archivos.
-- `qt6-translations-l10n`: traducciones de diálogos Qt al español y otros idiomas.
-- `fonts-noto-mono`: fuente monoespaciada recomendada.
-- `mythes`: soporte base para diccionarios de sinónimos.
-- `mythes-es`: diccionario de sinónimos en español.
+- `python3-pyqt6`: biblioteca gráfica que provee la interfaz de usuario
+  (ventanas, botones, menús, editor de texto, diálogos de archivo, etc.).
+- `python3-chardet`: detecta automáticamente la codificación de un archivo de
+  texto al abrirlo (UTF-8, ISO-8859-1, Windows-1252, etc.). Sin esta librería,
+  el usuario tendría que especificar la codificación manualmente cada vez que
+  abre un archivo, y los archivos creados en Windows (ANSI, UTF-8 con BOM) o
+  macOS (Mac Roman) no se abrirían correctamente. También se usa en la función
+  "Buscar/Reemplazar en archivos" para leer archivos con cualquier codificación
+  dentro de una carpeta.
+- `qt6-translations-l10n`: traducciones de los diálogos nativos de Qt al
+  español y otros idiomas. Por ejemplo, los botones "Abrir", "Guardar",
+  "Cancelar" en los cuadros de diálogo de archivos aparecen en español cuando
+  el sistema está configurado en ese idioma.
+- `fonts-noto-mono`: fuente monoespaciada recomendada por defecto para el
+  editor. Las fuentes monoespaciadas mantienen los acordes alineados
+  verticalmente con la letra, lo cual es esencial para que las canciones se
+  vean correctamente.
+- `mythes`: soporte base para diccionarios de sinónimos (thesaurus). El programa
+  usa los diccionarios Mythes instalados en el sistema (los mismos que usa
+  LibreOffice) para ofrecer sinónimos de palabras. Sin este paquete, la opción
+  "Sinónimos..." del menú Herramientas no tendría diccionarios que cargar.
+- `mythes-es`: diccionario de sinónimos en español para el thesaurus Mythes.
+  Permite buscar sinónimos en español desde el menú `Herramientas > Sinónimos...`.
+  Para otros idiomas se pueden instalar paquetes como `mythes-de` (alemán),
+  `mythes-en` (inglés), etc.
 
 ---
 
-# Aplicación ChordPages (chordpages)
+# Aplicación ChordPages
 
 ChordPages es un editor WYSIWYG orientado a páginas para canciones con letras y
 acordes de guitarra. A diferencia de `chordflow`, que muestra el texto en una
