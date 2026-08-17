@@ -324,6 +324,21 @@ pip install pytest pytest-qt
 
 ---
 
+# Configuration Files
+
+Each application stores its settings in the platform's standard configuration
+directory, under a shared `guitarchs` folder:
+
+| Application | Linux | Windows | macOS |
+|---|---|---|---|
+| **chordflow** | `~/.config/guitarchs/chordflow/config.json` | `%APPDATA%\guitarchs\chordflow\config.json` | `~/Library/Application Support/guitarchs/chordflow/config.json` |
+| **chordpages** | `~/.config/guitarchs/chordpages/settings.ini` | `%APPDATA%\guitarchs\chordpages\settings.ini` | `~/Library/Application Support/guitarchs/chordpages/settings.ini` |
+
+The files are created automatically when you first run the corresponding
+application. You can delete them to reset all settings to defaults.
+
+---
+
 # Roadmap
 
 See [ROADMAP.md](ROADMAP.md) for the current implementation status and planned
