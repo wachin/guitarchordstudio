@@ -122,6 +122,7 @@ y soporte para archivos `.txt`, `.pro`, `.cho` y `.chordpro`.
       espacios, tabs y cursor se calcule con el mismo motor.
 - [x] Zoom manual agregado: acercar, alejar, zoom 100% y ajuste de tres paginas
       al ancho.
+- [x] El zoom escala la fuente junto con la pagina, igual que en LibreOffice.
 - [x] Atajos de zoom agregados: `Ctrl++`, `Ctrl+=`, `Ctrl+-` y `Ctrl+0`.
 - [x] Barra de herramientas agregada para controles de zoom.
 - [x] Ventana principal con acciones de archivo.
