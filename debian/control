@@ -1,0 +1,27 @@
+Source: chordflow
+Section: sound
+Priority: optional
+Maintainer: Your Name <you@example.com>
+Build-Depends: debhelper-compat (= 13), dh-python, python3-all, pyqt6-dev-tools
+Standards-Version: 4.6.2
+Homepage: https://github.com/wachin/guitarchordstudio
+
+Package: chordflow
+Architecture: all
+Depends: ${python3:Depends}, ${misc:Depends},
+         python3-pyqt6,
+         python3-chardet,
+         qt6-translations-l10n,
+         fonts-noto-mono,
+         mythes,
+         mythes-en-us,
+         mythes-es
+Description: Suite of guitar chord editing applications
+ GuitarChordStudio is a suite of applications for working with
+ guitar chord lyrics. It includes:
+ .
+  - chordflow: tabbed lyrics and chords editor with autoscroll.
+  - chordpages: page-oriented WYSIWYG editor with multi-page layout.
+ .
+ Thesaurus dictionaries (mythes-*) are optional; you can install
+ the ones corresponding to your language.

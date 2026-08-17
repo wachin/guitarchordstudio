@@ -88,14 +88,48 @@ On Debian 12, MX Linux 23, antiX 23 and derivatives:
 ```bash
 sudo apt-get update
 sudo apt-get install python3 python3-pyqt6 python3-chardet \
-    qt6-translations-l10n fonts-noto-mono mythes mythes-es
+    qt6-translations-l10n fonts-noto-mono mythes mythes-en-us mythes-es
 ```
 
-For synonyms in other languages, install the corresponding Mythes package:
+For synonyms in other languages, install the corresponding Mythes package.
+The following dictionaries are available in Debian and Ubuntu:
+
+| Package | Language |
+|---|---|
+| `mythes-ar` | Arabic |
+| `mythes-bg` | Bulgarian |
+| `mythes-ca` | Catalan |
+| `mythes-cs` | Czech |
+| `mythes-da` | Danish |
+| `mythes-de` | German |
+| `mythes-de-ch` | Swiss German |
+| `mythes-en-au` | Australian English |
+| `mythes-en-us` | American English |
+| `mythes-es` | Spanish |
+| `mythes-fr` | French |
+| `mythes-gl` | Galician |
+| `mythes-gug` | Guarani |
+| `mythes-hu` | Hungarian |
+| `mythes-id` | Indonesian |
+| `mythes-is` | Icelandic |
+| `mythes-it` | Italian |
+| `mythes-lv` | Latvian |
+| `mythes-ne` | Nepali |
+| `mythes-no` | Norwegian |
+| `mythes-pl` | Polish |
+| `mythes-pt-br` | Brazilian Portuguese |
+| `mythes-pt-pt` | European Portuguese |
+| `mythes-ro` | Romanian |
+| `mythes-ru` | Russian |
+| `mythes-sk` | Slovak |
+| `mythes-sl` | Slovenian |
+| `mythes-sv` | Swedish |
+| `mythes-uk` | Ukrainian |
+
+Install one or more of them, for example:
 
 ```bash
-sudo apt-get install mythes-de   # German
-# or mythes-en, mythes-fr, etc.
+sudo apt-get install mythes-en-us mythes-fr mythes-de
 ```
 
 ## Running
@@ -198,7 +232,7 @@ DejaVu Sans Mono.
   LibreOffice). Without this package, the Thesaurus feature has no dictionaries
   to load.
 - **`mythes-es`** — Spanish thesaurus dictionary. For other languages, install
-  `mythes-de`, `mythes-en`, etc.
+  the corresponding package from the table above.
 
 ---
 
