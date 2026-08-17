@@ -97,7 +97,7 @@ class TextScrollerApp(QMainWindow):
         self.is_scrolling = False
         self.max_speed = 400
         self.scroll_speed = self.calculate_speed(15)
-        self.config_manager = ConfigManager("config12.json")
+        self.config_manager = ConfigManager()
         self.opened_files = {}
         self.file_encodings = {}
         self.config = self.config_manager.load()

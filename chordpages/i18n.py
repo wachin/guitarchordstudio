@@ -13,7 +13,7 @@ from PyQt6.QtWidgets import QApplication
 SYSTEM_LANGUAGE = "system"
 TRANSLATION_BASENAME = "chordpages"
 QT_TRANSLATION_BASENAME = "qtbase"
-SOURCE_TRANSLATIONS_PATH = Path(__file__).resolve().parent.parent / "translations"
+SOURCE_TRANSLATIONS_PATH = Path(__file__).resolve().parent / "translations"
 INSTALLED_TRANSLATIONS_PATH = Path(sys.prefix) / "share" / "chordpages" / "translations"
 
 

@@ -8,13 +8,17 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
-from PyQt6.QtCore import QByteArray, QSettings, QSize
+from PyQt6.QtCore import QByteArray, QSettings, QSize, QStandardPaths
 from PyQt6.QtWidgets import QMainWindow
 
 
 ORGANIZATION_NAME = "ChordFlow"
 APPLICATION_NAME = "ChordFlow"
 WINDOW_TITLE_NAME = "ChordFlow Guitar"
+
+# Configuration directory — shared across the suite
+CONFIG_DIR_NAME = "guitarchs"
+CONFIG_APP_NAME = "chordpages"
 DEFAULT_MAIN_WINDOW_SIZE = (1100, 850)
 DEFAULT_RECENT_FILE_LIMIT = 10
 DEFAULT_LANGUAGE = "system"
@@ -36,7 +40,14 @@ class DocumentViewSettings:
 
 
 class SettingsManager:
-    """Small typed wrapper around Qt's persistent settings storage."""
+    """Small typed wrapper around Qt's persistent settings storage.
+
+    Settings are stored in the platform-appropriate config directory:
+
+        Linux:   ~/.config/guitarchs/chordpages/settings.ini
+        Windows: %APPDATA%/guitarchs/chordpages/settings.ini
+        macOS:   ~/Library/Application Support/guitarchs/chordpages/settings.ini
+    """
 
     MAIN_WINDOW_GEOMETRY_KEY = "mainWindow/geometry"
     MAIN_WINDOW_STATE_KEY = "mainWindow/state"
@@ -52,7 +63,11 @@ class SettingsManager:
     FILE_VIEW_SETTINGS_PREFIX = "files/viewSettings"
 
     def __init__(self, qsettings: QSettings | None = None):
-        self._settings = qsettings or QSettings(ORGANIZATION_NAME, APPLICATION_NAME)
+        if qsettings is not None:
+            self._settings = qsettings
+        else:
+            ini_path = _default_settings_path()
+            self._settings = QSettings(str(ini_path), QSettings.Format.IniFormat)
 
     @classmethod
     def from_file(cls, path: str | Path) -> "SettingsManager":
@@ -341,3 +356,20 @@ def _optional_positive_int(value: Any) -> int | None:
     except (TypeError, ValueError):
         return None
     return parsed_value if parsed_value > 0 else None
+
+
+def _default_settings_path() -> Path:
+    """Return the platform-appropriate settings INI path.
+
+    Linux:   ~/.config/guitarchs/chordpages/settings.ini
+    Windows: %APPDATA%/guitarchs/chordpages/settings.ini
+    macOS:   ~/Library/Application Support/guitarchs/chordpages/settings.ini
+    """
+    base = Path(
+        QStandardPaths.writableLocation(
+            QStandardPaths.StandardLocation.GenericConfigLocation
+        )
+    )
+    config_dir = base / CONFIG_DIR_NAME / CONFIG_APP_NAME
+    config_dir.mkdir(parents=True, exist_ok=True)
+    return config_dir / "settings.ini"
