@@ -42,12 +42,13 @@ class PageWidget(QFrame):
         super().__init__(parent)
         self._layout = layout or PageLayout()
         self._zoom = 1.0
+        self._base_font = QFont(editor_font or default_editor_font())
         self.editor = QTextEdit(self)
         self.editor.setObjectName("pageTextEditor")
         self.editor.setFrameShape(QFrame.Shape.NoFrame)
         self.editor.setAcceptRichText(False)
         self.editor.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
-        self.set_editor_font(editor_font or default_editor_font())
+        self._apply_zoom_font()
         self.editor.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
@@ -101,6 +102,7 @@ class PageWidget(QFrame):
     def set_zoom(self, zoom: float) -> None:
         self._zoom = clamped_zoom(zoom)
         self._apply_layout()
+        self._apply_zoom_font()
 
     def zoom(self) -> float:
         return self._zoom
@@ -118,8 +120,8 @@ class PageWidget(QFrame):
         return self.editor.document().defaultFont()
 
     def set_editor_font(self, font: QFont) -> None:
-        self.editor.setFont(font)
-        self.editor.document().setDefaultFont(font)
+        self._base_font = QFont(font)
+        self._apply_zoom_font()
 
     def text(self) -> str:
         return self.editor.toPlainText()
@@ -153,6 +155,13 @@ class PageWidget(QFrame):
         self.updateGeometry()
         self._place_safe_area_frame()
         self._place_editor()
+
+    def _apply_zoom_font(self) -> None:
+        """Scale the base font by the current zoom factor."""
+        scaled = QFont(self._base_font)
+        scaled.setPointSizeF(self._base_font.pointSizeF() * self._zoom)
+        self.editor.setFont(scaled)
+        self.editor.document().setDefaultFont(scaled)
 
     def _place_editor(self) -> None:
         left, top, right, bottom = self._layout.margin_px(
