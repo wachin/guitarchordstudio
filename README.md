@@ -15,15 +15,14 @@ proyecto y luego en el paquete Debian.
 Desde la raíz del repositorio:
 
 ```bash
-python3 -m ChordFlow
-python3 chord_autoscroll.py
+python3 -m chordflow
 python3 -m chordpages
 ```
 
 Si instalas el proyecto como paquete Python, quedarán dos lanzadores:
 
 ```bash
-guitarchordstudio-autoscroll
+chordflow
 chordpages
 ```
 
@@ -77,8 +76,7 @@ sudo apt-get install mythes-de
 Desde la carpeta del proyecto:
 
 ```bash
-python3 -m ChordFlow
-python3 chord_autoscroll.py
+python3 -m chordflow
 ```
 
 También puedes ejecutarlo desde un gestor de archivos si tu distribución tiene una opción para lanzar scripts de Python.

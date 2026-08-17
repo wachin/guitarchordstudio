@@ -14,14 +14,14 @@ dependencies = [
 ]
 
 [project.gui-scripts]
-chordflow = "ChordFlow.app:main"
+chordflow = "chordflow.app:main"
 
 [tool.setuptools.packages.find]
-where = [".", "ChordPages"]
-include = ["ChordFlow*", "chordpages*"]
+where = [".", "chordpages"]
+include = ["chordflow*", "chordpages*"]
 
 [tool.setuptools.package-data]
 chordpages = ["assets/*.svg"]
 
 [tool.setuptools.data-files]
-"share/chordflow/translations" = ["ChordPages/translations/*.qm"]
+"share/chordflow/translations" = ["chordpages/translations/*.qm"]
