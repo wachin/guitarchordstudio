@@ -49,6 +49,7 @@ from .file_operations import (
     write_file,
 )
 from .search_dialog import FindInFilesDialog, SynonymsDialog
+from .spellcheck import install_spell_checker
 from .thesaurus import MythesThesaurus
 
 
@@ -381,6 +382,7 @@ class TextScrollerApp(QMainWindow):
         text_widget.setUndoRedoEnabled(True)
         text_widget.document().setModified(False)
         text_widget.textChanged.connect(self.on_text_changed)
+        install_spell_checker(text_widget)
 
         default_font = self.config.get("font_family", "Noto Mono")
         default_font_size = self.config.get("font_size", 10)

@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import (
 
 from chordpages.document.page import DEFAULT_SCREEN_DPI, PageLayout
 from chordpages.fonts import default_editor_font
+from chordpages.spellcheck import install_spell_checker
 
 
 PAGE_CANVAS_MARGIN_PX = 24
@@ -49,6 +50,7 @@ class PageWidget(QFrame):
         self.editor.setAcceptRichText(False)
         self.editor.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
         self._apply_zoom_font()
+        install_spell_checker(self.editor)
         self.editor.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )

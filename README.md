@@ -76,6 +76,7 @@ distributions.
 - Autoscroll with adjustable speed for hands-free rehearsals
 - Search and replace within a document or across multiple files
 - Thesaurus integration via system Mythes dictionaries
+- Spell-checking with red underline via system Hunspell dictionaries
 - Customizable monospaced font
 - Save with encoding selection (UTF-8, UTF-16, ANSI, ISO-8859-1, etc.)
 - Recent files list with timestamps
@@ -87,12 +88,98 @@ On Debian 12, MX Linux 23, antiX 23 and derivatives:
 
 ```bash
 sudo apt-get update
-sudo apt-get install python3 python3-pyqt6 python3-chardet \
-    qt6-translations-l10n fonts-noto-mono mythes mythes-en-us mythes-es
+sudo apt-get install python3 python3-pyqt6 python3-chardet python3-hunspell \
+    qt6-translations-l10n fonts-noto-mono \
+    hunspell-es hunspell-en-us \
+    mythes mythes-en-us mythes-es
 ```
 
-For synonyms in other languages, install the corresponding Mythes package.
-The following dictionaries are available in Debian and Ubuntu:
+### Spell-checking dictionaries (Hunspell)
+
+The following dictionaries are available in Debian and Ubuntu. Install one or
+more of them to enable spell-checking (red underline on misspelled words):
+
+| Package | Language |
+|---|---|
+| `hunspell-af` | Afrikaans |
+| `hunspell-an` | Aragonese |
+| `hunspell-ar` | Arabic |
+| `hunspell-be` | Belarusian |
+| `hunspell-bg` | Bulgarian |
+| `hunspell-bn` | Bengali |
+| `hunspell-bo` | Classical Tibetan |
+| `hunspell-br` | Breton |
+| `hunspell-bs` | Bosnian |
+| `hunspell-ca` | Catalan |
+| `hunspell-cs` | Czech |
+| `hunspell-da` | Danish |
+| `hunspell-de-at` | German (Austria) |
+| `hunspell-de-at-frami` | German (Austria, frami variant) |
+| `hunspell-de-ch` | German (Switzerland) |
+| `hunspell-de-ch-frami` | German (Switzerland, frami variant) |
+| `hunspell-de-de` | German (Germany) |
+| `hunspell-de-de-frami` | German (Germany, frami variant) |
+| `hunspell-de-med` | German (medical) |
+| `hunspell-dz` | Dzongkha |
+| `hunspell-el` | Modern Greek |
+| `hunspell-en-au` | English (Australia) |
+| `hunspell-en-ca` | English (Canada) |
+| `hunspell-en-gb` | English (United Kingdom) |
+| `hunspell-en-med` | English (medical) |
+| `hunspell-en-us` | English (United States) |
+| `hunspell-en-za` | English (South Africa) |
+| `hunspell-eo` | Esperanto |
+| `hunspell-es` | Spanish |
+| `hunspell-eu` | Basque |
+| `hunspell-fr` | French |
+| `hunspell-fr-classical` | French (classical) |
+| `hunspell-fr-comprehensive` | French (comprehensive) |
+| `hunspell-fr-revised` | French (revised) |
+| `hunspell-gd` | Scottish Gaelic |
+| `hunspell-gl` | Galician |
+| `hunspell-gu` | Gujarati |
+| `hunspell-gug` | Guarani |
+| `hunspell-he` | Hebrew |
+| `hunspell-hi` | Hindi |
+| `hunspell-hr` | Croatian |
+| `hunspell-hu` | Hungarian |
+| `hunspell-id` | Indonesian |
+| `hunspell-is` | Icelandic |
+| `hunspell-it` | Italian |
+| `hunspell-kk` | Kazakh |
+| `hunspell-kmr` | Kurdish Kurmanji |
+| `hunspell-ko` | Korean |
+| `hunspell-lo` | Lao |
+| `hunspell-lt` | Lithuanian |
+| `hunspell-lv` | Latvian |
+| `hunspell-ml` | Malayalam |
+| `hunspell-mn` | Mongolian |
+| `hunspell-ne` | Nepali |
+| `hunspell-nl` | Dutch |
+| `hunspell-no` | Norwegian |
+| `hunspell-oc` | Occitan |
+| `hunspell-pl` | Polish |
+| `hunspell-pt-br` | Portuguese (Brazil) |
+| `hunspell-pt-pt` | Portuguese (Portugal) |
+| `hunspell-ro` | Romanian |
+| `hunspell-ru` | Russian |
+| `hunspell-si` | Sinhalese |
+| `hunspell-sk` | Slovak |
+| `hunspell-sl` | Slovenian |
+| `hunspell-sr` | Serbian |
+| `hunspell-sv` | Swedish |
+| `hunspell-sw` | Swahili |
+| `hunspell-te` | Telugu |
+| `hunspell-th` | Thai |
+| `hunspell-tr` | Turkish |
+| `hunspell-uk` | Ukrainian |
+| `hunspell-uz` | Uzbek |
+| `hunspell-vi` | Vietnamese |
+
+### Thesaurus dictionaries (Mythes)
+
+The following dictionaries are available in Debian and Ubuntu. Install one or
+more of them to enable the Thesaurus feature (`Tools > Thesaurus...`):
 
 | Package | Language |
 |---|---|
@@ -126,10 +213,10 @@ The following dictionaries are available in Debian and Ubuntu:
 | `mythes-sv` | Swedish |
 | `mythes-uk` | Ukrainian |
 
-Install one or more of them, for example:
+Example — install both English and Spanish dictionaries:
 
 ```bash
-sudo apt-get install mythes-en-us mythes-fr mythes-de
+sudo apt-get install hunspell-en-us hunspell-es mythes-en-us mythes-es
 ```
 
 ## Running
@@ -225,6 +312,10 @@ DejaVu Sans Mono.
   (UTF-8, ISO-8859-1, Windows-1252, etc.). Without it, the user would have to
   specify the encoding manually. Also used in the "Find/Replace in files"
   feature to read files with any encoding.
+- **`python3-hunspell`** — Python bindings for the system Hunspell library.
+  Provides spell-checking (red underline on misspelled words and spelling
+  suggestions in the right-click context menu). Without this package, the
+  spell-checking feature is silently disabled.
 - **`qt6-translations-l10n`** — Translations for native Qt dialogs (Open, Save,
   Cancel buttons appear in the system language).
 - **`fonts-noto-mono`** — Default monospaced font for the editor.
@@ -271,6 +362,7 @@ with configurable margins and a multi-page view.
 - Version snapshots for restorable `.mchord` history
 - Spanish and English translations via Qt Linguist
 - Drag-and-drop file support
+- Spell-checking with red underline via system Hunspell dictionaries
 
 ## Installing Dependencies
 
@@ -278,7 +370,7 @@ with configurable margins and a multi-page view.
 
 ```bash
 sudo apt-get update
-sudo apt-get install python3 python3-pyqt6 \
+sudo apt-get install python3 python3-pyqt6 python3-hunspell \
     qt6-translations-l10n
 ```
 
