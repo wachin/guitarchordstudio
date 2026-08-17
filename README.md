@@ -3,12 +3,9 @@
 Este repositorio puede organizarse como una suite con varias aplicaciones, de
 forma parecida a WPS Office. Ahora mismo incluye:
 
-- `guitarchordstudio-autoscroll`: editor de letras con acordes y autoscroll.
-- `chordpages`: editor WYSIWYG orientado a páginas.
-
-`ChordPages/` no debe copiarse a la raíz. Lo correcto es mantener cada
-aplicación en su propia carpeta o módulo y unificarlas en el empaquetado del
-proyecto y luego en el paquete Debian.
+- `chordflow`: editor de letras con acordes y autoscroll.
+- `chordpages`: editor WYSIWYG orientado a páginas, con diseño de página real,
+  márgenes configurables y soporte multi-página.
 
 ## Ejecutar Las Aplicaciones
 
@@ -26,7 +23,9 @@ chordflow
 chordpages
 ```
 
-## Aplicación Chord Autoscroll
+---
+
+# Aplicación Chord Autoscroll (chordflow)
 
 Editor de letras con acordes para guitarristas, cantantes y músicos que trabajan con canciones en archivos de texto. Permite abrir canciones, transponer acordes, desplazarse automáticamente durante el ensayo, buscar y reemplazar texto, buscar en varios archivos y consultar sinónimos usando diccionarios Mythes instalados en Linux.
 
@@ -230,12 +229,116 @@ Artículos relacionados:
 - `mythes`: soporte base para diccionarios de sinónimos.
 - `mythes-es`: diccionario de sinónimos en español.
 
+---
+
+# Aplicación ChordPages (chordpages)
+
+ChordPages es un editor WYSIWYG orientado a páginas para canciones con letras y
+acordes de guitarra. A diferencia de `chordflow`, que muestra el texto en una
+sola vista desplazable, ChordPages organiza el contenido en páginas reales
+(como A4 o Carta) que se ven en pantalla tal como se imprimirían.
+
+El programa está diseñado para compositores, arreglistas y músicos que prefieren
+trabajar con un diseño de página real, márgenes configurables y una vista
+multi-página.
+
+## Características
+
+- Edición WYSIWYG en páginas reales con fondo, borde y sombra.
+- Vista 3-up: tres páginas por fila dentro de un scroll vertical general.
+- Modos de vista: una página, dos páginas, y tres páginas por fila.
+- Márgenes configurables en milímetros con presets (normal, estrecho, moderado, ancho, espejo).
+- Soporte de tamaño de página: A4, Carta, Legal, apaisado/vertical y tamaño personalizado.
+- Zoom: acercar, alejar, 100%, ajustar al ancho y ajustar a la página.
+- Edición básica: escribir, Enter, Tab, Backspace, Delete, selección con mouse y teclado.
+- Copiar, cortar, pegar y seleccionar todo.
+- Abrir y guardar archivos en formato `.mchord` y texto plano.
+- Exportación a PDF a través del sistema de impresión de Qt.
+- Paginador propio que divide el texto en páginas según caracteres por línea y líneas por página.
+- Reflujo automático al cambiar zoom, papel, fuente y márgenes.
+- Cursor medido con `QTextLayout` para alineación precisa como en un editor nativo.
+- Tema de aplicación: sistema, claro y oscuro.
+- Diálogo de preferencias con selección de idioma en vivo.
+- Autoguardado en segundo plano para recuperación ante fallos.
+- Copias de seguridad automáticas antes de sobrescribir documentos.
+- Diálogo de recuperación al inicio si hay borradores sin guardar.
+- Snapshots de versión para historial restaurable de `.mchord`.
+- Traducciones al español e inglés mediante Qt Linguist.
+- Soporte para arrastrar y soltar archivos.
+
+## Sistemas Probados
+
+- Debian 12 / MX Linux 23 de 64 bits.
+- Windows (con Python 3.11+ y PyQt6).
+- macOS (con Python 3.11+ y PyQt6).
+
+## Instalación De Dependencias
+
+### Debian / MX Linux
+
+```bash
+sudo apt-get update
+sudo apt-get install python3 python3-pyqt6 python3-pyqt6.qtsvg \
+    qt6-translations-l10n python3-pytest python3-pytest-qt
+```
+
+### Windows
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install PyQt6 pytest
+```
+
+### macOS
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install PyQt6 pytest
+```
+
+## Ejecutar El Programa
+
+```bash
+python3 -m chordpages
+```
+
+## Ejecutar Las Pruebas
+
+```bash
+pytest -q chordpages/tests/
+```
+
+## Flujo De Trabajo De Traducciones
+
+ChordPages mantiene archivos de traducción Qt Linguist en `chordpages/translations/`.
+Al iniciar, carga `chordpages_<locale>.qm` con `QTranslator`.
+
+Actualizar los archivos de traducción después de cambiar cadenas visibles:
+
+```bash
+pylupdate6 chordpages/ --ts chordpages/translations/chordpages_es.ts
+pylupdate6 chordpages/ --ts chordpages/translations/chordpages_en.ts
+```
+
+Editar con Qt Linguist y compilar:
+
+```bash
+linguist-qt6 chordpages/translations/chordpages_es.ts
+lrelease chordpages/translations/chordpages_es.ts -qm chordpages/translations/chordpages_es.qm
+lrelease chordpages/translations/chordpages_en.ts -qm chordpages/translations/chordpages_en.qm
+```
+
+---
+
 ## Hoja De Ruta
 
-Consulta [ROADMAP.md](ROADMAP.md) para ver lo que ya está implementado y las ideas previstas para futuras versiones.
+Consulta [ROADMAP.md](ROADMAP.md) para ver lo que ya está implementado y las
+ideas previstas para futuras versiones de ambas aplicaciones.
 
 ## Licencia
 
-El programa está pensado para publicarse bajo GPL 3.
+Los programas están pensados para publicarse bajo GPL 3.
 
 Que Dios les bendiga.
