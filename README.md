@@ -172,7 +172,7 @@ Terminadores de línea disponibles:
 
 ## Atajos De Teclado
 
-| Función | Atajo |
+| Función  | Atajo |
 | --- | --- |
 | Nuevo archivo | `Ctrl+N` |
 | Abrir archivo | `Ctrl+O` |
@@ -298,8 +298,8 @@ multi-página.
 
 ```bash
 sudo apt-get update
-sudo apt-get install python3 python3-pyqt6 python3-pyqt6.qtsvg \
-    qt6-translations-l10n python3-pytest python3-pytest-qt
+sudo apt-get install python3 python3-pyqt6 \
+    qt6-translations-l10n
 ```
 
 ### Windows
@@ -348,6 +348,38 @@ Editar con Qt Linguist y compilar:
 linguist-qt6 chordpages/translations/chordpages_es.ts
 lrelease chordpages/translations/chordpages_es.ts -qm chordpages/translations/chordpages_es.qm
 lrelease chordpages/translations/chordpages_en.ts -qm chordpages/translations/chordpages_en.qm
+```
+
+---
+
+## Dependencias de desarrollo
+
+Estos paquetes solo son necesarios si vas a ejecutar las pruebas o trabajar
+con traducciones. No se requieren para ejecutar las aplicaciones.
+
+### Debian / MX Linux
+
+```bash
+sudo apt-get install python3-pytest python3-pytest-qt \
+    pyqt6-dev-tools qt6-l10n-tools
+```
+
+- `python3-pytest`: ejecutor de pruebas. Necesario para correr la suite de
+  tests con `pytest`.
+- `python3-pytest-qt`: proporciona el fixture `qtbot` para crear y manipular
+  widgets de Qt durante las pruebas (abrir ventanas, hacer clic, escribir
+  texto, etc.). Sin este paquete no se pueden ejecutar los tests que
+  interactúan con la interfaz gráfica.
+- `pyqt6-dev-tools`: provee `pylupdate6`, la herramienta que extrae cadenas
+  traducibles del código fuente para generar los archivos `.ts` de Qt Linguist.
+- `qt6-l10n-tools`: provee `linguist-qt6` (editor visual de traducciones) y
+  `lrelease` (compilador de `.ts` a `.qm`). Se usan en el flujo de trabajo de
+  traducciones.
+
+### Windows / macOS
+
+```bash
+pip install pytest pytest-qt
 ```
 
 ---
