@@ -49,7 +49,7 @@ from .file_operations import (
     write_file,
 )
 from .search_dialog import FindInFilesDialog, SynonymsDialog
-from .spellcheck import install_spell_checker
+from .spellcheck import build_language_menu, install_spell_checker
 from .thesaurus import MythesThesaurus
 
 
@@ -619,6 +619,12 @@ class TextScrollerApp(QMainWindow):
         change_speed_action.triggered.connect(self.change_max_speed)
         change_speed_action.setShortcut("Ctrl+Shift+V")
         options_menu.addAction(change_speed_action)
+
+        options_menu.addSeparator()
+        spell_lang_menu = build_language_menu(
+            self, lambda: self.get_current_text_widget()
+        )
+        options_menu.addMenu(spell_lang_menu)
 
         help_menu = menu_bar.addMenu("Ayuda")
 

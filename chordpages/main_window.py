@@ -54,6 +54,7 @@ from chordpages.settings import (
     SettingsManager,
     WINDOW_TITLE_NAME,
 )
+from chordpages.spellcheck import build_language_menu
 from chordpages.theme import apply_theme
 from chordpages.ui.page_editor import (
     MAX_ZOOM,
@@ -800,6 +801,11 @@ class MainWindow(QMainWindow):
 
         self.edit_menu = self.menuBar().addMenu(self.tr("Edit"))
         self.edit_menu.addAction(self.preferences_action)
+        self.edit_menu.addSeparator()
+        spell_lang_menu = build_language_menu(
+            self, lambda: self.editor.page.editor if hasattr(self, 'editor') else None
+        )
+        self.edit_menu.addMenu(spell_lang_menu)
 
         self.transpose_menu = self.menuBar().addMenu(self.tr("Transpose"))
         self.transpose_menu.addAction(self.transpose_down_action)
