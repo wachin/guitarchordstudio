@@ -345,13 +345,42 @@ def _default_lang() -> str:
     return "en_US"
 
 
+def _third_party_dicts() -> Path:
+    """Return the path to the bundled third-party Hunspell dictionaries.
+
+    The dictionaries are shipped as a git submodule at
+    ``third-party/libreoffice-dictionaries-collection/dicts/``.
+    """
+    # Walk up from the module file to find the project root.
+    module = Path(__file__).resolve().parent  # chordflow/
+    # Try project root: chordflow/../third-party/...
+    for parent in (module.parent, module.parent.parent):
+        candidate = (
+            parent
+            / "third-party"
+            / "libreoffice-dictionaries-collection"
+            / "dicts"
+        )
+        if candidate.is_dir():
+            return candidate
+    return Path()
+
+
 def _dictionary_paths(lang: str) -> list[tuple[Path, Path]]:
     """Return possible ``(aff_path, dic_path)`` pairs for *lang*."""
-    bases = [
+    bases: list[Path] = [
+        # System paths (Linux)
         Path(f"/usr/share/hunspell/{lang}"),
         Path(f"/usr/share/myspell/dicts/{lang}"),
         Path(f"/usr/share/hunspell/{lang.replace('_', '-')}"),
     ]
+
+    # Third-party bundled dictionaries (git submodule)
+    third_party = _third_party_dicts()
+    if third_party:
+        prefix = f"dict-{lang.split('_')[0].lower()}"
+        bases.append(third_party / prefix / lang)
+
     return [(b.with_suffix(".aff"), b.with_suffix(".dic")) for b in bases]
 
 

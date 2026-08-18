@@ -10,7 +10,12 @@
       "Bash(hunspell *)",
       "Bash(ldconfig *)",
       "Bash(grep *)",
-      "Bash(dpkg *)"
+      "Bash(dpkg *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(file *)",
+      "Bash(du *)",
+      "Bash(head *)"
     ]
   },
   "$version": 4
