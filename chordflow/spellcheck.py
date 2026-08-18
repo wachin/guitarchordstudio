@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import locale
 import re
+from pathlib import Path
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QSyntaxHighlighter, QTextCharFormat, QTextCursor
@@ -63,19 +64,19 @@ class SpellChecker:
         if not _HUNSPELL_AVAILABLE:
             return
         lang = self._lang.replace("-", "_")
-        # Try the simple constructor first, then explicit paths.
-        try:
-            self._hs = hunspell.Hunspell(lang)
-        except Exception:
-            pass
-        if self._hs is not None:
-            return
-        for candidate in _dictionary_paths(lang):
-            aff, dic = candidate
+        for aff, dic in _dictionary_paths(lang):
+            if not aff.exists() or not dic.exists():
+                continue
             try:
-                self._hs = hunspell.HunSpell(aff, dic)
+                self._hs = hunspell.HunSpell(str(aff), str(dic))
+                # pyhunspell 0.5.x requires an explicit add_dic call,
+                # otherwise the dictionary is not actually loaded.
+                self._hs.add_dic(str(dic))
+                # Verify the dictionary works.
+                self._hs.spell("test")
                 return
             except Exception:
+                self._hs = None
                 continue
 
 
@@ -180,17 +181,14 @@ def _default_lang() -> str:
     return "en_US"
 
 
-def _dictionary_paths(lang: str) -> list[tuple[str, str]]:
+def _dictionary_paths(lang: str) -> list[tuple[Path, Path]]:
     """Return possible ``(aff_path, dic_path)`` pairs for *lang*."""
     bases = [
-        f"/usr/share/hunspell/{lang}",
-        f"/usr/share/myspell/dicts/{lang}",
-        f"/usr/share/hunspell/{lang.replace('_', '-')}",
+        Path(f"/usr/share/hunspell/{lang}"),
+        Path(f"/usr/share/myspell/dicts/{lang}"),
+        Path(f"/usr/share/hunspell/{lang.replace('_', '-')}"),
     ]
-    results = []
-    for base in bases:
-        results.append((f"{base}.aff", f"{base}.dic"))
-    return results
+    return [(b.with_suffix(".aff"), b.with_suffix(".dic")) for b in bases]
 
 
 __all__ = [

@@ -6,7 +6,11 @@
       "Bash(tail *)",
       "Bash(mkdir *)",
       "Bash(chmod *)",
-      "Bash(apt-cache *)"
+      "Bash(apt-cache *)",
+      "Bash(hunspell *)",
+      "Bash(ldconfig *)",
+      "Bash(grep *)",
+      "Bash(dpkg *)"
     ]
   },
   "$version": 4
