@@ -1,7 +1,9 @@
-"""Spell-checking support via system Hunspell dictionaries."""
+"""Spell-checking support via system Hunspell library (ctypes)."""
 
 from __future__ import annotations
 
+import ctypes
+import ctypes.util
 import locale
 import re
 from pathlib import Path
@@ -10,12 +12,88 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QSyntaxHighlighter, QTextCharFormat, QTextCursor
 from PyQt6.QtWidgets import QMenu, QTextEdit
 
-try:
-    import hunspell
+# ---------------------------------------------------------------------------
+# Load libhunspell via ctypes
+# ---------------------------------------------------------------------------
 
-    _HUNSPELL_AVAILABLE = True
-except ImportError:
-    _HUNSPELL_AVAILABLE = False
+_LIB: ctypes.CDLL | None = None
+_lib_path = ctypes.util.find_library("hunspell-1.7")
+if _lib_path is None:
+    _lib_path = ctypes.util.find_library("hunspell")
+if _lib_path is not None:
+    try:
+        _LIB = ctypes.cdll.LoadLibrary(_lib_path)
+    except Exception:
+        _LIB = None
+
+
+def _hs_create(aff: bytes, dic: bytes) -> ctypes.c_void_p | None:
+    """Create a Hunspell handle via ctypes."""
+    if _LIB is None:
+        return None
+    try:
+        _LIB.Hunspell_create.restype = ctypes.c_void_p
+        _LIB.Hunspell_create.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+        return _LIB.Hunspell_create(aff, dic)
+    except Exception:
+        return None
+
+
+def _hs_destroy(handle: ctypes.c_void_p) -> None:
+    if _LIB is not None and handle is not None:
+        try:
+            _LIB.Hunspell_destroy(handle)
+        except Exception:
+            pass
+
+
+def _hs_spell(handle: ctypes.c_void_p, word: bytes) -> bool:
+    if _LIB is None or handle is None:
+        return True
+    try:
+        _LIB.Hunspell_spell.restype = ctypes.c_int
+        _LIB.Hunspell_spell.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+        return bool(_LIB.Hunspell_spell(handle, word))
+    except Exception:
+        return True
+
+
+def _hs_suggest(handle: ctypes.c_void_p, word: bytes) -> list[str]:
+    if _LIB is None or handle is None:
+        return []
+    try:
+        _LIB.Hunspell_suggest.restype = ctypes.c_int
+        _LIB.Hunspell_suggest.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_char_p),
+            ctypes.c_char_p,
+        ]
+        arr = ctypes.c_char_p()
+        n = _LIB.Hunspell_suggest(handle, ctypes.byref(arr), word)
+        result: list[str] = []
+        if n > 0:
+            ptr = ctypes.cast(arr, ctypes.c_void_p).value
+            for i in range(n):
+                str_ptr = ctypes.c_char_p.from_address(
+                    ptr + i * ctypes.sizeof(ctypes.c_char_p)
+                )
+                if str_ptr.value:
+                    result.append(str_ptr.value.decode("utf-8"))
+        _LIB.Hunspell_free_list(handle, ctypes.byref(arr), n)
+        return result
+    except Exception:
+        return []
+
+
+def _hs_add(handle: ctypes.c_void_p, word: bytes) -> None:
+    if _LIB is None or handle is None:
+        return
+    try:
+        _LIB.Hunspell_add.restype = ctypes.c_int
+        _LIB.Hunspell_add.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+        _LIB.Hunspell_add(handle, word)
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -23,15 +101,10 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 class SpellChecker:
-    """Check words and get suggestions via the system Hunspell library.
-
-    The constructor tries to load a dictionary for the given *lang* code
-    (e.g. ``"en_US"``, ``"es_ES"``).  When *lang* is ``None`` the system
-    locale is used.
-    """
+    """Check words and get suggestions via the system Hunspell library."""
 
     def __init__(self, lang: str | None = None):
-        self._hs: hunspell.HunSpell | None = None
+        self._handle: ctypes.c_void_p | None = None
         self._lang = lang or _default_lang()
         self._load()
 
@@ -39,54 +112,54 @@ class SpellChecker:
 
     @property
     def available(self) -> bool:
-        """``True`` when the hunspell library and dictionary were loaded."""
-        return self._hs is not None
+        return self._handle is not None
 
     @property
     def language(self) -> str:
         return self._lang
 
     def set_language(self, lang: str) -> bool:
-        """Switch to a different dictionary.  Returns ``True`` on success."""
+        self._destroy()
         self._lang = lang
-        self._hs = None
         self._load()
         return self.available
 
     def check(self, word: str) -> bool:
-        """Return ``True`` when *word* is spelled correctly."""
-        if self._hs is None:
+        if self._handle is None:
             return True
-        # pyhunspell 0.5.x handles UTF-8 bytes correctly for accented chars.
-        return self._hs.spell(word.encode("utf-8"))
+        return _hs_spell(self._handle, word.encode("utf-8"))
 
     def suggest(self, word: str) -> list[str]:
-        """Return a list of spelling suggestions for *word*."""
-        if self._hs is None:
+        if self._handle is None:
             return []
-        return self._hs.suggest(word.encode("utf-8"))
+        return _hs_suggest(self._handle, word.encode("utf-8"))
 
     def add_word(self, word: str) -> None:
-        """Add *word* to the current session dictionary."""
-        if self._hs is not None:
-            self._hs.add(word.encode("utf-8"))
+        if self._handle is not None:
+            _hs_add(self._handle, word.encode("utf-8"))
+
+    def _destroy(self) -> None:
+        if self._handle is not None:
+            _hs_destroy(self._handle)
+            self._handle = None
 
     # --- internal ---------------------------------------------------------
 
     def _load(self) -> None:
-        if not _HUNSPELL_AVAILABLE:
+        if _LIB is None:
             return
         lang = self._lang.replace("-", "_")
         for aff, dic in _dictionary_paths(lang):
             if not aff.exists() or not dic.exists():
                 continue
             try:
-                self._hs = hunspell.HunSpell(str(aff), str(dic))
-                self._hs.add_dic(str(dic))
-                self._hs.spell(b"test")  # verify
-                return
+                handle = _hs_create(str(aff).encode("utf-8"), str(dic).encode("utf-8"))
+                if handle is not None:
+                    self._handle = handle
+                    _hs_spell(handle, b"test")  # verify
+                    return
             except Exception:
-                self._hs = None
+                self._handle = None
                 continue
 
 
@@ -106,9 +179,6 @@ class SpellHighlighter(QSyntaxHighlighter):
         )
         self._fmt.setUnderlineColor(Qt.GlobalColor.red)
         self._word_re = re.compile(r"\b\w+\b")
-        self._accent_re = re.compile(
-            r"[áéíóúàèìòùâêîôûäëïöüñçÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÄËÏÖÜÑÇ]"
-        )
 
     def highlightBlock(self, text: str) -> None:
         if not self._checker.available:
@@ -117,8 +187,6 @@ class SpellHighlighter(QSyntaxHighlighter):
             word = m.group()
             if len(word) <= 1 or word.isdigit():
                 continue
-            # Skip lines that look like chord-only lines (uppercase + optional
-            # sharps/flats, no vowels beyond the first letter).
             if re.match(r"^[A-G](#|b)?(m|maj|min|dim|aug|sus|add)?[0-9]?$", word):
                 continue
             if not self._checker.check(word):
@@ -128,38 +196,6 @@ class SpellHighlighter(QSyntaxHighlighter):
 # ---------------------------------------------------------------------------
 # Context-menu integration
 # ---------------------------------------------------------------------------
-
-AVAILABLE_LANGUAGES: dict[str, str] = {}
-
-
-def _scan_languages() -> dict[str, str]:
-    """Scan for available Hunspell dictionaries and return ``{lang: label}``."""
-    langs: dict[str, str] = {}
-    for path in Path("/usr/share/hunspell").glob("*.dic"):
-        lang = path.stem
-        label = _language_label(lang)
-        langs[lang] = label
-    return dict(sorted(langs.items()))
-
-
-def _language_label(lang: str) -> str:
-    """Return a human-readable label for a language code."""
-    labels = {
-        "en_US": "English (US)",
-        "en_GB": "English (UK)",
-        "es_ES": "Spanish (Spain)",
-        "es_EC": "Spanish (Ecuador)",
-        "es_MX": "Spanish (Mexico)",
-        "es_AR": "Spanish (Argentina)",
-        "fr_FR": "French",
-        "de_DE": "German",
-        "pt_BR": "Portuguese (Brazil)",
-        "pt_PT": "Portuguese (Portugal)",
-        "it_IT": "Italian",
-        "ca_ES": "Catalan",
-    }
-    return labels.get(lang, lang.replace("_", " "))
-
 
 def install_spell_checker(
     editor: QTextEdit, lang: str | None = None
@@ -173,12 +209,10 @@ def install_spell_checker(
     if not checker.available:
         return checker
 
-    # Install highlighter.
     highlighter = SpellHighlighter(editor.document(), checker)
     editor._spell_highlighter = highlighter  # type: ignore[attr-defined]
     editor._spell_checker = checker  # type: ignore[attr-defined]
 
-    # Monkey-patch the context menu.
     def _context_menu(event):
         menu = editor.createStandardContextMenu()
         cursor = editor.cursorForPosition(event.pos())
@@ -189,10 +223,7 @@ def install_spell_checker(
             suggestions = checker.suggest(word)
             if suggestions:
                 insert_pos = menu.actions()[0] if menu.actions() else None
-                first = True
                 for s in suggestions[:10]:
-                    if first:
-                        first = False
                     action = QAction(s, editor)
                     action.triggered.connect(
                         lambda checked, sug=s: _replace_word(editor, sug)
@@ -200,7 +231,6 @@ def install_spell_checker(
                     menu.insertAction(insert_pos, action)
                 menu.insertSeparator(insert_pos)
 
-            # "Add to dictionary"
             add_action = QAction(f'Add "{word}" to dictionary', editor)
             add_action.triggered.connect(
                 lambda checked: _add_word(editor, checker, word)
@@ -228,33 +258,40 @@ def _replace_word(editor: QTextEdit, replacement: str) -> None:
 
 def _add_word(editor: QTextEdit, checker: SpellChecker, word: str) -> None:
     checker.add_word(word)
-    # Force re-highlight of the current document.
     editor._spell_highlighter.rehighlight()  # type: ignore[attr-defined]
 
 
 # ---------------------------------------------------------------------------
-# Helpers
+# Language menu builder
 # ---------------------------------------------------------------------------
 
-def _default_lang() -> str:
-    """Return a language code from the system locale (e.g. ``"en_US"``)."""
-    try:
-        code, _ = locale.getlocale(locale.LC_MESSAGES)
-        if code:
-            return code.replace("-", "_")
-    except Exception:
-        pass
-    return "en_US"
+def _scan_languages() -> dict[str, str]:
+    """Scan for available Hunspell dictionaries and return ``{lang: label}``."""
+    langs: dict[str, str] = {}
+    for path in Path("/usr/share/hunspell").glob("*.dic"):
+        lang = path.stem
+        label = _language_label(lang)
+        langs[lang] = label
+    return dict(sorted(langs.items()))
 
 
-def _dictionary_paths(lang: str) -> list[tuple[Path, Path]]:
-    """Return possible ``(aff_path, dic_path)`` pairs for *lang*."""
-    bases = [
-        Path(f"/usr/share/hunspell/{lang}"),
-        Path(f"/usr/share/myspell/dicts/{lang}"),
-        Path(f"/usr/share/hunspell/{lang.replace('_', '-')}"),
-    ]
-    return [(b.with_suffix(".aff"), b.with_suffix(".dic")) for b in bases]
+def _language_label(lang: str) -> str:
+    """Return a human-readable label for a language code."""
+    labels = {
+        "en_US": "English (US)",
+        "en_GB": "English (UK)",
+        "es_ES": "Spanish (Spain)",
+        "es_EC": "Spanish (Ecuador)",
+        "es_MX": "Spanish (Mexico)",
+        "es_AR": "Spanish (Argentina)",
+        "fr_FR": "French",
+        "de_DE": "German",
+        "pt_BR": "Portuguese (Brazil)",
+        "pt_PT": "Portuguese (Portugal)",
+        "it_IT": "Italian",
+        "ca_ES": "Catalan",
+    }
+    return labels.get(lang, lang.replace("_", " ").title())
 
 
 def build_language_menu(parent, editor_getter) -> QMenu:
@@ -292,10 +329,34 @@ def _switch_language(editor: QTextEdit, lang: str) -> None:
             highlighter.rehighlight()
 
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _default_lang() -> str:
+    """Return a language code from the system locale (e.g. ``"en_US"``)."""
+    try:
+        code, _ = locale.getlocale(locale.LC_MESSAGES)
+        if code:
+            return code.replace("-", "_")
+    except Exception:
+        pass
+    return "en_US"
+
+
+def _dictionary_paths(lang: str) -> list[tuple[Path, Path]]:
+    """Return possible ``(aff_path, dic_path)`` pairs for *lang*."""
+    bases = [
+        Path(f"/usr/share/hunspell/{lang}"),
+        Path(f"/usr/share/myspell/dicts/{lang}"),
+        Path(f"/usr/share/hunspell/{lang.replace('_', '-')}"),
+    ]
+    return [(b.with_suffix(".aff"), b.with_suffix(".dic")) for b in bases]
+
+
 __all__ = [
     "SpellChecker",
     "SpellHighlighter",
     "install_spell_checker",
     "build_language_menu",
-    "AVAILABLE_LANGUAGES",
 ]
