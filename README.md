@@ -17,7 +17,7 @@
 
 ---
 
-## Overview
+# Overview
 
 This repository is organized as a suite of applications for working with guitar
 chord lyrics, similar to how WPS Office bundles multiple tools. It currently
@@ -28,7 +28,8 @@ includes:
 | **chordflow** | Single-page lyrics and chords editor with autoscroll for rehearsals and performances |
 | **chordpages** | Page-oriented WYSIWYG editor with multi-page layout, configurable margins, and print-ready output |
 
-### Quick Start
+
+## Quick Start
 
 ```bash
 # Run chordflow
@@ -84,6 +85,13 @@ distributions.
 
 ## Installing Dependencies
 
+Clone the repository:
+
+```bash
+git clone https://github.com/wachin/guitarchordstudio
+git submodule update --init --recursive
+```
+
 On Debian 12, MX Linux 23, antiX 23 and derivatives:
 
 ```bash
@@ -99,82 +107,82 @@ sudo apt-get install python3 python3-pyqt6 python3-chardet \
 The following dictionaries are available in Debian and Ubuntu. Install one or
 more of them to enable spell-checking (red underline on misspelled words):
 
-| Package | Language |
-|---|---|
-| `hunspell-af` | Afrikaans |
-| `hunspell-an` | Aragonese |
-| `hunspell-ar` | Arabic |
-| `hunspell-be` | Belarusian |
-| `hunspell-bg` | Bulgarian |
-| `hunspell-bn` | Bengali |
-| `hunspell-bo` | Classical Tibetan |
-| `hunspell-br` | Breton |
-| `hunspell-bs` | Bosnian |
-| `hunspell-ca` | Catalan |
-| `hunspell-cs` | Czech |
-| `hunspell-da` | Danish |
-| `hunspell-de-at` | German (Austria) |
-| `hunspell-de-at-frami` | German (Austria, frami variant) |
-| `hunspell-de-ch` | German (Switzerland) |
-| `hunspell-de-ch-frami` | German (Switzerland, frami variant) |
-| `hunspell-de-de` | German (Germany) |
-| `hunspell-de-de-frami` | German (Germany, frami variant) |
-| `hunspell-de-med` | German (medical) |
-| `hunspell-dz` | Dzongkha |
-| `hunspell-el` | Modern Greek |
-| `hunspell-en-au` | English (Australia) |
-| `hunspell-en-ca` | English (Canada) |
-| `hunspell-en-gb` | English (United Kingdom) |
-| `hunspell-en-med` | English (medical) |
-| `hunspell-en-us` | English (United States) |
-| `hunspell-en-za` | English (South Africa) |
-| `hunspell-eo` | Esperanto |
-| `hunspell-es` | Spanish |
-| `hunspell-eu` | Basque |
-| `hunspell-fr` | French |
-| `hunspell-fr-classical` | French (classical) |
-| `hunspell-fr-comprehensive` | French (comprehensive) |
-| `hunspell-fr-revised` | French (revised) |
-| `hunspell-gd` | Scottish Gaelic |
-| `hunspell-gl` | Galician |
-| `hunspell-gu` | Gujarati |
-| `hunspell-gug` | Guarani |
-| `hunspell-he` | Hebrew |
-| `hunspell-hi` | Hindi |
-| `hunspell-hr` | Croatian |
-| `hunspell-hu` | Hungarian |
-| `hunspell-id` | Indonesian |
-| `hunspell-is` | Icelandic |
-| `hunspell-it` | Italian |
-| `hunspell-kk` | Kazakh |
-| `hunspell-kmr` | Kurdish Kurmanji |
-| `hunspell-ko` | Korean |
-| `hunspell-lo` | Lao |
-| `hunspell-lt` | Lithuanian |
-| `hunspell-lv` | Latvian |
-| `hunspell-ml` | Malayalam |
-| `hunspell-mn` | Mongolian |
-| `hunspell-ne` | Nepali |
-| `hunspell-nl` | Dutch |
-| `hunspell-no` | Norwegian |
-| `hunspell-oc` | Occitan |
-| `hunspell-pl` | Polish |
-| `hunspell-pt-br` | Portuguese (Brazil) |
-| `hunspell-pt-pt` | Portuguese (Portugal) |
-| `hunspell-ro` | Romanian |
-| `hunspell-ru` | Russian |
-| `hunspell-si` | Sinhalese |
-| `hunspell-sk` | Slovak |
-| `hunspell-sl` | Slovenian |
-| `hunspell-sr` | Serbian |
-| `hunspell-sv` | Swedish |
-| `hunspell-sw` | Swahili |
-| `hunspell-te` | Telugu |
-| `hunspell-th` | Thai |
-| `hunspell-tr` | Turkish |
-| `hunspell-uk` | Ukrainian |
-| `hunspell-uz` | Uzbek |
-| `hunspell-vi` | Vietnamese |
+|           Package           |              Language               |
+| --------------------------- | ----------------------------------- |
+| `hunspell-af`               | Afrikaans                           |
+| `hunspell-an`               | Aragonese                           |
+| `hunspell-ar`               | Arabic                              |
+| `hunspell-be`               | Belarusian                          |
+| `hunspell-bg`               | Bulgarian                           |
+| `hunspell-bn`               | Bengali                             |
+| `hunspell-bo`               | Classical Tibetan                   |
+| `hunspell-br`               | Breton                              |
+| `hunspell-bs`               | Bosnian                             |
+| `hunspell-ca`               | Catalan                             |
+| `hunspell-cs`               | Czech                               |
+| `hunspell-da`               | Danish                              |
+| `hunspell-de-at`            | German (Austria)                    |
+| `hunspell-de-at-frami`      | German (Austria, frami variant)     |
+| `hunspell-de-ch`            | German (Switzerland)                |
+| `hunspell-de-ch-frami`      | German (Switzerland, frami variant) |
+| `hunspell-de-de`            | German (Germany)                    |
+| `hunspell-de-de-frami`      | German (Germany, frami variant)     |
+| `hunspell-de-med`           | German (medical)                    |
+| `hunspell-dz`               | Dzongkha                            |
+| `hunspell-el`               | Modern Greek                        |
+| `hunspell-en-au`            | English (Australia)                 |
+| `hunspell-en-ca`            | English (Canada)                    |
+| `hunspell-en-gb`            | English (United Kingdom)            |
+| `hunspell-en-med`           | English (medical)                   |
+| `hunspell-en-us`            | English (United States)             |
+| `hunspell-en-za`            | English (South Africa)              |
+| `hunspell-eo`               | Esperanto                           |
+| `hunspell-es`               | Spanish                             |
+| `hunspell-eu`               | Basque                              |
+| `hunspell-fr`               | French                              |
+| `hunspell-fr-classical`     | French (classical)                  |
+| `hunspell-fr-comprehensive` | French (comprehensive)              |
+| `hunspell-fr-revised`       | French (revised)                    |
+| `hunspell-gd`               | Scottish Gaelic                     |
+| `hunspell-gl`               | Galician                            |
+| `hunspell-gu`               | Gujarati                            |
+| `hunspell-gug`              | Guarani                             |
+| `hunspell-he`               | Hebrew                              |
+| `hunspell-hi`               | Hindi                               |
+| `hunspell-hr`               | Croatian                            |
+| `hunspell-hu`               | Hungarian                           |
+| `hunspell-id`               | Indonesian                          |
+| `hunspell-is`               | Icelandic                           |
+| `hunspell-it`               | Italian                             |
+| `hunspell-kk`               | Kazakh                              |
+| `hunspell-kmr`              | Kurdish Kurmanji                    |
+| `hunspell-ko`               | Korean                              |
+| `hunspell-lo`               | Lao                                 |
+| `hunspell-lt`               | Lithuanian                          |
+| `hunspell-lv`               | Latvian                             |
+| `hunspell-ml`               | Malayalam                           |
+| `hunspell-mn`               | Mongolian                           |
+| `hunspell-ne`               | Nepali                              |
+| `hunspell-nl`               | Dutch                               |
+| `hunspell-no`               | Norwegian                           |
+| `hunspell-oc`               | Occitan                             |
+| `hunspell-pl`               | Polish                              |
+| `hunspell-pt-br`            | Portuguese (Brazil)                 |
+| `hunspell-pt-pt`            | Portuguese (Portugal)               |
+| `hunspell-ro`               | Romanian                            |
+| `hunspell-ru`               | Russian                             |
+| `hunspell-si`               | Sinhalese                           |
+| `hunspell-sk`               | Slovak                              |
+| `hunspell-sl`               | Slovenian                           |
+| `hunspell-sr`               | Serbian                             |
+| `hunspell-sv`               | Swedish                             |
+| `hunspell-sw`               | Swahili                             |
+| `hunspell-te`               | Telugu                              |
+| `hunspell-th`               | Thai                                |
+| `hunspell-tr`               | Turkish                             |
+| `hunspell-uk`               | Ukrainian                           |
+| `hunspell-uz`               | Uzbek                               |
+| `hunspell-vi`               | Vietnamese                          |
 
 ### Thesaurus dictionaries (Mythes)
 
