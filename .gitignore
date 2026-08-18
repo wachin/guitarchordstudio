@@ -13,7 +13,8 @@ env/
 
 # --- Build artifacts ---
 dist/
-/build/
+/build/*
+!/build/release-description.md
 *.egg-info/
 *.egg
 *.whl
