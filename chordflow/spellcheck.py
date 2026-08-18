@@ -218,6 +218,7 @@ def install_spell_checker(
         cursor = editor.cursorForPosition(event.pos())
         cursor.select(QTextCursor.SelectionType.WordUnderCursor)
         word = cursor.selectedText()
+        editor.setTextCursor(cursor)
 
         if word and not checker.check(word):
             suggestions = checker.suggest(word)
