@@ -1,4 +1,4 @@
-# Hunspell & Mythes Dictionaries for GuitarChordStudio
+# Hunspell & Mythes Dictionaries for Desktop Applications
 
 This release contains **Hunspell** (spell-checking `.aff`/`.dic`) and **Mythes**
 (thesaurus `.dat`/`.idx`) dictionaries extracted from
