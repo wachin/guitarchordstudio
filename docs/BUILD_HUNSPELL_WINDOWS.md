@@ -36,8 +36,11 @@ pacman -Syu
 
 # Instalar herramientas de compilación + libiconv + gettext + autotools
 pacman -S base-devel mingw-w64-x86_64-toolchain mingw-w64-x86_64-libtool \
-          mingw-w64-x86_64-libiconv mingw-w64-x86_64-gettext autoconf automake autopoint
+          mingw-w64-x86_64-libiconv mingw-w64-x86_64-gettext autoconf automake
 ```
+
+> **Nota:** Cuando pacman pregunte "Enter a selection (default=all):" para el toolchain,
+> simplemente presiona **Enter** sin escribir nada. No escribas "all" como texto — da error.
 
 **Paquetes instalados:**
 
@@ -47,8 +50,8 @@ pacman -S base-devel mingw-w64-x86_64-toolchain mingw-w64-x86_64-libtool \
 | `mingw-w64-x86_64-toolchain` | GCC, G++, linker para Windows 64-bit |
 | `mingw-w64-x86_64-libtool` | Generación de librerías compartidas (.dll) |
 | `mingw-w64-x86_64-libiconv` | **Conversión de codificaciones** (UTF-8 ↔ ISO-8859, etc.) |
-| `mingw-w64-x86_64-gettext` | Internacionalización (NLS) |
-| `autoconf`, `automake`, `autopoint` | Generación de scripts configure (autotools) |
+| `mingw-w64-x86_64-gettext` | Internacionalización (NLS) — incluye `autopoint` |
+| `autoconf`, `automake` | Generación de scripts configure (autotools) |
 
 ## Pasos de compilación
 
@@ -152,10 +155,7 @@ en `resources/hunspell/`.
   - **MinGW64**: compila binarios Windows nativos (sin dependencia de MSYS2 runtime)
   - **MSYS2 normal**: compila binarios que dependen de `msys-2.0.dll`
 
-- Si `autoreconf` falla con "command not found", ejecutar:
-  ```bash
-  pacman -S autoconf automake autopoint
-  ```
+- `autopoint` no es un paquete separado — viene incluido en `mingw-w64-x86_64-gettext`.
 
 - Para verificar qué DLLs necesita el hunspell compilado:
   ```bash
@@ -166,20 +166,21 @@ en `resources/hunspell/`.
 
 | Error | Solución |
 |-------|----------|
-| `autoreconf: command not found` | `pacman -S autoconf automake autopoint` |
+| `autoreconf: command not found` | `pacman -S autoconf automake` |
 | `libtool: command not found` | `pacman -S mingw-w64-x86_64-libtool` |
 | `iconv.h: No such file` | `pacman -S mingw-w64-x86_64-libiconv` |
 | DLL no detectada por Python | Verificar que está en `resources/hunspell/libhunspell-1.7-0.dll` |
 | `libiconv-2.dll not found` al ejecutar | Copiar `C:\msys64\mingw64\bin\libiconv-2.dll` al dir del exe |
 | El configure dice "iconv: no" en el resumen | Asegurarse de usar MinGW64 terminal, no MSYS2 normal |
+| `error: target not found: autopoint` | No existe como paquete — viene dentro de `gettext` |
 
 ## Resumen rápido
 
 ```bash
 # 1. Abrir MSYS2 MinGW64 (icono azul)
-# 2. Instalar dependencias
+# 2. Instalar dependencias (Enter en "default=all" sin escribir nada)
 pacman -S base-devel mingw-w64-x86_64-toolchain mingw-w64-x86_64-libtool \
-          mingw-w64-x86_64-libiconv mingw-w64-x86_64-gettext autoconf automake autopoint
+          mingw-w64-x86_64-libiconv mingw-w64-x86_64-gettext autoconf automake
 
 # 3. Compilar
 cd /c/D/guitarchordstudio/third-party/hunspell
