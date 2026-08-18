@@ -3,6 +3,33 @@
 from __future__ import annotations
 
 import os
+import sys
+from pathlib import Path
+
+
+def _bundled_resources() -> Path:
+    """Return the path to the bundled resources directory.
+
+    Search order:
+    1. ``resources/`` relative to project root (for Nuitka builds)
+    2. ``third-party/libreoffice-dictionaries-collection/dicts/`` (dev/submodule)
+    """
+    module = Path(__file__).resolve().parent  # chordflow/
+    for parent in (module.parent, module.parent.parent):
+        # Check for resources/ at project root
+        resources = parent / "resources" / "dicts"
+        if resources.is_dir():
+            return resources
+        # Check for third-party submodule
+        third_party = (
+            parent
+            / "third-party"
+            / "libreoffice-dictionaries-collection"
+            / "dicts"
+        )
+        if third_party.is_dir():
+            return third_party
+    return Path()
 
 
 class MythesThesaurus:
@@ -17,14 +44,28 @@ class MythesThesaurus:
             "en": "Ingles (Estados Unidos)",
         }
         best_by_path = {}
-        search_dirs = [
-            "/usr/share/mythes",
-            "/usr/share/hunspell",
-            "/usr/share/myspell/dicts",
-        ]
+        search_dirs = []
+
+        if sys.platform == "win32":
+            # Windows: APPDATA + bundled resources
+            appdata = os.environ.get("APPDATA", "")
+            if appdata:
+                search_dirs.append(Path(appdata) / "guitarchs" / "mythes")
+        else:
+            # Linux system paths
+            search_dirs.extend([
+                Path("/usr/share/mythes"),
+                Path("/usr/share/hunspell"),
+                Path("/usr/share/myspell/dicts"),
+            ])
+
+        # Bundled resources (always checked)
+        bundled = _bundled_resources()
+        if bundled and bundled.is_dir():
+            search_dirs.append(bundled)
 
         for base in search_dirs:
-            if not os.path.isdir(base):
+            if not base.is_dir():
                 continue
             for name in sorted(os.listdir(base)):
                 if not (name.startswith("th_") and name.endswith(".dat")):
@@ -49,6 +90,34 @@ class MythesThesaurus:
                     current["code"]
                 ):
                     best_by_path[key] = language
+
+        # Also scan dict-*/ subdirectories in bundled resources for th_*.dat files
+        if bundled and bundled.is_dir():
+            for sub in bundled.iterdir():
+                if sub.is_dir() and sub.name.startswith("dict-"):
+                    for name in sorted(os.listdir(sub)):
+                        if not (name.startswith("th_") and name.endswith(".dat")):
+                            continue
+                        dat_path = os.path.join(sub, name)
+                        idx_path = dat_path[:-4] + ".idx"
+                        if not os.path.exists(idx_path):
+                            continue
+                        code = name[3:-4]
+                        if code.endswith("_v2"):
+                            code = code[:-3]
+                        key = os.path.realpath(dat_path)
+                        lang = code.split("_")[0]
+                        label = labels.get(lang, code.replace("_", "-"))
+                        language = {
+                            "code": code,
+                            "label": label,
+                            "dat": dat_path,
+                        }
+                        current = best_by_path.get(key)
+                        if current is None or self._language_priority(code) < self._language_priority(
+                            current["code"]
+                        ):
+                            best_by_path[key] = language
 
         languages = list(best_by_path.values())
         languages.sort(key=lambda item: (item["code"] != "es_ES", item["label"]))

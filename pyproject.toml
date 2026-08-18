@@ -21,7 +21,9 @@ where = [".", "chordpages"]
 include = ["chordflow*", "chordpages*"]
 
 [tool.setuptools.package-data]
+chordflow = ["dicts/**/*.aff", "dicts/**/*.dic", "dicts/**/*.dat", "dicts/**/*.idx"]
 chordpages = ["assets/*.svg"]
 
 [tool.setuptools.data-files]
 "share/chordflow/translations" = ["chordpages/translations/*.qm"]
+"share/chordflow/resources" = ["resources/dicts/**/*", "dictionaries.json"]

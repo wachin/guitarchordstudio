@@ -1,7 +1,7 @@
 Source: chordflow
 Section: sound
 Priority: optional
-Maintainer: Your Name <you@example.com>
+Maintainer: Washington Indacochea Delgado <linuxfrontier@proton.me>
 Build-Depends: debhelper-compat (= 13), dh-python, python3-all, pyqt6-dev-tools
 Standards-Version: 4.6.2
 Homepage: https://github.com/wachin/guitarchordstudio

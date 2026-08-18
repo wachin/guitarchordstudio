@@ -5,7 +5,9 @@ from __future__ import annotations
 import ctypes
 import ctypes.util
 import locale
+import os
 import re
+import sys
 from pathlib import Path
 
 from PyQt6.QtCore import Qt
@@ -16,13 +18,52 @@ from PyQt6.QtWidgets import QMenu, QTextEdit
 # Load libhunspell via ctypes
 # ---------------------------------------------------------------------------
 
+def _find_hunspell_dll() -> str | None:
+    """Find the Hunspell DLL on any platform."""
+    candidates = []
+
+    if sys.platform == "win32":
+        # Windows: search in well-known locations
+        candidates.extend([
+            # Nuitka/frozen app data directory
+            Path(sys.prefix) / "resources" / "hunspell" / "libhunspell-1.7-0.dll",
+            Path(sys.prefix) / "libhunspell-1.7-0.dll",
+            Path(sys.prefix) / "hunspell-1.7.dll",
+            # Same directory as the executable
+            Path(sys.executable).parent / "libhunspell-1.7-0.dll",
+            Path(sys.executable).parent / "hunspell-1.7.dll",
+            # _MEIPASS for PyInstaller (fallback)
+        ])
+        if getattr(sys, "_MEIPASS", None):
+            candidates.extend([
+                Path(sys._MEIPASS) / "libhunspell-1.7-0.dll",
+                Path(sys._MEIPASS) / "hunspell-1.7.dll",
+            ])
+        # Search in PATH / System32
+        for dll_name in ["libhunspell-1.7-0.dll", "hunspell-1.7.dll", "hunspell.dll"]:
+            try:
+                return str(ctypes.WinDLL(dll_name)._name)
+            except Exception:
+                pass
+    else:
+        # Linux / macOS: use ctypes find_library
+        for name in ["hunspell-1.7", "hunspell"]:
+            lib = ctypes.util.find_library(name)
+            if lib:
+                return lib
+
+    for candidate in candidates:
+        if candidate.exists():
+            return str(candidate)
+
+    return None
+
+
 _LIB: ctypes.CDLL | None = None
-_lib_path = ctypes.util.find_library("hunspell-1.7")
-if _lib_path is None:
-    _lib_path = ctypes.util.find_library("hunspell")
-if _lib_path is not None:
+_dll_path = _find_hunspell_dll()
+if _dll_path is not None:
     try:
-        _LIB = ctypes.cdll.LoadLibrary(_lib_path)
+        _LIB = ctypes.cdll.LoadLibrary(_dll_path)
     except Exception:
         _LIB = None
 
@@ -269,10 +310,22 @@ def _add_word(editor: QTextEdit, checker: SpellChecker, word: str) -> None:
 def _scan_languages() -> dict[str, str]:
     """Scan for available Hunspell dictionaries and return ``{lang: label}``."""
     langs: dict[str, str] = {}
-    for path in Path("/usr/share/hunspell").glob("*.dic"):
-        lang = path.stem
-        label = _language_label(lang)
-        langs[lang] = label
+
+    # Scan bundled resources (resources/ or third-party submodule)
+    bundled = _bundled_resources()
+    if bundled and bundled.is_dir():
+        for path in bundled.glob("dict-*/**/*.dic"):
+            lang = path.stem
+            label = _language_label(lang)
+            langs[lang] = label
+
+    # Also scan system paths (Linux)
+    if sys.platform != "win32":
+        for path in Path("/usr/share/hunspell").glob("*.dic"):
+            lang = path.stem
+            label = _language_label(lang)
+            langs[lang] = label
+
     return dict(sorted(langs.items()))
 
 
@@ -345,38 +398,58 @@ def _default_lang() -> str:
     return "en_US"
 
 
-def _third_party_dicts() -> Path:
-    """Return the path to the bundled third-party Hunspell dictionaries.
+def _bundled_resources() -> Path:
+    """Return the path to the bundled resources directory.
 
-    The dictionaries are shipped as a git submodule at
-    ``third-party/libreoffice-dictionaries-collection/dicts/``.
+    Search order:
+    1. ``resources/`` relative to project root (for Nuitka builds)
+    2. ``third-party/libreoffice-dictionaries-collection/dicts/`` (dev/submodule)
     """
-    # Walk up from the module file to find the project root.
     module = Path(__file__).resolve().parent  # chordflow/
-    # Try project root: chordflow/../third-party/...
     for parent in (module.parent, module.parent.parent):
-        candidate = (
+        # Check for resources/ at project root
+        resources = parent / "resources" / "dicts"
+        if resources.is_dir():
+            return resources
+        # Check for third-party submodule
+        third_party = (
             parent
             / "third-party"
             / "libreoffice-dictionaries-collection"
             / "dicts"
         )
-        if candidate.is_dir():
-            return candidate
+        if third_party.is_dir():
+            return third_party
     return Path()
+
+
+def _third_party_dicts() -> Path:
+    """Return the path to the bundled third-party Hunspell dictionaries.
+
+    Alias for :func:`_bundled_resources` for backward compatibility.
+    """
+    return _bundled_resources()
 
 
 def _dictionary_paths(lang: str) -> list[tuple[Path, Path]]:
     """Return possible ``(aff_path, dic_path)`` pairs for *lang*."""
-    bases: list[Path] = [
-        # System paths (Linux)
-        Path(f"/usr/share/hunspell/{lang}"),
-        Path(f"/usr/share/myspell/dicts/{lang}"),
-        Path(f"/usr/share/hunspell/{lang.replace('_', '-')}"),
-    ]
+    bases: list[Path] = []
 
-    # Third-party bundled dictionaries (git submodule)
-    third_party = _third_party_dicts()
+    if sys.platform == "win32":
+        # Windows: bundled resources + APPDATA
+        appdata = Path(os.environ.get("APPDATA", ""))
+        if appdata.exists():
+            bases.append(appdata / "guitarchs" / "dicts" / f"dict-{lang.split('_')[0].lower()}" / lang)
+    else:
+        # Linux / macOS system paths
+        bases.extend([
+            Path(f"/usr/share/hunspell/{lang}"),
+            Path(f"/usr/share/myspell/dicts/{lang}"),
+            Path(f"/usr/share/hunspell/{lang.replace('_', '-')}"),
+        ])
+
+    # Bundled resources (resources/ or third-party submodule)
+    third_party = _bundled_resources()
     if third_party:
         prefix = f"dict-{lang.split('_')[0].lower()}"
         bases.append(third_party / prefix / lang)

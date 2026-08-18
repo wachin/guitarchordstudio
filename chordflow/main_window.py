@@ -42,6 +42,7 @@ from PyQt6.QtWidgets import (
 
 from .chord_transposer import transpose_text
 from .config_manager import ConfigManager
+from .dict_manager import list_available, download_and_install, uninstall
 from .file_operations import (
     add_to_recent_files,
     detect_encoding,
@@ -590,6 +591,10 @@ class TextScrollerApp(QMainWindow):
         synonyms_action.triggered.connect(self.show_synonyms_dialog)
         tools_menu.addAction(synonyms_action)
 
+        dicts_action = QAction("Diccionarios...", self)
+        dicts_action.triggered.connect(self.show_dict_manager_dialog)
+        tools_menu.addAction(dicts_action)
+
         options_menu = menu_bar.addMenu("Opciones")
 
         sharps_action = QAction("Usar Sostenidos al bajar semitonos", self)
@@ -1046,6 +1051,153 @@ class TextScrollerApp(QMainWindow):
     def toggle_accidentals(self, use_sharps):
         self.config["use_sharps"] = use_sharps
         self.save_config()
+
+    def show_dict_manager_dialog(self):
+        dialog = _DictManagerDialog(self)
+        dialog.exec()
+
+
+# ---------------------------------------------------------------------------
+# Dictionary Manager Dialog
+# ---------------------------------------------------------------------------
+
+class _DictManagerDialog(QDialog):
+    """Dialog for installing/uninstalling dictionaries."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Gestor de Diccionarios")
+        self.resize(500, 400)
+
+        layout = QVBoxLayout(self)
+
+        self.list_widget = QWidget()
+        list_layout = QVBoxLayout(self.list_widget)
+
+        self.table = QGridLayout()
+        self.progress_bar = QSlider(Qt.Orientation.Horizontal)
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+        self.progress_label = QLabel("")
+        self.status_label = QLabel("")
+
+        list_layout.addLayout(self.table)
+        list_layout.addWidget(self.progress_bar)
+        list_layout.addWidget(self.progress_label)
+        list_layout.addWidget(self.status_label)
+
+        layout.addWidget(self.list_widget)
+
+        button_layout = QHBoxLayout()
+        self.install_btn = QPushButton("Instalar seleccionado")
+        self.uninstall_btn = QPushButton("Desinstalar seleccionado")
+        self.refresh_btn = QPushButton("Actualizar")
+        self.close_btn = QPushButton("Cerrar")
+
+        button_layout.addWidget(self.install_btn)
+        button_layout.addWidget(self.uninstall_btn)
+        button_layout.addStretch()
+        button_layout.addWidget(self.refresh_btn)
+        button_layout.addWidget(self.close_btn)
+
+        layout.addLayout(button_layout)
+
+        self.install_btn.clicked.connect(self._install_selected)
+        self.uninstall_btn.clicked.connect(self._uninstall_selected)
+        self.refresh_btn.clicked.connect(self._refresh)
+        self.close_btn.clicked.connect(self.close)
+
+        self._build_table()
+
+    def _build_table(self):
+        """Build the dictionary list table."""
+        # Clear existing rows
+        while self.table.count():
+            item = self.table.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        dicts = list_available()
+        self._dict_map = {}  # row -> dict entry
+
+        for row, d in enumerate(dicts):
+            cb = QCheckBox(d["name"])
+            cb.setEnabled(not d["installed"])
+            cb.setProperty("dict_code", d["code"])
+            status = "INSTALADO" if d["installed"] else "Disponible"
+            label = QLabel(status)
+            label.setEnabled(False)
+            if d["installed"]:
+                label.setStyleSheet("color: green;")
+            self.table.addWidget(cb, row, 0)
+            self.table.addWidget(label, row, 1)
+            self._dict_map[row] = d
+
+    def _install_selected(self):
+        """Install the selected dictionary."""
+        code = None
+        for row, d in self._dict_map.items():
+            widget = self.table.itemAtPosition(row, 0).widget()
+            if isinstance(widget, QCheckBox) and widget.isChecked():
+                code = d["code"]
+                break
+
+        if not code:
+            QMessageBox.information(self, "Diccionarios", "Selecciona un diccionario para instalar.")
+            return
+
+        self.install_btn.setEnabled(False)
+        self.status_label.setText(f"Instalando diccionario '{code}'...")
+        self.progress_bar.setValue(0)
+        self.progress_label.setText("0%")
+
+        def progress(downloaded, total):
+            if total:
+                pct = int(downloaded / total * 100)
+                self.progress_bar.setValue(pct)
+                self.progress_label.setText(f"{pct}%")
+
+        try:
+            download_and_install(code, progress)
+            self.status_label.setText(f"Diccionario '{code}' instalado correctamente.")
+            self.progress_bar.setValue(100)
+            self.progress_label.setText("100%")
+            QTimer.singleShot(2000, self._build_table)
+        except Exception as e:
+            self.status_label.setText(f"Error: {e}")
+            QMessageBox.critical(self, "Error", str(e))
+        finally:
+            self.install_btn.setEnabled(True)
+
+    def _uninstall_selected(self):
+        """Uninstall the selected dictionary."""
+        code = None
+        for row, d in self._dict_map.items():
+            widget = self.table.itemAtPosition(row, 0).widget()
+            if isinstance(widget, QCheckBox) and widget.isChecked():
+                code = d["code"]
+                break
+
+        if not code:
+            QMessageBox.information(self, "Diccionarios", "Selecciona un diccionario para desinstalar.")
+            return
+
+        reply = QMessageBox.question(
+            self, "Desinstalar",
+            f"¿Desea desinstalar el diccionario '{code}'?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            uninstall(code)
+            self.status_label.setText(f"Diccionario '{code}' desinstalado.")
+            QTimer.singleShot(2000, self._build_table)
+
+    def _refresh(self):
+        """Refresh the dictionary list."""
+        self._build_table()
+        self.status_label.setText("")
+        self.progress_bar.setValue(0)
+        self.progress_label.setText("")
 
 
 __all__ = ["CustomTextEdit", "TextScrollerApp"]
