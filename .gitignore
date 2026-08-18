@@ -48,3 +48,6 @@ config12.json
 
 # --- Third-party large binaries ---
 third-party/LibreOfficePortable_*/
+
+# VNote
+vnote/

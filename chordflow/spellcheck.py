@@ -1,4 +1,9 @@
-"""Spell-checking support via system Hunspell library (ctypes)."""
+"""Spell-checking support.
+
+Linux / macOS: Hunspell via system ctypes (when the shared library is found).
+Windows: lightweight pure-Python spell checker that reads ``.dic`` files directly
+and applies basic affix rules.  No external DLL needed.
+"""
 
 from __future__ import annotations
 
@@ -15,47 +20,17 @@ from PyQt6.QtGui import QAction, QSyntaxHighlighter, QTextCharFormat, QTextCurso
 from PyQt6.QtWidgets import QMenu, QTextEdit
 
 # ---------------------------------------------------------------------------
-# Load libhunspell via ctypes
+# Backend detection
 # ---------------------------------------------------------------------------
 
 def _find_hunspell_dll() -> str | None:
-    """Find the Hunspell DLL on any platform."""
-    candidates = []
-
+    """Find the Hunspell shared library on Linux / macOS only."""
     if sys.platform == "win32":
-        # Windows: search in well-known locations
-        candidates.extend([
-            # Nuitka/frozen app data directory
-            Path(sys.prefix) / "resources" / "hunspell" / "libhunspell-1.7-0.dll",
-            Path(sys.prefix) / "libhunspell-1.7-0.dll",
-            Path(sys.prefix) / "hunspell-1.7.dll",
-            # Same directory as the executable
-            Path(sys.executable).parent / "libhunspell-1.7-0.dll",
-            Path(sys.executable).parent / "hunspell-1.7.dll",
-            # _MEIPASS for PyInstaller (fallback)
-        ])
-        if getattr(sys, "_MEIPASS", None):
-            candidates.extend([
-                Path(sys._MEIPASS) / "libhunspell-1.7-0.dll",
-                Path(sys._MEIPASS) / "hunspell-1.7.dll",
-            ])
-        # Search in PATH / System32
-        for dll_name in ["libhunspell-1.7-0.dll", "hunspell-1.7.dll", "hunspell.dll"]:
-            try:
-                return str(ctypes.WinDLL(dll_name)._name)
-            except Exception:
-                pass
-    else:
-        # Linux / macOS: use ctypes find_library
-        for name in ["hunspell-1.7", "hunspell"]:
-            lib = ctypes.util.find_library(name)
-            if lib:
-                return lib
-
-    for candidate in candidates:
-        if candidate.exists():
-            return str(candidate)
-
+        return None
+    for name in ["hunspell-1.7", "hunspell"]:
+        lib = ctypes.util.find_library(name)
+        if lib:
+            return lib
     return None
 
 
@@ -67,10 +42,152 @@ if _dll_path is not None:
     except Exception:
         _LIB = None
 
+_USE_HUNSPELL_CTYPES = _LIB is not None
+
+
+# ---------------------------------------------------------------------------
+# Pure-Python .dic reader with affix rule support (Windows fallback)
+# ---------------------------------------------------------------------------
+
+class _DicFileWordSet:
+    """Load words from a Hunspell .dic file + apply .aff suffix rules.
+
+    Hunspell .dic format:
+        Line 1: word_count [optional flags]
+        Lines 2..N: word[/flags]  — flags reference rules in the .aff file
+
+    SFX rules in .aff:
+        SFX flag N count          — header
+        SFX flag strip add cond   — rule lines (N of them)
+
+    We expand derived words by applying SFX rules to base words that carry
+    the matching flag character.
+    """
+
+    def __init__(self, dic_path: Path):
+        self.words: set[str] = set()
+        self._load(dic_path)
+
+    def _load(self, dic_path: Path) -> None:
+        if not dic_path.exists():
+            return
+        try:
+            encoding = self._detect_encoding(dic_path)
+            with open(dic_path, "r", encoding=encoding, errors="replace") as f:
+                raw_lines = f.readlines()
+
+            # Parse base words with their flags
+            base_words: list[tuple[str, str]] = []
+            for line in raw_lines[1:]:
+                parts = line.strip().split("/", 1)
+                word = parts[0].strip()
+                flags = parts[1].strip() if len(parts) > 1 else ""
+                if word:
+                    base_words.append((word, flags))
+                    self.words.add(word.lower())
+
+            # Parse affix rules and expand derived words
+            aff_path = dic_path.with_suffix(".aff")
+            if aff_path.exists():
+                self._expand_with_affix_rules(base_words, aff_path, encoding)
+
+        except Exception:
+            pass
+
+    def _expand_with_affix_rules(
+        self, base_words: list[tuple[str, str]], aff_path: Path, encoding: str
+    ) -> None:
+        """Parse SFX rules from .aff and generate derived word forms."""
+        try:
+            with open(aff_path, "r", encoding=encoding, errors="replace") as f:
+                aff_lines = f.readlines()
+        except Exception:
+            return
+
+        suffix_rules: dict[str, list[tuple[str, str, str]]] = {}
+        current_flag: str | None = None
+        current_rules: list[tuple[str, str, str]] = []
+
+        for line in aff_lines:
+            stripped = line.strip()
+            if stripped.startswith("SFX ") and not stripped.startswith("SFX Y"):
+                parts = stripped.split()
+                if len(parts) >= 2 and len(parts[1]) == 1 and parts[1] not in ("Y", "N"):
+                    # Header line: SFX flag Y count  or  SFX flag N count
+                    if current_flag:
+                        suffix_rules[current_flag] = current_rules
+                    current_flag = parts[1]
+                    current_rules = []
+                elif len(parts) == 5 and current_flag:
+                    # Rule line: SFX flag strip add condition
+                    flag = parts[1]
+                    strip = parts[2] if parts[2] != "0" else ""
+                    add = parts[3]
+                    condition = parts[4]
+                    current_rules.append((strip, add, condition))
+
+        if current_flag:
+            suffix_rules[current_flag] = current_rules
+
+        # Apply rules to base words
+        for word, flags in base_words:
+            if not flags:
+                continue
+            for flag_char in flags:
+                for strip, add, condition in suffix_rules.get(flag_char, []):
+                    derived = self._apply_suffix_rule(word, strip, add, condition)
+                    if derived:
+                        self.words.add(derived.lower())
+
+    @staticmethod
+    def _apply_suffix_rule(word: str, strip: str, add: str, condition: str) -> str | None:
+        """Apply one suffix rule.  Returns derived word or None."""
+        # Hunspell conditions use dot as wildcard, [^...] for negation
+        if condition and condition != ".":
+            cond_re = "^" + condition.replace(".", "[a-zA-ZáéíóúñÁÉÍÓÚÑ]") + "$"
+            try:
+                if not re.match(cond_re, word):
+                    return None
+            except re.error:
+                pass
+
+        # Strip characters from end
+        base = word
+        if strip:
+            if strip == "0":
+                pass
+            elif word.endswith(strip):
+                base = word[: -len(strip)]
+            else:
+                return None
+
+        # Add suffix
+        return base + add
+
+    @staticmethod
+    def _detect_encoding(dic_path: Path) -> str:
+        """Try to detect encoding from the sibling .aff file."""
+        aff = dic_path.with_suffix(".aff")
+        if aff.exists():
+            try:
+                with open(aff, "r", encoding="utf-8", errors="replace") as f:
+                    for line in f:
+                        if line.startswith("SET "):
+                            return line.split()[1].strip()
+            except Exception:
+                pass
+        return "utf-8"
+
+    def contains(self, word: str) -> bool:
+        return word.lower() in self.words
+
+
+# ---------------------------------------------------------------------------
+# Hunspell ctypes wrapper (Linux / macOS)
+# ---------------------------------------------------------------------------
 
 def _hs_create(aff: bytes, dic: bytes) -> ctypes.c_void_p | None:
-    """Create a Hunspell handle via ctypes."""
-    if _LIB is None:
+    if not _USE_HUNSPELL_CTYPES:
         return None
     try:
         _LIB.Hunspell_create.restype = ctypes.c_void_p
@@ -81,7 +198,7 @@ def _hs_create(aff: bytes, dic: bytes) -> ctypes.c_void_p | None:
 
 
 def _hs_destroy(handle: ctypes.c_void_p) -> None:
-    if _LIB is not None and handle is not None:
+    if _USE_HUNSPELL_CTYPES and handle is not None:
         try:
             _LIB.Hunspell_destroy(handle)
         except Exception:
@@ -89,7 +206,7 @@ def _hs_destroy(handle: ctypes.c_void_p) -> None:
 
 
 def _hs_spell(handle: ctypes.c_void_p, word: bytes) -> bool:
-    if _LIB is None or handle is None:
+    if not _USE_HUNSPELL_CTYPES or handle is None:
         return True
     try:
         _LIB.Hunspell_spell.restype = ctypes.c_int
@@ -100,7 +217,7 @@ def _hs_spell(handle: ctypes.c_void_p, word: bytes) -> bool:
 
 
 def _hs_suggest(handle: ctypes.c_void_p, word: bytes) -> list[str]:
-    if _LIB is None or handle is None:
+    if not _USE_HUNSPELL_CTYPES or handle is None:
         return []
     try:
         _LIB.Hunspell_suggest.restype = ctypes.c_int
@@ -127,37 +244,45 @@ def _hs_suggest(handle: ctypes.c_void_p, word: bytes) -> list[str]:
 
 
 def _hs_add(handle: ctypes.c_void_p, word: bytes) -> None:
-    if _LIB is None or handle is None:
-        return
-    try:
-        _LIB.Hunspell_add.restype = ctypes.c_int
-        _LIB.Hunspell_add.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
-        _LIB.Hunspell_add(handle, word)
-    except Exception:
-        pass
+    if _USE_HUNSPELL_CTYPES and handle is not None:
+        try:
+            _LIB.Hunspell_add.restype = ctypes.c_int
+            _LIB.Hunspell_add.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+            _LIB.Hunspell_add(handle, word)
+        except Exception:
+            pass
 
 
 # ---------------------------------------------------------------------------
-# Core spell checker
+# Core spell checker (auto-selects backend)
 # ---------------------------------------------------------------------------
 
 class SpellChecker:
-    """Check words and get suggestions via the system Hunspell library."""
+    """Check words and get suggestions.
+
+    Uses Hunspell via ctypes on Linux / macOS, or a pure-Python .dic word
+    list with affix expansion on Windows.
+    """
 
     def __init__(self, lang: str | None = None):
         self._handle: ctypes.c_void_p | None = None
+        self._dic_set: _DicFileWordSet | None = None
         self._lang = lang or _default_lang()
         self._load()
 
-    # --- public API -------------------------------------------------------
-
     @property
     def available(self) -> bool:
-        return self._handle is not None
+        if _USE_HUNSPELL_CTYPES:
+            return self._handle is not None
+        return self._dic_set is not None
 
     @property
     def language(self) -> str:
         return self._lang
+
+    @property
+    def backend(self) -> str:
+        return "hunspell" if _USE_HUNSPELL_CTYPES else "dic"
 
     def set_language(self, lang: str) -> bool:
         self._destroy()
@@ -166,42 +291,64 @@ class SpellChecker:
         return self.available
 
     def check(self, word: str) -> bool:
-        if self._handle is None:
-            return True
-        return _hs_spell(self._handle, word.encode("utf-8"))
+        if _USE_HUNSPELL_CTYPES:
+            if self._handle is None:
+                return True
+            return _hs_spell(self._handle, word.encode("utf-8"))
+        else:
+            if self._dic_set is None:
+                return True
+            return self._dic_set.contains(word)
 
     def suggest(self, word: str) -> list[str]:
-        if self._handle is None:
+        if _USE_HUNSPELL_CTYPES:
+            if self._handle is None:
+                return []
+            return _hs_suggest(self._handle, word.encode("utf-8"))
+        else:
             return []
-        return _hs_suggest(self._handle, word.encode("utf-8"))
 
     def add_word(self, word: str) -> None:
-        if self._handle is not None:
-            _hs_add(self._handle, word.encode("utf-8"))
+        if _USE_HUNSPELL_CTYPES:
+            if self._handle is not None:
+                _hs_add(self._handle, word.encode("utf-8"))
+        else:
+            if self._dic_set is not None:
+                self._dic_set.words.add(word.lower())
 
     def _destroy(self) -> None:
-        if self._handle is not None:
+        if _USE_HUNSPELL_CTYPES and self._handle is not None:
             _hs_destroy(self._handle)
             self._handle = None
-
-    # --- internal ---------------------------------------------------------
+        self._dic_set = None
 
     def _load(self) -> None:
-        if _LIB is None:
-            return
         lang = self._lang.replace("-", "_")
-        for aff, dic in _dictionary_paths(lang):
-            if not aff.exists() or not dic.exists():
-                continue
-            try:
-                handle = _hs_create(str(aff).encode("utf-8"), str(dic).encode("utf-8"))
-                if handle is not None:
-                    self._handle = handle
-                    _hs_spell(handle, b"test")  # verify
-                    return
-            except Exception:
-                self._handle = None
-                continue
+        paths = _dictionary_paths(lang)
+
+        if _USE_HUNSPELL_CTYPES:
+            for aff, dic in paths:
+                if not aff.exists() or not dic.exists():
+                    continue
+                try:
+                    handle = _hs_create(str(aff).encode("utf-8"), str(dic).encode("utf-8"))
+                    if handle is not None:
+                        self._handle = handle
+                        _hs_spell(handle, b"test")
+                        return
+                except Exception:
+                    self._handle = None
+                    continue
+        else:
+            for aff, dic in paths:
+                if dic.exists():
+                    try:
+                        self._dic_set = _DicFileWordSet(dic)
+                        if self._dic_set.words:
+                            return
+                    except Exception:
+                        self._dic_set = None
+                        continue
 
 
 # ---------------------------------------------------------------------------
@@ -228,7 +375,11 @@ class SpellHighlighter(QSyntaxHighlighter):
             word = m.group()
             if len(word) <= 1 or word.isdigit():
                 continue
+            # Skip chord symbols
             if re.match(r"^[A-G](#|b)?(m|maj|min|dim|aug|sus|add)?[0-9]?$", word):
+                continue
+            # Skip lines that look like chord lines (mostly uppercase + symbols)
+            if re.match(r"^[A-G0-9#/b\s\-]+$", word):
                 continue
             if not self._checker.check(word):
                 self.setFormat(m.start(), m.end() - m.start(), self._fmt)
@@ -241,18 +392,14 @@ class SpellHighlighter(QSyntaxHighlighter):
 def install_spell_checker(
     editor: QTextEdit, lang: str | None = None
 ) -> SpellChecker:
-    """Attach a spell checker + highlighter to *editor*.
-
-    Returns the :class:`SpellChecker` instance so callers can inspect
-    ``.available`` and ``.language``.
-    """
+    """Attach a spell checker + highlighter to *editor*."""
     checker = SpellChecker(lang)
     if not checker.available:
         return checker
 
     highlighter = SpellHighlighter(editor.document(), checker)
-    editor._spell_highlighter = highlighter  # type: ignore[attr-defined]
-    editor._spell_checker = checker  # type: ignore[attr-defined]
+    editor._spell_highlighter = highlighter
+    editor._spell_checker = checker
 
     def _context_menu(event):
         menu = editor.createStandardContextMenu()
@@ -287,7 +434,7 @@ def install_spell_checker(
 
         menu.exec(event.globalPos())
 
-    editor.contextMenuEvent = _context_menu  # type: ignore[method-assign]
+    editor.contextMenuEvent = _context_menu
     return checker
 
 
@@ -300,60 +447,15 @@ def _replace_word(editor: QTextEdit, replacement: str) -> None:
 
 def _add_word(editor: QTextEdit, checker: SpellChecker, word: str) -> None:
     checker.add_word(word)
-    editor._spell_highlighter.rehighlight()  # type: ignore[attr-defined]
+    editor._spell_highlighter.rehighlight()
 
 
 # ---------------------------------------------------------------------------
 # Language menu builder
 # ---------------------------------------------------------------------------
 
-def _scan_languages() -> dict[str, str]:
-    """Scan for available Hunspell dictionaries and return ``{lang: label}``."""
-    langs: dict[str, str] = {}
-
-    # Scan bundled resources (resources/ or third-party submodule)
-    bundled = _bundled_resources()
-    if bundled and bundled.is_dir():
-        for path in bundled.glob("dict-*/**/*.dic"):
-            lang = path.stem
-            label = _language_label(lang)
-            langs[lang] = label
-
-    # Also scan system paths (Linux)
-    if sys.platform != "win32":
-        for path in Path("/usr/share/hunspell").glob("*.dic"):
-            lang = path.stem
-            label = _language_label(lang)
-            langs[lang] = label
-
-    return dict(sorted(langs.items()))
-
-
-def _language_label(lang: str) -> str:
-    """Return a human-readable label for a language code."""
-    labels = {
-        "en_US": "English (US)",
-        "en_GB": "English (UK)",
-        "es_ES": "Spanish (Spain)",
-        "es_EC": "Spanish (Ecuador)",
-        "es_MX": "Spanish (Mexico)",
-        "es_AR": "Spanish (Argentina)",
-        "fr_FR": "French",
-        "de_DE": "German",
-        "pt_BR": "Portuguese (Brazil)",
-        "pt_PT": "Portuguese (Portugal)",
-        "it_IT": "Italian",
-        "ca_ES": "Catalan",
-    }
-    return labels.get(lang, lang.replace("_", " ").title())
-
-
 def build_language_menu(parent, editor_getter) -> QMenu:
-    """Build a ``QMenu`` of available Hunspell dictionaries.
-
-    When an item is selected, the spell checker attached to the editor
-    returned by *editor_getter* is switched to that language.
-    """
+    """Build a ``QMenu`` of available Hunspell dictionaries."""
     menu = QMenu("Spell-check language", parent)
     langs = _scan_languages()
     if not langs:
@@ -387,31 +489,72 @@ def _switch_language(editor: QTextEdit, lang: str) -> None:
 # Helpers
 # ---------------------------------------------------------------------------
 
+def _scan_languages() -> dict[str, str]:
+    """Scan for available Hunspell dictionaries and return ``{lang: label}``."""
+    langs: dict[str, str] = {}
+
+    bundled = _bundled_resources()
+    if bundled and bundled.is_dir():
+        for path in bundled.glob("dict-*/**/*.dic"):
+            lang = path.stem
+            label = _language_label(lang)
+            langs[lang] = label
+
+    if sys.platform != "win32":
+        for path in Path("/usr/share/hunspell").glob("*.dic"):
+            lang = path.stem
+            label = _language_label(lang)
+            langs[lang] = label
+
+    return dict(sorted(langs.items()))
+
+
+def _language_label(lang: str) -> str:
+    """Return a human-readable label for a language code."""
+    labels = {
+        "en_US": "English (US)",
+        "en_GB": "English (UK)",
+        "es_ES": "Spanish (Spain)",
+        "es_EC": "Spanish (Ecuador)",
+        "es_MX": "Spanish (Mexico)",
+        "es_AR": "Spanish (Argentina)",
+        "fr_FR": "French",
+        "de_DE": "German",
+        "pt_BR": "Portuguese (Brazil)",
+        "pt_PT": "Portuguese (Portugal)",
+        "it_IT": "Italian",
+        "ca_ES": "Catalan",
+    }
+    return labels.get(lang, lang.replace("_", " ").title())
+
+
 def _default_lang() -> str:
-    """Return a language code from the system locale (e.g. ``"en_US"``)."""
+    """Return a language code from the system locale.
+
+    On Windows, defaults to ``es_ES`` since this app is primarily used
+    by Spanish-speaking guitarists.
+    """
     try:
         code, _ = locale.getlocale(locale.LC_MESSAGES)
         if code:
-            return code.replace("-", "_")
+            code = code.replace("-", "_")
+            if code.lower().startswith("es"):
+                return "es_ES"
+            return code
     except Exception:
         pass
+    if sys.platform == "win32":
+        return "es_ES"
     return "en_US"
 
 
 def _bundled_resources() -> Path:
-    """Return the path to the bundled resources directory.
-
-    Search order:
-    1. ``resources/`` relative to project root (for Nuitka builds)
-    2. ``third-party/libreoffice-dictionaries-collection/dicts/`` (dev/submodule)
-    """
-    module = Path(__file__).resolve().parent  # chordflow/
+    """Return the path to the bundled resources directory."""
+    module = Path(__file__).resolve().parent
     for parent in (module.parent, module.parent.parent):
-        # Check for resources/ at project root
         resources = parent / "resources" / "dicts"
         if resources.is_dir():
             return resources
-        # Check for third-party submodule
         third_party = (
             parent
             / "third-party"
@@ -423,36 +566,25 @@ def _bundled_resources() -> Path:
     return Path()
 
 
-def _third_party_dicts() -> Path:
-    """Return the path to the bundled third-party Hunspell dictionaries.
-
-    Alias for :func:`_bundled_resources` for backward compatibility.
-    """
-    return _bundled_resources()
-
-
 def _dictionary_paths(lang: str) -> list[tuple[Path, Path]]:
     """Return possible ``(aff_path, dic_path)`` pairs for *lang*."""
     bases: list[Path] = []
 
     if sys.platform == "win32":
-        # Windows: bundled resources + APPDATA
         appdata = Path(os.environ.get("APPDATA", ""))
         if appdata.exists():
             bases.append(appdata / "guitarchs" / "dicts" / f"dict-{lang.split('_')[0].lower()}" / lang)
     else:
-        # Linux / macOS system paths
         bases.extend([
             Path(f"/usr/share/hunspell/{lang}"),
             Path(f"/usr/share/myspell/dicts/{lang}"),
             Path(f"/usr/share/hunspell/{lang.replace('_', '-')}"),
         ])
 
-    # Bundled resources (resources/ or third-party submodule)
-    third_party = _bundled_resources()
-    if third_party:
+    bundled = _bundled_resources()
+    if bundled:
         prefix = f"dict-{lang.split('_')[0].lower()}"
-        bases.append(third_party / prefix / lang)
+        bases.append(bundled / prefix / lang)
 
     return [(b.with_suffix(".aff"), b.with_suffix(".dic")) for b in bases]
 

@@ -38,6 +38,29 @@ def _dicts_base() -> Path:
     return base
 
 
+def _bundled_dicts() -> Path:
+    """Return the path to bundled dictionaries in resources/.
+
+    Search order:
+    1. ``resources/dicts/`` at project root (dev + Nuitka)
+    2. ``third-party/libreoffice-dictionaries-collection/dicts/`` (submodule)
+    """
+    module = Path(__file__).resolve().parent  # chordflow/
+    for parent in (module.parent, module.parent.parent):
+        resources = parent / "resources" / "dicts"
+        if resources.is_dir():
+            return resources
+        third_party = (
+            parent
+            / "third-party"
+            / "libreoffice-dictionaries-collection"
+            / "dicts"
+        )
+        if third_party.is_dir():
+            return third_party
+    return Path()
+
+
 def _catalog_path() -> Path:
     """Return the path to the dictionaries catalog (dictionaries.json).
 
@@ -90,11 +113,13 @@ def list_available() -> list[dict]:
     """
     catalog = load_catalog()
     dicts_base = _dicts_base()
+    bundled = _bundled_dicts()
     result = []
     for entry in catalog.get("dictionaries", []):
         code = entry["code"]
         prefix = f"dict-{code}"
-        installed = (dicts_base / prefix).is_dir()
+        # Check both user-installed and bundled locations
+        installed = (dicts_base / prefix).is_dir() or (bundled / prefix).is_dir()
         result.append({**entry, "installed": installed})
     return result
 
