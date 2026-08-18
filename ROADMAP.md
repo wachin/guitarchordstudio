@@ -69,7 +69,9 @@ acompañar ensayos con desplazamiento automático.
 Editor de canciones en texto plano para letras y acordes de guitarra. Su
 objetivo es aprovechar pantallas de ordenador mostrando tres paginas por fila,
 con comportamiento de escritura estable, paginas reales, margenes configurables
-y soporte para archivos `.txt`, `.pro`, `.cho` y `.chordpro`.
+y soporte para archivos `.txt`
+
+**Nota:** En el futuro una vez que el programa fucnione bien tal vez también soporte para: `.pro`, `.cho` y `.chordpro` (como el agregar soporte semantico opcional para ChordPro: directivas, titulos,  comentarios, transpose y bloques).
 
 ### Reglas tecnicas no negociables
 
@@ -192,17 +194,9 @@ y soporte para archivos `.txt`, `.pro`, `.cho` y `.chordpro`.
       no solo por cantidad aproximada de caracteres.
 - [ ] Agregar undo/redo.
 - [ ] Agregar busqueda y reemplazo.
-- [ ] Agregar opcion de auto-scroll para tocar guitarra, sin reemplazar la
-      vista de paginas.
-- [ ] Agregar soporte semantico opcional para ChordPro: directivas, titulos,
-      comentarios, transpose y bloques.
 - [ ] Agregar impresion/exportacion a PDF respetando las paginas visuales.
 - [ ] Guardar preferencias del usuario: papel, margenes, fuente, zoom y ultimo
       directorio usado.
-- [ ] Mejorar rendimiento para canciones muy largas con cache de layout y
-      repintado parcial.
-- [ ] Agregar indicador de pagina, posicion del cursor y cantidad total de
-      paginas.
 
 ### Instrucciones para futuras versiones
 
@@ -216,9 +210,3 @@ y soporte para archivos `.txt`, `.pro`, `.cho` y `.chordpro`.
 - [ ] Si se agrega soporte ChordPro, mantener dos capas separadas: texto fuente
       editable y representacion interpretada. No reemplazar el texto escrito
       por el usuario con una version renderizada.
-- [ ] Si se agrega auto-scroll, debe desplazarse el `QScrollArea` general, no
-      crear scroll interno en cada pagina.
-- [ ] Si se agregan columnas reales dentro de una pagina, deben paginarse como
-      regiones de flujo con capacidad fija. Cuando una columna se llena, el
-      texto pasa a la siguiente columna; cuando se llenan las columnas de la
-      pagina, se crea otra pagina.
