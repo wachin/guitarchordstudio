@@ -45,3 +45,6 @@ config12.json
 
 # --- Qwen AI agent workspace ---
 .qwen/worktrees/
+
+# --- Third-party large binaries ---
+third-party/LibreOfficePortable_*/
