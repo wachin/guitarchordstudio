@@ -88,7 +88,7 @@ On Debian 12, MX Linux 23, antiX 23 and derivatives:
 
 ```bash
 sudo apt-get update
-sudo apt-get install python3 python3-pyqt6 python3-chardet python3-hunspell \
+sudo apt-get install python3 python3-pyqt6 python3-chardet \
     qt6-translations-l10n fonts-noto-mono \
     hunspell-es hunspell-en-us \
     mythes mythes-en-us mythes-es
@@ -312,10 +312,6 @@ DejaVu Sans Mono.
   (UTF-8, ISO-8859-1, Windows-1252, etc.). Without it, the user would have to
   specify the encoding manually. Also used in the "Find/Replace in files"
   feature to read files with any encoding.
-- **`python3-hunspell`** — Python bindings for the system Hunspell library.
-  Provides spell-checking (red underline on misspelled words and spelling
-  suggestions in the right-click context menu). Without this package, the
-  spell-checking feature is silently disabled.
 - **`qt6-translations-l10n`** — Translations for native Qt dialogs (Open, Save,
   Cancel buttons appear in the system language).
 - **`fonts-noto-mono`** — Default monospaced font for the editor.
@@ -370,7 +366,7 @@ with configurable margins and a multi-page view.
 
 ```bash
 sudo apt-get update
-sudo apt-get install python3 python3-pyqt6 python3-hunspell \
+sudo apt-get install python3 python3-pyqt6 \
     qt6-translations-l10n
 ```
 

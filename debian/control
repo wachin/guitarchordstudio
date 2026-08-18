@@ -11,7 +11,6 @@ Architecture: all
 Depends: ${python3:Depends}, ${misc:Depends},
          python3-pyqt6,
          python3-chardet,
-         python3-hunspell,
          qt6-translations-l10n,
          fonts-noto-mono,
          hunspell-es,
