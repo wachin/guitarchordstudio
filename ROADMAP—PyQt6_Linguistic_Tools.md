@@ -22,10 +22,10 @@ Current intended architecture:
 ```text
 GuitarChordStudio
         │
-        └── third-party/
+        └── libs/
             └── pyqt6-linguistic-tools
                      │
-                     ├── third-party/
+                     ├── libss/
                      │      ├── spylls
                      │      └── pythes
                      │
@@ -45,7 +45,7 @@ GuitarChordStudio
 
 # IMPORTANT ARCHITECTURAL REFERENCE: SONNET
 
-The developer has intentionally placed a copy of the **Sonnet** source code at:
+The developer has intentionally placed as sub-module of the **Sonnet** source code at:
 
 ```text
 third-party/sonnet
@@ -64,6 +64,7 @@ Sonnet is a mature Qt spell-checking framework and contains useful architectural
 - Context-menu integration.
 - Personal dictionary handling.
 - Spell-checking dialogs and UI integration.
+
 
 ## Critical restriction
 
@@ -119,9 +120,12 @@ Target structure:
 ```text
 pyqt6-linguistic-tools/
 │
-├── third-party/
+├── libs/
 │   ├── spylls/
-│   ├── pythes/
+│   └── pythes/
+│
+├── third-party/
+│   ├── hunspell/
 │   └── sonnet/
 │
 ├── src/
@@ -133,9 +137,8 @@ pyqt6-linguistic-tools/
 └── ROADMAP.md
 ```
 
-- [ ] Add `wachin/spylls` as a Git submodule.
-- [ ] Add `wachin/pythes` as a Git submodule.
 - [ ] Keep `third-party/sonnet` only as architectural reference.
+- [ ] Keep `third-party/sonnet` only as reference of the spylls hunspell fork
 - [ ] Document submodule initialization.
 - [ ] Document recursive cloning.
 - [ ] Verify:
