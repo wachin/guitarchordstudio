@@ -194,19 +194,6 @@ y soporte para archivos `.txt`
       no solo por cantidad aproximada de caracteres.
 - [ ] Agregar undo/redo.
 - [ ] Agregar busqueda y reemplazo.
-- [ ] Agregar impresion/exportacion a PDF respetando las paginas visuales.
 - [ ] Guardar preferencias del usuario: papel, margenes, fuente, zoom y ultimo
       directorio usado.
 
-### Instrucciones para futuras versiones
-
-- [ ] Si se cambia el layout, primero comprobar que
-      `PageLine.text == source_text[PageLine.start_idx:PageLine.end_idx]` para
-      todas las lineas visuales.
-- [ ] Si se cambia el wrap, conservar todos los espacios del texto fuente. Los
-      espacios son importantes para alinear acordes.
-- [ ] Si se cambia el comportamiento del cursor, probar escritura continua,
-      Enter, Backspace, Delete, flechas, Home, End, PageUp y PageDown.
-- [ ] Si se agrega soporte ChordPro, mantener dos capas separadas: texto fuente
-      editable y representacion interpretada. No reemplazar el texto escrito
-      por el usuario con una version renderizada.
