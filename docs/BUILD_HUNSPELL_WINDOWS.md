@@ -435,6 +435,17 @@ produzcan el mismo hash o el mismo resultado.
 -   `Release` produce una biblioteca estática `.lib`.
 -   `Release_dll` produce la biblioteca dinámica que puede cargarse
     mediante `ctypes`.
+-   **⚠️ Limitación importante: el proyecto MSVC de Hunspell NO incluye
+    soporte para `libiconv`.** El archivo `msvc/libhunspell.vcxproj` no
+    referencia iconv en los include paths ni en el linker. Esto significa
+    que la DLL compilada con MSVC **no puede convertir entre encodings**
+    — funcionará correctamente con diccionarios UTF-8 (como `es_ES` y
+    `en_US` que vienen en este proyecto), pero diccionarios que usen
+    ISO-8859-1/2/15 u otros encodings fallarán en runtime.
+-   Si necesitas iconv con MSVC, tendrías que compilar `libiconv`
+    separately y modificar manualmente el `.vcxproj` para agregar los
+    include paths y linkear contra `libiconv.lib` — esto no está
+    documentado aquí porque es significativamente más complejo.
 -   Si Visual Studio muestra que el proyecto apunta a v140/Windows SDK
     8.1, puede redestinarse al toolset y SDK modernos.
 -   Si aparece un error de archivos fuente o cabeceras faltantes y
@@ -447,23 +458,21 @@ git submodule update --init --recursive
 -   Para una aplicación Python/PyQt6, la DLL debe tener la misma
     arquitectura que Python. Si Python es de 64 bits, utilizar `x64`.
 
-### Comparación MinGW vs MSVC
+### ¿MinGW o MSVC? Cuál elegir
 
-  -----------------------------------------------------------------------------
-  Aspecto                       MinGW                   MSVC
-  ----------------------------- ----------------------- -----------------------
-  DLLs adicionales necesarias   `libiconv-2.dll`,       Solo
-                                `libgcc_s_seh-1.dll`,   `libhunspell-1.7.dll`
-                                `libstdc++-6.dll`       (VC++ runtime ya está
-                                                        en Windows)
+| Criterio | MinGW (MSYS2) | MSVC (Visual Studio) |
+|----------|---------------|----------------------|
+| **Soporte de iconv** | ✅ Incluido automáticamente | ❌ No incluido en el .vcxproj |
+| **Diccionarios UTF-8** (es_ES, en_US) | ✅ Funciona | ✅ Funciona |
+| **Diccionarios ISO-8859** | ✅ Funciona | ❌ Falla sin iconv |
+| **Falsos positivos en Defender** | ⚠️ Frecuentes (`Wacatac.B!ml`) | ✅ Raros (0/71 en la prueba) |
+| **DLLs adicionales necesarias** | 4 (hunspell + iconv + gcc + stdc++) | 1 (solo hunspell) |
+| **Herramientas requeridas** | MSYS2 + pacman | Visual Studio |
+| **Complejidad** | Media | Baja |
 
-  Falsos positivos en Defender  Frecuentes              Menos frecuentes, pero
-                                (`Wacatac.B!ml`)        posibles sin firma
-
-  Herramientas requeridas       MSYS2 + pacman          Visual Studio
-
-  Tamaño de la DLL              \~500 KB                \~300 KB
-  -----------------------------------------------------------------------------
+**Recomendación:** Si solo usas diccionarios UTF-8 (es_ES, en_US), **MSVC
+es más simple** — una sola DLL, menos falsos positivos. Si necesitas
+soporte para diccionarios con otros encodings, usa **MinGW**.
 
 ------------------------------------------------------------------------
 
