@@ -4,3 +4,12 @@
 [submodule "third-party/hunspell"]
 	path = third-party/hunspell
 	url = https://github.com/hunspell/hunspell
+[submodule "third-party/spylls"]
+	path = third-party/spylls
+	url = https://github.com/wachin/spylls.git
+[submodule "third-party/pythes"]
+	path = third-party/pythes
+	url = https://github.com/wachin/pythes.git
+[submodule "third-party/pyqt6-linguistic-tools"]
+	path = third-party/pyqt6-linguistic-tools
+	url = https://github.com/wachin/pyqt6-linguistic-tools.git
