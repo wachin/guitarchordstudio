@@ -265,6 +265,18 @@ Dictionary licenses vary. Tests and packaged releases must preserve attribution
 and must not assume that every file in the collection has identical
 redistribution terms.
 
+### Current corpus audit baseline — 2026-08-20
+
+The encoding-agnostic Spylls audit tool scanned all 88 LibreOffice `.aff`
+files currently available to GuitarChordStudio. It found 47 supported raw
+directive names, 9 with partial behavior, 8 metadata or non-spelling
+extensions, and one probable source typo (`SFT` inside a Mongolian `SFX`
+block). No dictionary was rewritten. Historical aliases `COMPOUNDFIRST` and
+`ONLYROOT`, present alongside their modern Hungarian equivalents, now have
+focused regression tests. Based on actual corpus frequency, `FULLSTRIP` is the
+next engine-level behavior to characterize; the more frequent `WORDCHARS`
+belongs to the future shared tokenizer.
+
 ## Exit criteria for the preliminary stage
 
 - [ ] The fast and curated suites pass on Linux, Windows and macOS.
