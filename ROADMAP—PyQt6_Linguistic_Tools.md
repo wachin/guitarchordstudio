@@ -17,6 +17,31 @@ Create a reusable, cross-platform linguistic toolkit for **Python + PyQt6** appl
 
 This repository must be designed as a reusable component that can be added as a Git submodule to multiple PyQt6 applications.
 
+There will be **one repository and one public API** for every supported
+platform:
+
+```text
+pyqt6-linguistic-tools
+```
+
+Do not create separate `pyqt6-linguistic-tools-Linux` and
+`pyqt6-linguistic-tools-win` repositories. Platform differences belong in
+replaceable providers and backends, not in copies of the Qt integration or
+application-facing API.
+
+The first portable implementation will use:
+
+- **Spylls** for Hunspell-compatible spelling on Linux, Windows and macOS.
+- **PyThes** for MyThes-compatible thesaurus lookup on Linux, Windows and
+  macOS.
+- System dictionary discovery on Linux, while still reading those dictionaries
+  through the same portable backends.
+- Managed/user dictionaries on Windows and macOS.
+
+Native Hunspell and MyThes engines may be added later as optional performance
+backends. They must never be required by the public API or by ChordFlow,
+ChordPages, or another host application.
+
 Current intended architecture:
 
 ```text
@@ -25,7 +50,7 @@ GuitarChordStudio
         └── libs/
             └── pyqt6-linguistic-tools
                      │
-                     ├── libss/
+                     ├── libs/
                      │      ├── spylls
                      │      └── pythes
                      │
@@ -99,7 +124,158 @@ The developer has intentionally placed as sub-module the **hunspell** source cod
 libs/pyqt6-linguistic-tools/third-party/hunspell
 ```
 
-In case it becomes necessary to reinforce the `Spylls` source code, which is a project that has ported Hunspell to Python
+Use Hunspell as the behavioral and dictionary-format reference when reinforcing
+Spylls, which is a Python port of Hunspell concepts. Native Hunspell remains a
+test oracle and a possible optional backend; it is not a runtime requirement for
+the first portable release.
+
+---
+
+# MANDATORY PRELIMINARY STAGE — Stabilize Spylls and PyThes
+
+This stage comes before development of the toolkit itself because every higher
+layer depends on these two portable engines. The currently selected upstream
+projects have shown little or no recent development activity for approximately
+two years. Therefore, the project must not assume that upstream will implement
+missing behavior or fix compatibility problems on our schedule.
+
+Only the minimum repository and pytest scaffolding from Phase 0 may be created
+first when needed to execute this gate. Feature development above the engine
+layer remains blocked until the exit criteria below are satisfied.
+
+The copies under `libs/spylls` and `libs/pythes` are maintained forks. Their
+improvement is part of this project, not an incidental task.
+
+Before changing either fork:
+
+- [ ] Record the exact upstream repository, commit and license.
+- [ ] Create a branch/release policy for the maintained fork.
+- [ ] Commit engine fixes and tests in each fork repository, then update the
+  pinned submodule commit in `pyqt6-linguistic-tools`.
+- [ ] Define how future upstream changes will be reviewed and merged without
+  losing local regression fixes.
+- [ ] Run the existing upstream tests unchanged and record the baseline.
+- [ ] Add a changelog containing every deviation from upstream.
+- [ ] Add a regression test before fixing each discovered defect.
+- [ ] Keep fixes focused so they can be proposed upstream when appropriate.
+- [ ] Never hide an incompatibility by silently changing a source dictionary.
+
+## Spylls stabilization gate
+
+Spylls is the required initial spelling backend on all three platforms. It is a
+port of Hunspell behavior, but it is not assumed to be fully equivalent to
+native Hunspell.
+
+- [ ] Review the complete Spylls fork.
+- [ ] Inventory parsed, implemented, partially implemented and ignored Hunspell
+  directives.
+- [ ] Understand `.aff` parsing, `.dic` parsing, `lookup()` and `suggest()`.
+- [ ] Verify Hunspell `SET` handling and Python codec-name normalization.
+- [ ] Test UTF-8, ISO-8859-1, ISO-8859-2, ISO-8859-7, ISO-8859-13,
+  ISO-8859-15 and every other encoding found in the corpus.
+- [ ] Test accented Spanish words, `ñ`, combining Unicode characters and
+  scripts outside Western European alphabets.
+- [ ] Compare representative results with native Hunspell using the same
+  `.aff/.dic` files.
+- [ ] Cover compound rules, affix flags, forbidden words, capitalization,
+  replacement tables, input conversion and output conversion.
+- [ ] Audit incomplete behaviors documented by Spylls, including rare Hunspell
+  directives and language-specific branches.
+- [ ] Benchmark dictionary loading, `lookup()` and `suggest()`.
+- [ ] Measure peak memory for small, medium and very large dictionaries.
+- [ ] Never add arbitrary limits such as rejecting suggestions above 12
+  characters.
+- [ ] Load dictionaries lazily and define a bounded cache policy.
+- [ ] Add tests before changing Spylls behavior.
+- [ ] Document every deviation from upstream Spylls.
+- [ ] Do not declare this gate complete merely because a dictionary loads; its
+  representative morphology and suggestions must also pass.
+
+## PyThes stabilization gate
+
+PyThes is the required initial thesaurus backend on all three platforms. Its
+handling of encodings and `.idx` byte offsets must be validated before building
+the thesaurus UI.
+
+- [ ] Review the complete PyThes fork.
+- [ ] Understand `.dat` parsing, `.idx` parsing and lookup behavior.
+- [ ] Verify that `.idx` offsets are treated as byte offsets and remain correct
+  for UTF-8 and legacy encodings.
+- [ ] Test UTF-8, ISO-8859-* and every other encoding found in the corpus.
+- [ ] Handle BOMs, CRLF/LF differences and encoding aliases safely.
+- [ ] Detect missing, truncated, malformed and stale indexes.
+- [ ] Validate index entry counts and verify that indexed words match `.dat`
+  entries.
+- [ ] Regenerate an index from `.dat` when explicitly requested.
+- [ ] Allow a safe fallback without a usable `.idx`.
+- [ ] Preserve meanings, parts of speech, alternate senses and phrases.
+- [ ] Add Unicode normalization and bounded caching.
+- [ ] Modernize paths, typing, exceptions and structured result types.
+- [ ] Add tests before changing PyThes behavior.
+- [ ] Document every deviation from upstream PyThes.
+
+## LibreOffice dictionary compatibility corpus
+
+Use the collection currently available in GuitarChordStudio at:
+
+```text
+third-party/libreoffice-dictionaries-collection/dicts/
+```
+
+The standalone library must not hard-code that GuitarChordStudio-specific path.
+Tests must accept the corpus root through a pytest option or an environment
+variable such as:
+
+```text
+LIBREOFFICE_DICTIONARIES_PATH
+```
+
+CI for the standalone repository may check out the dictionary collection in a
+known test-data location.
+
+Create these test levels under `tests/`:
+
+### Fast suite — every commit
+
+- [ ] Keep small, license-compatible fixtures covering each important encoding
+  and Hunspell/MyThes feature.
+- [ ] Run parser, lookup, suggestion and byte-offset regression tests.
+- [ ] Keep execution time suitable for local development and pull requests.
+- [ ] Convert every corpus failure into the smallest useful regression fixture,
+  while preserving its required license and attribution.
+
+### Curated integration suite — every pull request
+
+- [ ] Load a representative matrix of real LibreOffice dictionaries.
+- [ ] Include small, medium and large dictionaries.
+- [ ] Include regional variants and spelling-only/thesaurus-only languages.
+- [ ] Check representative correct words, incorrect words and suggestions.
+- [ ] Check representative thesaurus entries and index offsets.
+
+### Full corpus suite — scheduled/manual
+
+- [ ] Discover every `.aff/.dic` and `.dat/.idx` pair in the collection.
+- [ ] Validate every dictionary without converting its original encoding.
+- [ ] Record load time, peak memory, warnings, failures and backend version.
+- [ ] Produce a machine-readable compatibility report by locale.
+- [ ] Compare results against the previous baseline to detect regressions.
+- [ ] Run outside the fast unit-test job because the full collection is large.
+
+Dictionary licenses vary. Tests and packaged releases must preserve attribution
+and must not assume that every file in the collection has identical
+redistribution terms.
+
+## Exit criteria for the preliminary stage
+
+- [ ] The fast and curated suites pass on Linux, Windows and macOS.
+- [ ] Known incompatibilities have explicit expected-failure tests and tracked
+  issues; they are not silent.
+- [ ] Spylls and PyThes expose stable primitives needed by their toolkit
+  backends.
+- [ ] Performance budgets are documented for dictionary loading, memory,
+  lookup, suggestion and thesaurus lookup.
+- [ ] The compatibility report identifies which LibreOffice dictionaries are
+  ready, limited or unsupported.
 
 ---
 
@@ -199,57 +375,39 @@ Do not port implementation line by line.
 
 ---
 
-# Phase 3 — Spylls audit
+# Phase 3 — Integrate the stabilized Spylls fork
 
-Spylls will be the initial primary spelling backend.
+The audit, improvement and compatibility work happens in the mandatory
+preliminary stage. This phase exposes the stabilized fork through the toolkit
+backend interface.
 
-- [ ] Review the complete Spylls fork.
-- [ ] Understand `.aff` parsing.
-- [ ] Understand `.dic` parsing.
-- [ ] Understand `lookup()`.
-- [ ] Understand `suggest()`.
-- [ ] Understand encoding handling.
-- [ ] Verify Hunspell `SET` handling.
-- [ ] Test UTF-8 dictionaries.
-- [ ] Test ISO-8859-* dictionaries.
-- [ ] Test other encodings found in LibreOffice dictionaries.
-- [ ] Test accented Spanish words.
-- [ ] Test `ñ`.
-- [ ] Test combining Unicode characters.
-- [ ] Test languages outside Western European alphabets.
-- [ ] Benchmark `lookup()`.
-- [ ] Benchmark `suggest()`.
-- [ ] Investigate long-word suggestion performance.
-- [ ] Never add arbitrary limits such as rejecting suggestions above 12 characters.
-- [ ] Add tests before changing Spylls behavior.
-- [ ] Keep modifications to the fork as small and maintainable as possible.
-- [ ] Document every deviation from upstream Spylls.
+- [ ] Implement `SpyllsBackend` without exposing Spylls types publicly.
+- [ ] Translate fork exceptions into structured toolkit errors.
+- [ ] Expose backend version, capabilities and active dictionary metadata.
+- [ ] Keep personal dictionaries and ignore lists outside the immutable source
+  dictionary.
+- [ ] Verify that applications never need to import Spylls directly.
+- [ ] Reuse the preliminary compatibility tests as backend contract tests.
+- [ ] Make Spylls the default spelling backend on Linux, Windows and macOS for
+  the first portable release.
 
 ---
 
-# Phase 4 — PyThes audit and modernization
+# Phase 4 — Integrate the stabilized PyThes fork
 
-PyThes will provide the initial MyThes backend.
+The audit, improvement and compatibility work happens in the mandatory
+preliminary stage. This phase exposes the stabilized fork through the toolkit
+backend interface.
 
-- [ ] Review the complete PyThes fork.
-- [ ] Understand `.dat` parsing.
-- [ ] Understand `.idx` parsing.
-- [ ] Understand encoding detection.
-- [ ] Understand byte-offset lookup.
-- [ ] Modernize paths using `pathlib`.
-- [ ] Add modern type hints.
-- [ ] Improve exceptions.
-- [ ] Add structured result types.
-- [ ] Test UTF-8 thesauri.
-- [ ] Test non-UTF-8 thesauri.
-- [ ] Validate `.idx → .dat` byte offsets.
-- [ ] Detect corrupted indexes.
-- [ ] Add ability to regenerate an index from `.dat`.
-- [ ] Allow fallback operation without a usable `.idx`.
-- [ ] Add Unicode normalization.
-- [ ] Add caching.
-- [ ] Add extensive tests.
-- [ ] Document every deviation from upstream PyThes.
+- [ ] Implement `PyThesBackend` without exposing PyThes types publicly.
+- [ ] Translate fork exceptions into structured toolkit errors.
+- [ ] Return stable structured results for meanings, parts of speech and
+  synonyms.
+- [ ] Expose backend version, capabilities and active thesaurus metadata.
+- [ ] Verify that applications never need to import PyThes directly.
+- [ ] Reuse the preliminary compatibility tests as backend contract tests.
+- [ ] Make PyThes the default thesaurus backend on Linux, Windows and macOS for
+  the first portable release.
 
 ---
 
@@ -344,6 +502,26 @@ SpellCheckerBackend
 
 Only `SpyllsBackend` is required initially.
 
+Create a backend resolver without platform conditionals in host applications:
+
+```text
+Configured backend
+        ↓
+Available and compatible?
+        ├── yes → use it
+        └── no  → portable SpyllsBackend fallback
+```
+
+- [ ] Default to `SpyllsBackend` on Linux, Windows and macOS in the first
+  portable release.
+- [ ] Allow explicit backend selection for diagnostics and conformance tests.
+- [ ] Never silently change a document language when falling back between
+  engines.
+- [ ] Report the selected backend and fallback reason through structured
+  diagnostics.
+- [ ] Ensure adding a native backend does not change the public service or Qt
+  APIs.
+
 ---
 
 # Phase 8 — Thesaurus backend interface
@@ -364,6 +542,13 @@ ThesaurusBackend
 - [ ] Implement `PyThesBackend`.
 
 Potential future implementations must remain possible without changing the public API.
+
+- [ ] Default to `PyThesBackend` on Linux, Windows and macOS in the first
+  portable release.
+- [ ] Keep a future `NativeMyThesBackend` optional and behind the same
+  `ThesaurusBackend` interface.
+- [ ] Do not require `libmythes`, a DLL or a dylib for the first portable
+  release.
 
 ---
 
@@ -413,6 +598,11 @@ DictionaryProvider
         └── future providers
 ```
 
+A provider returning Linux system files does not imply use of a native engine.
+For example, `LinuxSystemDictionaryProvider` may find
+`/usr/share/hunspell/es_EC.aff`, and `SpyllsBackend` may read it. Providers and
+backends must remain independently selectable.
+
 ---
 
 # Phase 11 — Linux provider
@@ -430,6 +620,9 @@ Search locations such as:
 
 - [ ] Detect system Hunspell dictionaries.
 - [ ] Detect system MyThes thesauri.
+- [ ] Read discovered system dictionaries through Spylls/PyThes by default.
+- [ ] Do not require the Hunspell or MyThes shared libraries merely to use
+  their installed dictionary files.
 - [ ] Never install Linux packages automatically.
 - [ ] Never request root privileges.
 - [ ] Never modify system dictionary files.
@@ -448,6 +641,7 @@ Search locations such as:
 - [ ] Prepare integration with `libreoffice-dictionaries-collection` through the `/dictionaries.json` file which contains the list to download and decompress all the dictionaries that were packaged from `/third-party/libreoffice-dictionaries-collection`
 - [ ] Do not require system-wide Hunspell.
 - [ ] Do not require DLL-based Hunspell.
+- [ ] Use Spylls and PyThes by default.
 
 ---
 
@@ -459,6 +653,32 @@ Search locations such as:
 - [ ] Support manual import.
 - [ ] Prepare integration with `libreoffice-dictionaries-collection` through the `/dictionaries.json` file which contains the list to download and decompress all the dictionaries that were packaged from `/third-party/libreoffice-dictionaries-collection`
 - [ ] Avoid native binary dependencies whenever possible.
+- [ ] Use Spylls and PyThes by default.
+
+---
+
+# DEFERRED TRACK — Optional native engines
+
+Do not begin this track until the portable Spylls/PyThes path and its public
+interfaces are stable. Native engines are optional optimizations, not separate
+platform editions of the toolkit.
+
+- [ ] Implement `NativeHunspellBackend` only behind `SpellCheckerBackend`.
+- [ ] Prefer a system-provided native library on Linux; never install one or
+  request root privileges.
+- [ ] Implement `NativeMyThesBackend` only if benchmarks demonstrate a useful
+  benefit over PyThes.
+- [ ] Keep native dependencies optional at installation and runtime.
+- [ ] Fall back safely to Spylls/PyThes when a native engine cannot load.
+- [ ] Run the same backend contract and dictionary conformance tests against
+  portable and native implementations.
+- [ ] Document behavioral differences instead of pretending both engines are
+  byte-for-byte identical.
+- [ ] Do not create Linux- or Windows-specific copies of the core, Qt layer,
+  registry, settings, tests or documentation.
+- [ ] If native packaging eventually needs a separate distribution, publish a
+  small backend plugin such as `pyqt6-linguistic-tools-native-hunspell`, not a
+  fork of the complete toolkit.
 
 ---
 
@@ -776,6 +996,10 @@ Create reusable UI for dictionaries.
 
 # Phase 31 — Tests
 
+The engine-level fast, curated and full-corpus suites are defined in the
+mandatory preliminary stage. This phase adds toolkit service and Qt integration
+coverage on top of those suites.
+
 ## Unit tests
 
 - [ ] Tokenizer.
@@ -788,6 +1012,8 @@ Create reusable UI for dictionaries.
 - [ ] LinguisticService.
 - [ ] Caching.
 - [ ] Encoding handling.
+- [ ] Backend resolver selection and fallback.
+- [ ] Identical public contracts for portable and optional native backends.
 
 ## Qt tests
 
@@ -834,6 +1060,9 @@ Then extend to:
 - [ ] System Hunspell dictionaries.
 - [ ] System MyThes dictionaries.
 - [ ] User dictionaries.
+- [ ] Spylls/PyThes reading system-installed dictionary files.
+- [ ] Portable fallback when native shared libraries are absent.
+- [ ] Optional native backend conformance when shared libraries are present.
 
 ## Windows
 
@@ -842,6 +1071,7 @@ Then extend to:
 - [ ] Virtual environment.
 - [ ] App-managed dictionaries.
 - [ ] Packaged executable.
+- [ ] Spylls/PyThes operation without Hunspell/MyThes DLLs.
 
 ## macOS
 
@@ -850,6 +1080,7 @@ Then extend to:
 - [ ] Virtual environment.
 - [ ] App-managed dictionaries.
 - [ ] Packaged application.
+- [ ] Spylls/PyThes operation without bundled native linguistic libraries.
 
 ---
 
@@ -865,6 +1096,10 @@ Then extend to:
 - [ ] Test PyThes loading.
 - [ ] Test Unicode.
 - [ ] Test representative legacy encodings.
+- [ ] Run the fast engine suite on every job.
+- [ ] Run the curated LibreOffice corpus suite on pull requests.
+- [ ] Run the full corpus suite on a schedule and by manual dispatch.
+- [ ] Upload the machine-readable dictionary compatibility report.
 - [ ] Run Qt tests headlessly where possible.
 - [ ] Prevent stable releases when critical tests fail.
 
@@ -932,6 +1167,9 @@ decorator = LinguisticTextEditDecorator(
 - [ ] Recursive cloning.
 - [ ] Spylls backend.
 - [ ] PyThes backend.
+- [ ] Portable default backend policy.
+- [ ] Optional native backend and fallback policy.
+- [ ] LibreOffice corpus test configuration.
 - [ ] Dictionary formats.
 - [ ] Encoding behavior.
 - [ ] Linux dictionary discovery.
@@ -952,6 +1190,9 @@ Only integrate after the standalone library is functional.
 
 - [ ] Initialize the nested submodules recursively.
 - [ ] Import `pyqt6-linguistic-tools`.
+- [ ] Use the same `LinguisticService` and Qt integration in ChordFlow and
+  ChordPages.
+- [ ] Keep backend and platform selection out of ChordFlow and ChordPages.
 - [ ] Keep GuitarChordStudio-specific code outside the library.
 - [ ] Remove duplicated linguistic logic from GuitarChordStudio where appropriate.
 - [ ] Integrate spell checking.
@@ -994,6 +1235,10 @@ Requirements:
 - [ ] Spell checking works on Linux.
 - [ ] Spell checking works on Windows.
 - [ ] Spell checking works on macOS.
+- [ ] Spylls is the tested portable spelling backend on all three platforms.
+- [ ] PyThes is the tested portable thesaurus backend on all three platforms.
+- [ ] Linux automatically discovers and uses supported system dictionaries.
+- [ ] Windows and macOS do not require native Hunspell/MyThes libraries.
 - [ ] Suggestions work.
 - [ ] MyThes thesaurus works.
 - [ ] Personal dictionaries work.
@@ -1019,7 +1264,10 @@ Requirements:
 - [ ] Keep dictionary discovery separate from dictionary parsing.
 - [ ] Keep platform differences inside providers.
 - [ ] Do not place Windows/Linux/macOS conditionals throughout editor code.
+- [ ] Maintain one repository and one public API for every platform.
+- [ ] Use Spylls and PyThes as the initial portable backends on every platform.
 - [ ] Do not require native Hunspell DLL/SO/dylib for the initial architecture.
+- [ ] Treat native Hunspell/MyThes engines as optional replaceable backends.
 - [ ] Do not require Sonnet.
 - [ ] Do not require KDE Frameworks.
 - [ ] Do not convert all dictionaries to UTF-8 unnecessarily.
@@ -1030,6 +1278,7 @@ Requirements:
 - [ ] Keep the public API small.
 - [ ] Preserve Unicode internally.
 - [ ] Fail gracefully when a dictionary is unavailable or malformed.
+- [ ] Do not hard-code a GuitarChordStudio path in the standalone library.
 
 ---
 
@@ -1053,25 +1302,23 @@ pyqt6-linguistic-tools
                              ▼
                     LinguisticService
                              │
-                ┌────────────┴─────────────┐
-                │                          │
-                ▼                          ▼
-        SpellCheckerBackend        ThesaurusBackend
-                │                          │
-                ▼                          ▼
-          SpyllsBackend              PyThesBackend
-                │                          │
-                ▼                          ▼
-            .aff/.dic                  .dat/.idx
-                │                          │
-                └────────────┬─────────────┘
-                             ▼
-                    DictionaryRegistry
-                             │
-              ┌──────────────┼──────────────┐
-              ▼              ▼              ▼
-         Linux system    Managed files   User files
-          dictionaries   Windows/macOS   dictionaries
+            ┌──────────────┼──────────────┐
+            │              │              │
+            ▼              ▼              ▼
+   BackendResolver  DictionaryRegistry  Settings/PersonalDictionary
+            │              │
+      ┌─────┴─────┐        ┌───────┼───────┐
+      ▼           ▼        ▼       ▼       ▼
+ SpellCheckerBackend  ThesaurusBackend  Linux  Managed  User
+      │           │        system   files   files
+ ┌───┴───┐   ┌───┴────┐
+ ▼       ▼   ▼        ▼
+Spylls  Native* PyThes  Native*
+ │               │
+ ▼               ▼
+.aff/.dic         .dat/.idx
+
+* Optional and deferred; portable Spylls/PyThes remain the fallback.
 ```
 
 `third-party/sonnet` remains outside this runtime architecture and exists only to help the Agent study proven architectural ideas from a mature Qt spell-checking framework.
