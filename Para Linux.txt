@@ -1,0 +1,16 @@
+# Linux documentation
+
+Explicitly document:
+
+> GuitarChordStudio does not install system Hunspell dictionaries or MyThes packages on Linux. Language resources must be installed through the Linux distribution's package manager.
+
+Include examples for Debian/Ubuntu only when the package names are known and verified.
+
+For example:
+
+```bash
+sudo apt install hunspell hunspell-en-us hunspell-es mythes-es
+```
+
+Make clear that the command is executed manually by the user, not by GuitarChordStudio.
+
