@@ -50,7 +50,7 @@ config12.json
 third-party/LibreOfficePortable_*/
 
 # VNote
-vnote/
+third-party/vnote/
 Dictionaries/
 sonnet/
 third-party/kate/
