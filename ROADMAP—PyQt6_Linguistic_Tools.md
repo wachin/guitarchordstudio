@@ -637,17 +637,17 @@ class DictionaryInfo:
     source: str
 ```
 
-- [ ] Discover spelling dictionaries.
-- [ ] Discover thesauri.
-- [ ] Pair files correctly by locale.
-- [ ] Support regional variants.
-- [ ] Detect spelling-only languages.
-- [ ] Detect thesaurus-only languages.
-- [ ] Detect languages providing both.
-- [ ] Handle duplicate dictionaries.
-- [ ] Define source priority.
-- [ ] Cache discovery results.
-- [ ] Provide human-readable language names.
+- [x] Discover spelling dictionaries.
+- [x] Discover thesauri.
+- [x] Pair files correctly by locale.
+- [x] Support regional variants.
+- [x] Detect spelling-only languages.
+- [x] Detect thesaurus-only languages.
+- [x] Detect languages providing both.
+- [x] Handle duplicate dictionaries.
+- [x] Define source priority.
+- [x] Cache discovery results.
+- [x] Provide human-readable language names.
 
 ---
 
@@ -670,6 +670,10 @@ A provider returning Linux system files does not imply use of a native engine.
 For example, `LinuxSystemDictionaryProvider` may find
 `/usr/share/hunspell/es_EC.aff`, and `SpyllsBackend` may read it. Providers and
 backends must remain independently selectable.
+
+The engine-independent `DictionaryProvider` contract and reusable
+`DirectoryDictionaryProvider` are implemented. Platform-specific locations,
+managed downloads, and user data policies remain in the following phases.
 
 ---
 
