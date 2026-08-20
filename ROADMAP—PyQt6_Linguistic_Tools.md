@@ -209,7 +209,7 @@ the thesaurus UI.
 - [x] Regenerate an index from `.dat` when explicitly requested.
 - [x] Allow a safe fallback without a usable `.idx`.
 - [x] Preserve meanings, parts of speech, alternate senses and phrases.
-- [ ] Add Unicode normalization and bounded caching.
+- [x] Add Unicode normalization and bounded caching.
 - [ ] Modernize paths, typing, exceptions and structured result types.
 - [x] Add tests before changing PyThes behavior.
 - [x] Document every deviation from upstream PyThes.
