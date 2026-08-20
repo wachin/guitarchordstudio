@@ -657,31 +657,6 @@ Search locations such as:
 
 ---
 
-# DEFERRED TRACK — Optional native engines
-
-Do not begin this track until the portable Spylls/PyThes path and its public
-interfaces are stable. Native engines are optional optimizations, not separate
-platform editions of the toolkit.
-
-- [ ] Implement `NativeHunspellBackend` only behind `SpellCheckerBackend`.
-- [ ] Prefer a system-provided native library on Linux; never install one or
-  request root privileges.
-- [ ] Implement `NativeMyThesBackend` only if benchmarks demonstrate a useful
-  benefit over PyThes.
-- [ ] Keep native dependencies optional at installation and runtime.
-- [ ] Fall back safely to Spylls/PyThes when a native engine cannot load.
-- [ ] Run the same backend contract and dictionary conformance tests against
-  portable and native implementations.
-- [ ] Document behavioral differences instead of pretending both engines are
-  byte-for-byte identical.
-- [ ] Do not create Linux- or Windows-specific copies of the core, Qt layer,
-  registry, settings, tests or documentation.
-- [ ] If native packaging eventually needs a separate distribution, publish a
-  small backend plugin such as `pyqt6-linguistic-tools-native-hunspell`, not a
-  fork of the complete toolkit.
-
----
-
 # Phase 14 — PersonalDictionary
 
 Create a backend-independent personal dictionary.
@@ -720,6 +695,24 @@ Do not use limited patterns such as:
 
 Create Unicode-aware word tokenization.
 
+Do not rely solely on `\b\w+\b`. The tokenizer must correctly preserve tokens
+such as:
+
+```text
+Señor
+creación
+Straße
+français
+Москва
+d’Artagnan
+O'Connor
+```
+
+Evaluate Unicode properties such as `\p{L}` and `\p{M}` if the third-party
+`regex` package provides a material correctness benefit. Avoid adding that
+dependency if equivalent behavior can be implemented reliably with Python's
+Unicode facilities.
+
 - [ ] Support Spanish accents.
 - [ ] Support `ñ`.
 - [ ] Support apostrophes.
@@ -732,6 +725,12 @@ Create Unicode-aware word tokenization.
 - [ ] Exclude numbers when appropriate.
 - [ ] Exclude configurable technical tokens.
 - [ ] Provide token positions in the original text.
+- [ ] Preserve offsets exactly even when a token contains combining marks or a
+  typographic apostrophe.
+- [ ] Provide a host-supplied token-filter interface so applications can exclude
+  domain-specific tokens without coupling the core library to those domains.
+- [ ] Test `123`, `2026`, `x3`, URLs, `www` addresses and email addresses as
+  configurable non-word exclusions.
 
 ---
 
@@ -763,6 +762,10 @@ service.synonyms("rápido")
 - [ ] Add graceful error handling.
 - [ ] Add caching.
 - [ ] Keep the service independent of widgets.
+- [ ] Keep spelling and thesaurus capabilities independently enableable.
+- [ ] Lazy-load thesaurus data only when synonyms are requested.
+- [ ] Ensure spell checking continues to work when no thesaurus exists for the
+  active locale.
 
 ---
 
@@ -773,6 +776,8 @@ service.synonyms("rápido")
 - [ ] Cache thesaurus results by `(locale, word)`.
 - [ ] Invalidate caches when dictionaries change.
 - [ ] Invalidate relevant entries when personal dictionary changes.
+- [ ] Invalidate relevant entries when a personal word is removed.
+- [ ] Invalidate language-dependent caches whenever the language changes.
 - [ ] Use bounded caches.
 - [ ] Benchmark memory consumption.
 
@@ -821,6 +826,10 @@ integration = LinguisticTextEditDecorator(
 - [ ] Preserve host application's existing context menu.
 - [ ] Preserve host application's signals and behavior.
 - [ ] Allow host applications to add custom actions.
+- [ ] Allow host applications to register domain-specific token filters.
+- [ ] Expose explicit enable/disable methods without requiring editor
+  subclassing, for example `integration.set_spellcheck_enabled(False)`.
+- [ ] Allow thesaurus integration to be disabled independently.
 
 ---
 
@@ -862,6 +871,10 @@ SpellCheckHighlighter
 - [ ] Rehighlight affected blocks only.
 - [ ] Allow configurable visual style.
 - [ ] Allow disabling highlighting separately from linguistic services.
+- [ ] Keep the highlighter's responsibility narrow: tokenize, apply configured
+  filters, query cached spelling status and underline misspellings.
+- [ ] Never download dictionaries, inspect package managers, rescan the whole
+  filesystem or rebuild an engine from the highlighter.
 
 ---
 
@@ -911,6 +924,13 @@ Language >
 - [ ] Support synonyms submenu.
 - [ ] Support language submenu.
 - [ ] Allow applications to disable individual actions.
+- [ ] Show spelling suggestions only for misspelled words.
+- [ ] Allow synonyms and language selection for correctly spelled words without
+  manufacturing a spelling error.
+- [ ] Keep every library-owned action string translatable, using English source
+  strings.
+- [ ] Bound the number of inline suggestions and synonyms so context menus do
+  not become enormous; provide a `More synonyms...` dialog when appropriate.
 
 ---
 
@@ -930,6 +950,10 @@ Create a reusable `ThesaurusDialog`.
 - [ ] Add Forward.
 - [ ] Handle no-result cases.
 - [ ] Keep UI translatable.
+- [ ] Replace exactly the word under the cursor when a synonym is selected.
+- [ ] Preserve simple capitalization where safe (`word`, `Word`, `WORD`).
+- [ ] Do not attempt unsupported morphological transformations that could
+  produce an incorrect replacement.
 
 ---
 
@@ -943,6 +967,11 @@ Create a reusable `ThesaurusDialog`.
 - [ ] Remember default language.
 - [ ] Allow per-document language.
 - [ ] Store settings using `QSettings` in the Qt layer.
+- [ ] On language changes, unload the previous portable dictionary when it is
+  no longer cached, load the relevant personal dictionary, invalidate spelling
+  and suggestion caches, and update thesaurus availability.
+- [ ] Test repeated sequences such as
+  `es_ES → de_DE → ru_RU → fr_FR → es_ES`.
 
 ---
 
@@ -1013,7 +1042,20 @@ coverage on top of those suites.
 - [ ] Caching.
 - [ ] Encoding handling.
 - [ ] Backend resolver selection and fallback.
-- [ ] Identical public contracts for portable and optional native backends.
+- [ ] Portable backend contracts that do not expose concrete Spylls/PyThes
+  implementation types.
+- [ ] Unicode tokenizer cases: `Señor`, `creación`, `Straße`, `français`,
+  `Москва`, `d’Artagnan` and `O'Connor`.
+- [ ] Language switching, cache invalidation and personal-dictionary reload.
+- [ ] Spell-check-only languages, thesaurus-only languages and missing optional
+  resources.
+- [ ] Explicit skips with a reason when an optional real dictionary is absent;
+  tests must not pretend that a resource exists.
+- [ ] PyThes lookup for existing/missing Unicode words, multiple meanings and
+  duplicate synonyms.
+- [ ] Verify that the Qt/service layer exposes backend suggestions unchanged;
+  do not hard-code results that are not guaranteed by the selected dictionary
+  version.
 
 ## Qt tests
 
@@ -1024,6 +1066,9 @@ coverage on top of those suites.
 - [ ] Thesaurus dialog.
 - [ ] Language changes.
 - [ ] Cleanup/decorator removal.
+- [ ] Enable/disable spelling and thesaurus independently.
+- [ ] Exact replacement under the cursor and safe capitalization preservation.
+- [ ] Bounded suggestion/synonym menus and translatable actions.
 
 ---
 
@@ -1048,6 +1093,20 @@ Then extend to:
 - [ ] Turkish.
 - [ ] Other available LibreOffice languages.
 
+Representative acceptance words should include, when the corresponding real
+dictionary is available:
+
+```text
+Spanish: Canta, Toda, maravillas, creación, Señor
+German:  Haus, Straße, schön, Deutschland
+Russian: Москва, привет, Россия
+French:  français, création, école
+```
+
+Use clearly invented misspellings alongside valid words. Expected results must
+come from the pinned real dictionary or its recorded compatibility baseline,
+not from a second hard-coded word list in the application.
+
 ---
 
 # Phase 33 — Platform test matrix
@@ -1062,7 +1121,6 @@ Then extend to:
 - [ ] User dictionaries.
 - [ ] Spylls/PyThes reading system-installed dictionary files.
 - [ ] Portable fallback when native shared libraries are absent.
-- [ ] Optional native backend conformance when shared libraries are present.
 
 ## Windows
 
@@ -1162,13 +1220,13 @@ decorator = LinguisticTextEditDecorator(
 # Phase 37 — Documentation
 
 - [ ] Architecture overview.
+- [ ] Create `docs/linguistics-architecture.md`.
 - [ ] Installation.
 - [ ] Submodule installation.
 - [ ] Recursive cloning.
 - [ ] Spylls backend.
 - [ ] PyThes backend.
 - [ ] Portable default backend policy.
-- [ ] Optional native backend and fallback policy.
 - [ ] LibreOffice corpus test configuration.
 - [ ] Dictionary formats.
 - [ ] Encoding behavior.
@@ -1202,6 +1260,33 @@ Only integrate after the standalone library is functional.
 - [ ] Integrate synonyms.
 - [ ] Integrate thesaurus dialog.
 - [ ] Integrate language settings.
+- [ ] Implement a GuitarChordStudio-owned `is_chord_token(token)` filter using
+  the existing chord parser/grammar rather than duplicating it with a new
+  regular expression inside the linguistic library.
+- [ ] Pass that filter through the library's generic host token-filter API.
+- [ ] Confirm that chord symbols such as `A`, `Am`, `A#m`, `Bb`, `C#m7`,
+  `Fmaj7`, `Gsus4`, `D/F#` and `Cadd9` are never sent to Spylls.
+- [ ] Add a GuitarChordStudio integration acceptance test using a realistic
+  lyrics-and-chords document:
+
+  ```text
+  INTRO X3
+  A#m   G#   F#
+
+  VERSE
+  C#       G#       A#m      G#    F#
+  Mi Cristo, mi Rey, nadie es como tú
+  C#       F#       G#
+  Toda mi vida, quiero exaltar,
+  A#m      B        G#
+  las maravillas de tu amor
+  ```
+
+- [ ] Verify that chords/non-word markers are ignored while ordinary Spanish
+  words are checked according to the active dictionary.
+- [ ] Verify that a misspelling such as `marabillas` exposes the suggestions
+  returned by the active pinned dictionary, including `maravillas` when that
+  dictionary actually provides it.
 - [ ] Test Linux.
 - [ ] Test Windows.
 - [ ] Test macOS.
@@ -1322,3 +1407,53 @@ Spylls  Native* PyThes  Native*
 ```
 
 `third-party/sonnet` remains outside this runtime architecture and exists only to help the Agent study proven architectural ideas from a mature Qt spell-checking framework.
+
+---
+
+# Phase 41 — OPTIONAL POST-1.0 native Linux backends (last)
+
+This is deliberately the final and optional phase. Do not spend implementation
+or investigation effort here until the complete Spylls/PyThes path works to the
+quality required by version `1.0.0` in ChordFlow, ChordPages and the independent
+reuse example.
+
+Discovering Linux system dictionary **files** earlier in the roadmap does not
+activate this phase: Spylls and PyThes can read those files without loading
+`libhunspell.so` or `libmythes.so`.
+
+## Go/no-go decision before implementation
+
+- [ ] Confirm that every portable `1.0.0` requirement and test passes first.
+- [ ] Measure an actual performance, memory, compatibility or distribution
+  problem that a native backend could solve.
+- [ ] Estimate implementation, CI, packaging, security, licensing and ongoing
+  maintenance cost.
+- [ ] Decide explicitly whether the measured benefit justifies that cost.
+- [ ] If no material benefit exists, close this phase as `not planned`; native
+  integration is not required for project completeness.
+
+## Native work, only after a positive go decision
+
+- [ ] Implement `NativeHunspellBackend` only behind `SpellCheckerBackend`.
+- [ ] Prefer distribution-provided Hunspell libraries on Linux; never install
+  packages automatically or request root privileges.
+- [ ] Implement `NativeMyThesBackend` only behind `ThesaurusBackend` and only if
+  separate measurements justify it.
+- [ ] Keep native dependencies optional at installation and runtime.
+- [ ] Fall back safely to Spylls/PyThes when a native engine cannot load.
+- [ ] Run the same backend contracts and LibreOffice dictionary conformance
+  tests against portable and native implementations.
+- [ ] Add native lifecycle stress tests covering repeated create, check,
+  suggest, result release, destruction and language switching.
+- [ ] Check for leaks, invalid frees, stale handles and encoding changes.
+- [ ] Document behavioral differences instead of pretending portable and
+  native engines are identical.
+- [ ] Do not change the public service, Qt integration, ChordFlow or ChordPages
+  APIs to accommodate a native backend.
+- [ ] Do not create Linux- or Windows-specific copies of the core, Qt layer,
+  registry, settings, tests or documentation.
+- [ ] If native packaging needs a separate distribution, publish a small
+  optional plugin such as `pyqt6-linguistic-tools-native-hunspell`, not a fork
+  of the complete toolkit.
+- [ ] Consider native backends for Windows or macOS only in a later proposal
+  supported by separate evidence; they are outside this phase.
