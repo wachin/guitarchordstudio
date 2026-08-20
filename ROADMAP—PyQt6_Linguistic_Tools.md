@@ -278,6 +278,12 @@ lookup, with tests covering enabled, disabled, and partial-strip behavior; all
 nine real dictionaries that declare it load successfully. The more frequent
 `WORDCHARS` belongs to the future shared tokenizer.
 
+The optional `CHECKCOMPOUNDPATTERN` replacement field is also implemented and
+the three corresponding historical fixtures are active: the lookup baseline
+is now 104 passing, 3 explicitly pending, and 0 failing out of 107 scenarios.
+The remaining `onlyincompound2` case concerns the separate special `0`
+zero-affix boundary semantics.
+
 ## Exit criteria for the preliminary stage
 
 - [ ] The fast and curated suites pass on Linux, Windows and macOS.
