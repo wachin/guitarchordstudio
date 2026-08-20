@@ -447,16 +447,15 @@ Only the second category may be written by GuitarChordStudio.
 
 # Nuitka
 
-Review the Windows build scripts, including:
+Create a Windows build scripts:
 
 ```text
 build/build-windows.bat
 ```
 
-
 ---
 
-# 76. Spanish acceptance test
+# Spanish acceptance test
 
 This is mandatory.
 
@@ -485,7 +484,7 @@ Do not hardcode spell-check results.
 
 ---
 
-# 77. German tests
+# German tests
 
 If German resources are installed/available, test words such as:
 
@@ -502,7 +501,7 @@ Use the actual dictionary result.
 
 ---
 
-# 78. Russian tests
+# Russian tests
 
 If Russian resources are installed/available, test:
 
@@ -522,7 +521,7 @@ crash
 
 ---
 
-# 79. French tests
+# French tests
 
 If French resources are available, test:
 
@@ -707,7 +706,7 @@ dialog is acceptable if useful.
 
 ---
 
-# 88. Replacing a word with a synonym
+# Replacing a word with a synonym
 
 When the user chooses a synonym, replace exactly the word under the cursor.
 
@@ -723,7 +722,7 @@ Do not attempt complex morphology that could generate incorrect language.
 
 ---
 
-# 89. Spell checking can be disabled
+# Spell checking can be disabled
 
 Expose something similar to:
 
@@ -742,7 +741,7 @@ using translatable English source strings.
 
 ---
 
-# 90. Thesaurus can be disabled or lazy-loaded
+# Thesaurus can be disabled or lazy-loaded
 
 Do not load thesaurus data unnecessarily.
 
@@ -765,14 +764,12 @@ Explain clearly:
 * API;
 * Hunspell;
 * Thesaurus;
-* Linux system-resource policy;
-* Windows managed-resource policy;
 * personal dictionaries;
 * Qt integration;
 * Nuitka deployment;
-* internationalization, and others
+* internationalization
+* and others
 
-rather than duplicating all Windows compilation instructions.
 
 ---
 
