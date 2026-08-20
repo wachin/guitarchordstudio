@@ -495,14 +495,14 @@ Python Unicode str
 PyQt6
 ```
 
-- [ ] Preserve original upstream encoding whenever the file is valid.
-- [ ] Do not mass-convert dictionaries to UTF-8.
-- [ ] Respect Hunspell `SET`.
-- [ ] Respect MyThes encoding declarations.
-- [ ] Ensure the application API always returns Python Unicode strings.
-- [ ] Add tests for legacy encodings.
-- [ ] Add tests for mixed-language collections.
-- [ ] Repair dictionary files only when demonstrably broken.
+- [x] Preserve original upstream encoding whenever the file is valid.
+- [x] Do not mass-convert dictionaries to UTF-8.
+- [x] Respect Hunspell `SET`.
+- [x] Respect MyThes encoding declarations.
+- [x] Ensure the application API always returns Python Unicode strings.
+- [x] Add tests for legacy encodings.
+- [x] Add tests for mixed-language collections.
+- [x] Repair dictionary files only when demonstrably broken.
 
 ---
 
@@ -512,23 +512,23 @@ Create reusable validation utilities.
 
 ## Hunspell
 
-- [ ] Validate `.aff` existence.
-- [ ] Validate `.dic` existence.
-- [ ] Validate declared encoding.
-- [ ] Load dictionary through Spylls.
-- [ ] Test representative words.
-- [ ] Detect malformed rules.
+- [x] Validate `.aff` existence.
+- [x] Validate `.dic` existence.
+- [x] Validate declared encoding.
+- [x] Load dictionary through Spylls.
+- [x] Test representative words.
+- [x] Detect malformed rules.
 
 ## MyThes
 
-- [ ] Validate `.dat`.
-- [ ] Validate `.idx`.
-- [ ] Validate encoding.
-- [ ] Validate index entry count.
-- [ ] Validate every sampled byte offset.
-- [ ] Confirm that the indexed word matches the `.dat` entry.
-- [ ] Detect broken offsets caused by encoding conversion.
-- [ ] Regenerate index when requested.
+- [x] Validate `.dat`.
+- [x] Validate `.idx`.
+- [x] Validate encoding.
+- [x] Validate index entry count.
+- [x] Validate every sampled byte offset.
+- [x] Confirm that the indexed word matches the `.dat` entry.
+- [x] Detect broken offsets caused by encoding conversion.
+- [x] Regenerate index when requested.
 
 Output statuses such as:
 
