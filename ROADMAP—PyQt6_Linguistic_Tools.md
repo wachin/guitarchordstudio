@@ -217,8 +217,8 @@ native Hunspell.
   replacement tables, input conversion and output conversion.
 - [ ] Audit incomplete behaviors documented by Spylls, including rare Hunspell
   directives and language-specific branches.
-- [ ] Benchmark dictionary loading, `lookup()` and `suggest()`.
-- [ ] Measure peak memory for small, medium and very large dictionaries.
+- [x] Benchmark dictionary loading, `lookup()` and `suggest()`.
+- [x] Measure peak memory for small, medium and very large dictionaries.
 - [ ] Never add arbitrary limits such as rejecting suggestions above 12
   characters.
 - [ ] Load dictionaries lazily and define a bounded cache policy.
@@ -283,7 +283,7 @@ Create these test levels under `tests/`:
 ### Curated integration suite — every pull request
 
 - [x] Load a representative matrix of real LibreOffice dictionaries.
-- [ ] Include small, medium and large dictionaries.
+- [x] Include small, medium and large dictionaries.
 - [ ] Include regional variants and spelling-only/thesaurus-only languages.
 - [ ] Check representative correct words, incorrect words and suggestions.
 - [ ] Check representative thesaurus entries and index offsets.
@@ -319,6 +319,16 @@ implemented, including `ONLYINCOMPOUND` linking-affix placement. The lookup
 baseline is 105 passing, 2 explicitly pending, and 0 failing out of 107
 scenarios.
 
+A subprocess-isolated performance matrix now covers small, medium and
+very-large Spylls and PyThes data sets. It records load time, Python allocation
+peak, process RSS where available, hit/miss lookup latency, suggestion latency,
+and cached thesaurus latency in machine-readable JSON. The 2026-08-20 baseline
+and diagnostic budgets are documented in
+`libs/pyqt6-linguistic-tools/docs/performance-budgets.md`. The measurements
+require lazy background loading: `es_EC` used about 111 MiB RSS and 4.26 s to
+load under instrumentation, while the 583,521-entry Mongolian dictionary used
+about 1.0 GiB and 43.8 s.
+
 ## Exit criteria for the preliminary stage
 
 - [ ] The fast and curated suites pass on Linux, Windows and macOS.
@@ -326,7 +336,7 @@ scenarios.
   issues; they are not silent.
 - [ ] Spylls and PyThes expose stable primitives needed by their toolkit
   backends.
-- [ ] Performance budgets are documented for dictionary loading, memory,
+- [x] Performance budgets are documented for dictionary loading, memory,
   lookup, suggestion and thesaurus lookup.
 - [ ] The compatibility report identifies which LibreOffice dictionaries are
   ready, limited or unsupported.
@@ -837,7 +847,7 @@ service.synonyms("rápido")
 - [ ] Invalidate relevant entries when a personal word is removed.
 - [ ] Invalidate language-dependent caches whenever the language changes.
 - [ ] Use bounded caches.
-- [ ] Benchmark memory consumption.
+- [x] Benchmark memory consumption.
 
 ---
 
