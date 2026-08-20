@@ -808,11 +808,15 @@ the official spelling dictionaries used by Spylls, Hunspell or LibreOffice.
 
 Implement separately from personal dictionaries.
 
-- [ ] Ignore once.
-- [ ] Ignore for current document.
-- [ ] Ignore for current session.
-- [ ] Clear ignored words.
-- [ ] Ensure ignored words do not modify permanent dictionaries.
+- [x] Ignore once.
+- [x] Ignore for current document.
+- [x] Ignore for current session.
+- [x] Clear ignored words.
+- [x] Ensure ignored words do not modify permanent dictionaries.
+- [x] Keep state isolated by normalized locale.
+- [x] Use stable document and occurrence identifiers so repeated spell-check
+  passes do not consume an ignore-once decision.
+- [x] Keep the core implementation independent of Qt and filesystem storage.
 
 ---
 
@@ -1166,7 +1170,7 @@ coverage on top of those suites.
 - [ ] Registry.
 - [ ] Providers.
 - [x] Personal dictionary.
-- [ ] Ignore-word management.
+- [x] Ignore-word management.
 - [ ] Spylls backend.
 - [ ] PyThes backend.
 - [ ] LinguisticService.
