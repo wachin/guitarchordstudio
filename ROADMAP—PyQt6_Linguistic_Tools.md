@@ -738,6 +738,25 @@ Search locations such as:
 
 Create a backend-independent personal dictionary.
 
+Keep two clearly separated dictionary layers on every platform:
+
+1. **Official/source dictionaries** are the Hunspell/LibreOffice dictionaries
+   installed by the operating system, bundled with an application, downloaded
+   by the managed provider or manually imported. Treat their `.aff`, `.dic`,
+   `.dat` and `.idx` files as immutable and read-only even when the current
+   process technically has permission to modify them. Package upgrades,
+   reinstalls and dictionary refreshes may replace these files.
+2. **Personal dictionaries** contain only words explicitly added by the user.
+   Store them separately in toolkit-owned UTF-8 files and make only this layer
+   editable, removable, exportable and importable.
+
+A spelling lookup must accept a word when either the selected official
+dictionary or the personal dictionary for the active locale accepts it. The
+user-facing **Add to dictionary** action must therefore write only to the
+personal dictionary; it must never append to a Hunspell `.dic` file or alter a
+LibreOffice dictionary, including on Windows where bundled files may be
+writable.
+
 - [x] Store custom words by locale.
 - [x] Add words.
 - [x] Remove words.
@@ -747,6 +766,41 @@ Create a backend-independent personal dictionary.
 - [x] Support application-specific storage locations.
 - [x] Support shared storage if explicitly configured.
 - [x] Never modify LibreOffice/Hunspell source dictionaries.
+
+---
+
+# Phase 14A — Personal-dictionary backup and restore
+
+Make words accumulated by users portable across reinstalls, computers,
+operating systems, ChordFlow, ChordPages and other applications using the
+toolkit.
+
+- [ ] Define a versioned, documented and platform-independent UTF-8 backup
+  format.
+- [ ] Export the personal dictionary for the active locale.
+- [ ] Export all personal dictionaries in one backup.
+- [ ] Inspect and validate the complete backup before changing local data.
+- [ ] Show an import preview containing locales and word counts.
+- [ ] Import in **merge** mode: preserve existing personal words, add missing
+  personal words and remove duplicates.
+- [ ] Import in **replace** mode: replace only the selected personal
+  dictionary or dictionaries after an explicit warning.
+- [ ] Never merge into, replace or otherwise modify official Hunspell,
+  LibreOffice or managed source dictionaries.
+- [ ] Normalize imported locale identifiers and words using the same rules as
+  `PersonalDictionary`.
+- [ ] Reject unsupported versions, malformed data and unsafe paths without
+  partially importing the backup.
+- [ ] Make restore transactional so a failure leaves every existing personal
+  dictionary unchanged.
+- [ ] Provide backend-independent APIs so ChordFlow and ChordPages can create
+  and restore the same backup without duplicating logic.
+- [ ] Test merge conflicts, duplicate words, multiple locales, non-ASCII text,
+  malformed backups, interrupted writes and Linux/Windows/macOS portability.
+
+In this phase, the phrases **current dictionary**, **merge** and **replace**
+always refer to the user's separate personal dictionary. They never refer to
+the official spelling dictionaries used by Spylls, Hunspell or LibreOffice.
 
 ---
 
