@@ -221,7 +221,7 @@ native Hunspell.
 - [x] Measure peak memory for small, medium and very large dictionaries.
 - [ ] Never add arbitrary limits such as rejecting suggestions above 12
   characters.
-- [ ] Load dictionaries lazily and define a bounded cache policy.
+- [x] Load dictionaries lazily and define a bounded cache policy.
 - [ ] Add tests before changing Spylls behavior.
 - [x] Document every deviation from upstream Spylls.
 - [ ] Do not declare this gate complete merely because a dictionary loads; its
@@ -390,12 +390,12 @@ pyqt6-linguistic-tools/
 └── ROADMAP.md
 ```
 
-- [ ] Keep `third-party/sonnet` only as architectural reference.
-- [ ] Keep `third-party/hunspell` only as reference for the `spylls` hunspell fork, In case it is necessary to reinforce the source code.
-- [ ] Keep `third-party/mythes` only as the behavioral and file-format
+- [x] Keep `third-party/sonnet` only as architectural reference.
+- [x] Keep `third-party/hunspell` only as reference for the `spylls` hunspell fork, In case it is necessary to reinforce the source code.
+- [x] Keep `third-party/mythes` only as the behavioral and file-format
   reference for the maintained `pythes` fork unless the optional native phase
   is explicitly activated later.
-- [ ] Ensure applications using this repository do not need to add Spylls and PyThes separately.
+- [x] Ensure applications using this repository do not need to add Spylls and PyThes separately.
 
 ---
 
@@ -449,13 +449,13 @@ The audit, improvement and compatibility work happens in the mandatory
 preliminary stage. This phase exposes the stabilized fork through the toolkit
 backend interface.
 
-- [ ] Implement `SpyllsBackend` without exposing Spylls types publicly.
-- [ ] Translate fork exceptions into structured toolkit errors.
-- [ ] Expose backend version, capabilities and active dictionary metadata.
-- [ ] Keep personal dictionaries and ignore lists outside the immutable source
+- [x] Implement `SpyllsBackend` without exposing Spylls types publicly.
+- [x] Translate fork exceptions into structured toolkit errors.
+- [x] Expose backend version, capabilities and active dictionary metadata.
+- [x] Keep personal dictionaries and ignore lists outside the immutable source
   dictionary.
-- [ ] Verify that applications never need to import Spylls directly.
-- [ ] Reuse the preliminary compatibility tests as backend contract tests.
+- [x] Verify that applications never need to import Spylls directly.
+- [x] Reuse the preliminary compatibility tests as backend contract tests.
 - [ ] Make Spylls the default spelling backend on Linux, Windows and macOS for
   the first portable release.
 
@@ -467,13 +467,13 @@ The audit, improvement and compatibility work happens in the mandatory
 preliminary stage. This phase exposes the stabilized fork through the toolkit
 backend interface.
 
-- [ ] Implement `PyThesBackend` without exposing PyThes types publicly.
-- [ ] Translate fork exceptions into structured toolkit errors.
-- [ ] Return stable structured results for meanings, parts of speech and
+- [x] Implement `PyThesBackend` without exposing PyThes types publicly.
+- [x] Translate fork exceptions into structured toolkit errors.
+- [x] Return stable structured results for meanings, parts of speech and
   synonyms.
-- [ ] Expose backend version, capabilities and active thesaurus metadata.
-- [ ] Verify that applications never need to import PyThes directly.
-- [ ] Reuse the preliminary compatibility tests as backend contract tests.
+- [x] Expose backend version, capabilities and active thesaurus metadata.
+- [x] Verify that applications never need to import PyThes directly.
+- [x] Reuse the preliminary compatibility tests as backend contract tests.
 - [ ] Make PyThes the default thesaurus backend on Linux, Windows and macOS for
   the first portable release.
 
@@ -548,14 +548,14 @@ Create abstract APIs.
 
 ## SpellCheckerBackend
 
-- [ ] Create `SpellCheckerBackend`.
-- [ ] Define `load_dictionary()`.
-- [ ] Define `check_word()`.
-- [ ] Define `suggest()`.
-- [ ] Define `add_word()` where supported.
-- [ ] Define `remove_word()` where supported.
-- [ ] Define `available()`.
-- [ ] Define backend metadata.
+- [x] Create `SpellCheckerBackend`.
+- [x] Define `load_dictionary()`.
+- [x] Define `check_word()`.
+- [x] Define `suggest()`.
+- [x] Define `add_word()` where supported.
+- [x] Define `remove_word()` where supported.
+- [x] Define `available()`.
+- [x] Define backend metadata.
 
 Potential future implementations:
 
@@ -587,7 +587,7 @@ Available and compatible?
   engines.
 - [ ] Report the selected backend and fallback reason through structured
   diagnostics.
-- [ ] Ensure adding a native backend does not change the public service or Qt
+- [x] Ensure adding a native backend does not change the public service or Qt
   APIs.
 
 ---
@@ -600,22 +600,22 @@ Create:
 ThesaurusBackend
 ```
 
-- [ ] Define `load_dictionary()`.
-- [ ] Define `lookup()`.
-- [ ] Define `synonyms()`.
-- [ ] Preserve meanings.
-- [ ] Preserve parts of speech.
-- [ ] Preserve alternate senses.
-- [ ] Expose capabilities.
-- [ ] Implement `PyThesBackend`.
+- [x] Define `load_dictionary()`.
+- [x] Define `lookup()`.
+- [x] Define `synonyms()`.
+- [x] Preserve meanings.
+- [x] Preserve parts of speech.
+- [x] Preserve alternate senses.
+- [x] Expose capabilities.
+- [x] Implement `PyThesBackend`.
 
 Potential future implementations must remain possible without changing the public API.
 
 - [ ] Default to `PyThesBackend` on Linux, Windows and macOS in the first
   portable release.
-- [ ] Keep a future `NativeMyThesBackend` optional and behind the same
+- [x] Keep a future `NativeMyThesBackend` optional and behind the same
   `ThesaurusBackend` interface.
-- [ ] Do not require `libmythes`, a DLL or a dylib for the first portable
+- [x] Do not require `libmythes`, a DLL or a dylib for the first portable
   release.
 
 ---
