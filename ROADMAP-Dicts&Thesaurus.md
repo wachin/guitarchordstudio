@@ -1,7 +1,7 @@
 
 # GuitarChordStudio — Multiplatform Spell Checking and Thesaurus Infrastructure Extra Ideas
 
-# 9. Linux dictionaries
+# Linux dictionaries
 
 The Linux provider should discover installed pairs such as:
 
@@ -29,7 +29,7 @@ Do not invent supported languages.
 
 ---
 
-# 11. Linux resource management is read-only
+# Linux resource management is read-only
 
 Expose this distinction explicitly.
 
@@ -64,13 +64,11 @@ or:
 System package information
 ```
 
+in the language of the system
+
 ---
 
-
-
-
-
-# 18. Windows may manage/download dictionaries
+# Windows may manage/download dictionaries
 
 Unlike Linux, Windows may provide an application-level resource manager.
 
@@ -81,21 +79,18 @@ provider.can_install_spell_resources = True
 provider.can_install_thesaurus_resources = True
 ```
 
-provided licensing permits redistribution/download.
-
 The application may:
 
 * download a dictionary;
 * validate it;
 * install it into user application data;
-* update it;
 * remove it.
 
 This functionality is Windows-specific and MUST NOT accidentally become Linux system-package installation logic.
 
 ---
 
-# 19. Secure Windows resource installation
+# Secure Windows resource installation
 
 Any downloadable resource must use a safe workflow:
 
@@ -128,31 +123,14 @@ If installation fails, preserve the previous working version.
 
 ---
 
-# 20. Linguistic resource licenses
+# Linguistic resource licenses
 
 Do not assume that every Hunspell dictionary or MyThes thesaurus has the same license.
 
-For downloadable Windows resources preserve, when applicable:
-
-```text
-LICENSE
-COPYING
-README
-```
-
-Track:
-
-```text
-source
-version
-license
-locale
-```
-
-Do not redistribute a dictionary or thesaurus unless its license permits it.
+For downloadable Windows resources preserve all files that include licences
 
 
-# 26. Preserve working Linux behavior
+# Preserve working Linux behavior
 
 This requirement is critical.
 
@@ -174,22 +152,6 @@ After refactoring, verify equivalent or improved behavior.
 This project must be developed **English-first**.
 
 All newly introduced user-facing strings must initially be written in English.
-
-Examples:
-
-```text
-Spell checking
-Thesaurus
-Synonyms
-Add to dictionary
-Ignore
-Spell-checking language
-Language resources
-Dictionary not installed
-Thesaurus not installed
-System package information
-Download language resources
-```
 
 Do NOT initially write new UI strings in Spanish.
 
@@ -227,7 +189,7 @@ Backend errors should preferably use structured error codes/data that the Qt lay
 
 ---
 
-# 42. International tokenizer
+# International tokenizer
 
 Do not rely solely on:
 
@@ -260,7 +222,7 @@ Avoid unnecessary dependencies if Python can implement the required behavior rel
 
 ---
 
-# 43. GuitarChordStudio-specific chord detection
+# GuitarChordStudio-specific chord detection
 
 This is mandatory.
 
@@ -302,7 +264,7 @@ is_chord_token(token)
 
 ---
 
-# 44. Ignore obvious non-word tokens
+# Ignore obvious non-word tokens
 
 Do not spell-check tokens such as:
 
@@ -319,7 +281,7 @@ while continuing to check real words.
 
 ---
 
-# 45. Spell highlighter
+# Spell highlighter
 
 Create a reusable component conceptually similar to:
 
@@ -377,51 +339,8 @@ Invalidate it when:
 
 ---
 
-# 47. Reusable PyQt6 editor
 
-The long-term API should allow:
-
-```python
-from ...qt import SpellTextEdit
-
-editor = SpellTextEdit()
-editor.set_spell_language("es_ES")
-```
-
-and provide:
-
-* misspelling underline;
-* suggestions;
-* personal dictionary;
-* language menu;
-* thesaurus;
-* synonyms.
-
----
-
-# 48. Reusable `QPlainTextEdit`
-
-Also provide:
-
-```python
-SpellPlainTextEdit
-```
-
-without duplicating the entire implementation.
-
-Both widgets should share:
-
-```text
-SpellChecker
-SpellHighlighter
-ThesaurusEngine
-context-menu helpers
-language-menu helpers
-```
-
----
-
-# 49. Context menu
+# Context menu
 
 For a misspelled word such as:
 
@@ -461,7 +380,7 @@ All these strings must be translatable.
 
 ---
 
-# 50. Personal dictionaries
+# Personal dictionaries
 
 Personal dictionaries are different from system dictionaries.
 
@@ -506,7 +425,7 @@ on Linux.
 
 ---
 
-# 51. Important Linux distinction
+# Important Linux distinction
 
 Therefore Linux has two types of resources:
 
@@ -526,55 +445,13 @@ Only the second category may be written by GuitarChordStudio.
 
 ---
 
---
----
-
-# 65. Linux diagnostics
-
-For a working Debian installation, diagnostics might conceptually show:
-
-```text
-Platform: Linux
-Provider: LinuxSystemProvider
-
-Hunspell:
-    library: system
-    status: available
-
-Spanish:
-    AFF: /usr/share/hunspell/es_ES.aff
-    DIC: /usr/share/hunspell/es_ES.dic
-
-Thesaurus:
-    source: system
-    status: available
-```
-
-Do not hardcode these paths into expected test results if the distribution uses different valid paths.
-
-
-# 69. Nuitka
+# Nuitka
 
 Review the Windows build scripts, including:
 
 ```text
 build/build-windows.bat
 ```
-
-and equivalents.
-
-The Windows distribution must include:
-
-```text
-libhunspell.dll
-```
-
-and any required application-managed language resources.
-
-Nuitka must NOT rebuild Hunspell.
-
-It should package the already-built DLL.
-
 
 
 ---
