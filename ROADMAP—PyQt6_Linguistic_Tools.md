@@ -675,6 +675,11 @@ The engine-independent `DictionaryProvider` contract and reusable
 `DirectoryDictionaryProvider` are implemented. Platform-specific locations,
 managed downloads, and user data policies remain in the following phases.
 
+The cross-platform `ManagedDictionaryProvider` and `UserDictionaryProvider`
+are implemented with shared `QStandardPaths` storage, an offline catalog
+reader, and non-overwriting atomic manual import. Automatic downloads remain
+deferred until release metadata provides cryptographic checksums.
+
 ---
 
 # Phase 11 — Linux provider
@@ -706,26 +711,26 @@ Search locations such as:
 
 # Phase 12 — Windows provider
 
-- [ ] Use application/user data directories.
-- [ ] Use `QStandardPaths` when Qt is available.
-- [ ] Support managed dictionaries.
-- [ ] Support manual import.
-- [ ] Prepare integration with `libreoffice-dictionaries-collection` through the `/dictionaries.json` file which contains the list to download and decompress all the dictionaries that were packaged from `/third-party/libreoffice-dictionaries-collection`
-- [ ] Do not require system-wide Hunspell.
-- [ ] Do not require DLL-based Hunspell.
-- [ ] Use Spylls and PyThes by default.
+- [x] Use application/user data directories.
+- [x] Use `QStandardPaths` when Qt is available.
+- [x] Support managed dictionaries.
+- [x] Support manual import.
+- [x] Prepare integration with `libreoffice-dictionaries-collection` through the `/dictionaries.json` file which contains the list to download and decompress all the dictionaries that were packaged from `/third-party/libreoffice-dictionaries-collection`
+- [x] Do not require system-wide Hunspell.
+- [x] Do not require DLL-based Hunspell.
+- [x] Use Spylls and PyThes by default.
 
 ---
 
 # Phase 13 — macOS provider
 
-- [ ] Use application/user data directories.
-- [ ] Use `QStandardPaths`.
-- [ ] Support managed dictionaries.
-- [ ] Support manual import.
-- [ ] Prepare integration with `libreoffice-dictionaries-collection` through the `/dictionaries.json` file which contains the list to download and decompress all the dictionaries that were packaged from `/third-party/libreoffice-dictionaries-collection`
-- [ ] Avoid native binary dependencies whenever possible.
-- [ ] Use Spylls and PyThes by default.
+- [x] Use application/user data directories.
+- [x] Use `QStandardPaths`.
+- [x] Support managed dictionaries.
+- [x] Support manual import.
+- [x] Prepare integration with `libreoffice-dictionaries-collection` through the `/dictionaries.json` file which contains the list to download and decompress all the dictionaries that were packaged from `/third-party/libreoffice-dictionaries-collection`
+- [x] Avoid native binary dependencies whenever possible.
+- [x] Use Spylls and PyThes by default.
 
 ---
 
