@@ -39,7 +39,7 @@ Avoid unnecessary dependencies if Python can implement the required behavior rel
 
 This is mandatory.
 
-Do NOT send musical chord symbols to Hunspell.
+Do NOT send musical chord symbols to Spylls.
 
 Examples:
 
@@ -133,7 +133,7 @@ It must NOT:
 * download dictionaries;
 * inspect package managers;
 * scan the whole filesystem repeatedly;
-* rebuild Hunspell.
+* rebuild Spylls.
 
 ---
 
@@ -307,7 +307,7 @@ Test:
 marabillas
 ```
 
-If the installed Spanish Hunspell dictionary suggests:
+If the installed Spanish Spylls dictionary suggests:
 
 ```text
 maravillas
@@ -384,7 +384,7 @@ and chord/non-word exclusions.
 
 # 85. Chord tests
 
-The following must not be sent to Hunspell:
+The following must not be sent to Spylls:
 
 ```text
 A#m
@@ -398,7 +398,7 @@ Gsus4
 
 ---
 
-# 86. MyThes tests
+# 86. PyThes tests
 
 When a thesaurus is available, test:
 
