@@ -48,7 +48,7 @@ GuitarChordStudio
 The developer has intentionally placed as sub-module of the **Sonnet** source code at:
 
 ```text
-third-party/sonnet
+libs/pyqt6-linguistic-tools/third-party/sonnet
 ```
 
 Sonnet must be studied as an **architectural reference only**.
@@ -91,6 +91,18 @@ The final product must remain a **Python-first PyQt6 library**.
 
 ---
 
+# IMPORTANT ARCHITECTURAL REFERENCE: HUNSPELL
+
+The developer has intentionally placed as sub-module the **hunspell** source code at:
+
+```text
+libs/pyqt6-linguistic-tools/third-party/hunspell
+```
+
+In case it becomes necessary to reinforce the `Spylls` source code, which is a project that has ported Hunspell to Python
+
+---
+
 # Phase 0 — Repository foundation
 
 - [ ] Review the current repository structure.
@@ -101,7 +113,7 @@ The final product must remain a **Python-first PyQt6 library**.
 - [ ] Create `README.md`.
 - [ ] Create `CHANGELOG.md`.
 - [ ] Create `CONTRIBUTING.md`.
-- [ ] Keep this `ROADMAP.md` updated.
+- [ ] Keep this `ROADMAP—PyQt6_Linguistic_Tools.md` updated.
 - [ ] Add `.gitignore`.
 - [ ] Add typing configuration.
 - [ ] Add `pytest`.
@@ -125,8 +137,8 @@ pyqt6-linguistic-tools/
 │   └── pythes/
 │
 ├── third-party/
-│   ├── hunspell/
-│   └── sonnet/
+│   ├── sonnet/
+│   └── hunspell/
 │
 ├── src/
 │   └── pyqt6_linguistic_tools/
@@ -138,15 +150,7 @@ pyqt6-linguistic-tools/
 ```
 
 - [ ] Keep `third-party/sonnet` only as architectural reference.
-- [ ] Keep `third-party/sonnet` only as reference of the spylls hunspell fork
-- [ ] Document submodule initialization.
-- [ ] Document recursive cloning.
-- [ ] Verify:
-
-```bash
-git submodule update --init --recursive
-```
-
+- [ ] Keep `third-party/hunspell` only as reference for the `spylls` hunspell fork, In case it is necessary to reinforce the source code.
 - [ ] Ensure applications using this repository do not need to add Spylls and PyThes separately.
 
 ---
@@ -441,7 +445,7 @@ Search locations such as:
 - [ ] Use `QStandardPaths` when Qt is available.
 - [ ] Support managed dictionaries.
 - [ ] Support manual import.
-- [ ] Prepare integration with `libreoffice-dictionaries-collection`.
+- [ ] Prepare integration with `libreoffice-dictionaries-collection` through the `/dictionaries.json` file which contains the list to download and decompress all the dictionaries that were packaged from `/third-party/libreoffice-dictionaries-collection`
 - [ ] Do not require system-wide Hunspell.
 - [ ] Do not require DLL-based Hunspell.
 
@@ -453,7 +457,7 @@ Search locations such as:
 - [ ] Use `QStandardPaths`.
 - [ ] Support managed dictionaries.
 - [ ] Support manual import.
-- [ ] Prepare integration with `libreoffice-dictionaries-collection`.
+- [ ] Prepare integration with `libreoffice-dictionaries-collection` through the `/dictionaries.json` file which contains the list to download and decompress all the dictionaries that were packaged from `/third-party/libreoffice-dictionaries-collection`
 - [ ] Avoid native binary dependencies whenever possible.
 
 ---
@@ -515,7 +519,7 @@ Create Unicode-aware word tokenization.
 
 Create the main application-facing service.
 
-Target API:
+Target API, example for spanish:
 
 ```python
 service = LinguisticService(language="es_ES")
@@ -589,14 +593,6 @@ integration = LinguisticTextEditDecorator(
 )
 ```
 
-or eventually:
-
-```python
-enable_linguistics(
-    editor,
-    language="es_ES"
-)
-```
 
 - [ ] Do not require subclassing `QTextEdit`.
 - [ ] Do not require subclassing `QPlainTextEdit`.
@@ -760,7 +756,7 @@ Create reusable UI for dictionaries.
 - [ ] Allow removal of app-managed dictionaries.
 - [ ] Never remove Linux system dictionaries.
 - [ ] Prepare optional future download integration.
-- [ ] Prepare integration with `libreoffice-dictionaries-collection`.
+- [ ] Prepare integration with `libreoffice-dictionaries-collection` through the `/dictionaries.json` file which contains the list to download and decompress all the dictionaries that were packaged from `/third-party/libreoffice-dictionaries-collection`
 
 ---
 
@@ -892,6 +888,20 @@ The full demo should prove that another PyQt6 application can integrate the tool
 # Phase 36 — Public API
 
 Target a clean public API such as:
+
+```python
+from pyqt6_linguistic_tools import LinguisticService
+from pyqt6_linguistic_tools.qt import LinguisticTextEditDecorator
+
+service = LinguisticService(language="en_US")
+
+decorator = LinguisticTextEditDecorator(
+    editor,
+    service
+)
+```
+
+or:
 
 ```python
 from pyqt6_linguistic_tools import LinguisticService
