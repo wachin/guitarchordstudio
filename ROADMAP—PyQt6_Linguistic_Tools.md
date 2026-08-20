@@ -202,9 +202,9 @@ the thesaurus UI.
 - [x] Verify that `.idx` offsets are treated as byte offsets and remain correct
   for UTF-8 and legacy encodings.
 - [x] Test UTF-8, ISO-8859-* and every other encoding found in the corpus.
-- [ ] Handle BOMs, CRLF/LF differences and encoding aliases safely.
-- [ ] Detect missing, truncated, malformed and stale indexes.
-- [ ] Validate index entry counts and verify that indexed words match `.dat`
+- [x] Handle BOMs, CRLF/LF differences and encoding aliases safely.
+- [x] Detect missing, truncated, malformed and stale indexes.
+- [x] Validate index entry counts and verify that indexed words match `.dat`
   entries.
 - [ ] Regenerate an index from `.dat` when explicitly requested.
 - [x] Allow a safe fallback without a usable `.idx`.
@@ -268,8 +268,8 @@ redistribution terms.
 ### Current corpus audit baseline — 2026-08-20
 
 The encoding-agnostic Spylls audit tool scanned all 88 LibreOffice `.aff`
-files currently available to GuitarChordStudio. It found 47 supported raw
-directive names, 9 with partial behavior, 8 metadata or non-spelling
+files currently available to GuitarChordStudio. It now finds 49 supported raw
+directive names, 7 with partial behavior, 8 metadata or non-spelling
 extensions, and one probable source typo (`SFT` inside a Mongolian `SFX`
 block). No dictionary was rewritten. Historical aliases `COMPOUNDFIRST` and
 `ONLYROOT`, present alongside their modern Hungarian equivalents, now have
@@ -278,11 +278,10 @@ lookup, with tests covering enabled, disabled, and partial-strip behavior; all
 nine real dictionaries that declare it load successfully. The more frequent
 `WORDCHARS` belongs to the future shared tokenizer.
 
-The optional `CHECKCOMPOUNDPATTERN` replacement field is also implemented and
-the three corresponding historical fixtures are active: the lookup baseline
-is now 104 passing, 3 explicitly pending, and 0 failing out of 107 scenarios.
-The remaining `onlyincompound2` case concerns the separate special `0`
-zero-affix boundary semantics.
+`CHECKCOMPOUNDPATTERN` replacement and special `0` boundary behavior are now
+implemented, including `ONLYINCOMPOUND` linking-affix placement. The lookup
+baseline is 105 passing, 2 explicitly pending, and 0 failing out of 107
+scenarios.
 
 ## Exit criteria for the preliminary stage
 
