@@ -206,7 +206,7 @@ the thesaurus UI.
 - [x] Detect missing, truncated, malformed and stale indexes.
 - [x] Validate index entry counts and verify that indexed words match `.dat`
   entries.
-- [ ] Regenerate an index from `.dat` when explicitly requested.
+- [x] Regenerate an index from `.dat` when explicitly requested.
 - [x] Allow a safe fallback without a usable `.idx`.
 - [x] Preserve meanings, parts of speech, alternate senses and phrases.
 - [ ] Add Unicode normalization and bounded caching.
