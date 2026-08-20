@@ -738,15 +738,15 @@ Search locations such as:
 
 Create a backend-independent personal dictionary.
 
-- [ ] Store custom words by locale.
-- [ ] Add words.
-- [ ] Remove words.
-- [ ] List words.
-- [ ] Persist safely.
-- [ ] Use UTF-8 for our own generated personal dictionary files.
-- [ ] Support application-specific storage locations.
-- [ ] Support shared storage if explicitly configured.
-- [ ] Never modify LibreOffice/Hunspell source dictionaries.
+- [x] Store custom words by locale.
+- [x] Add words.
+- [x] Remove words.
+- [x] List words.
+- [x] Persist safely.
+- [x] Use UTF-8 for our own generated personal dictionary files.
+- [x] Support application-specific storage locations.
+- [x] Support shared storage if explicitly configured.
+- [x] Never modify LibreOffice/Hunspell source dictionaries.
 
 ---
 
@@ -1111,7 +1111,7 @@ coverage on top of those suites.
 - [ ] Tokenizer.
 - [ ] Registry.
 - [ ] Providers.
-- [ ] Personal dictionary.
+- [x] Personal dictionary.
 - [ ] Ignore-word management.
 - [ ] Spylls backend.
 - [ ] PyThes backend.
