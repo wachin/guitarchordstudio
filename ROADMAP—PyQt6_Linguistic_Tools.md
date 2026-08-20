@@ -273,9 +273,10 @@ directive names, 9 with partial behavior, 8 metadata or non-spelling
 extensions, and one probable source typo (`SFT` inside a Mongolian `SFX`
 block). No dictionary was rewritten. Historical aliases `COMPOUNDFIRST` and
 `ONLYROOT`, present alongside their modern Hungarian equivalents, now have
-focused regression tests. Based on actual corpus frequency, `FULLSTRIP` is the
-next engine-level behavior to characterize; the more frequent `WORDCHARS`
-belongs to the future shared tokenizer.
+focused regression tests. `FULLSTRIP` is now enforced for prefix and suffix
+lookup, with tests covering enabled, disabled, and partial-strip behavior; all
+nine real dictionaries that declare it load successfully. The more frequent
+`WORDCHARS` belongs to the future shared tokenizer.
 
 ## Exit criteria for the preliminary stage
 
