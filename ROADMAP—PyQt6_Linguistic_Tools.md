@@ -131,6 +131,42 @@ the first portable release.
 
 ---
 
+# IMPORTANT BEHAVIORAL REFERENCE: MYTHES
+
+The developer has intentionally placed the original **MyThes** source code as
+a submodule at:
+
+```text
+libs/pyqt6-linguistic-tools/third-party/mythes
+```
+
+MyThes is the native C++ implementation on which PyThes is based. Use this
+source as the authoritative behavioral and file-format reference whenever the
+maintained PyThes fork needs reinforcement, especially for:
+
+- `.dat` parsing and meaning records.
+- `.idx` generation, declared entry counts and byte offsets.
+- Character-encoding behavior.
+- Lookup edge cases and malformed-file handling.
+- Compatibility tests that require comparison with the original engine.
+
+PyThes remains the required portable thesaurus engine for the first release.
+The MyThes submodule is a development reference and possible test oracle; it
+must not become an implicit runtime dependency.
+
+## Critical restriction
+
+- [ ] DO NOT require MyThes to run PyThes or the toolkit.
+- [ ] DO NOT compile or bundle MyThes in the first portable implementation.
+- [ ] DO NOT expose native MyThes types through the public Python API.
+- [ ] DO NOT copy C++ implementation code directly into Python.
+- [ ] DO compare focused PyThes behavior with MyThes when resolving a verified
+  compatibility defect.
+- [ ] Keep any future native integration behind the optional
+  `NativeMyThesBackend` interface.
+
+---
+
 # MANDATORY PRELIMINARY STAGE — Stabilize Spylls and PyThes
 
 This stage comes before development of the toolkit itself because every higher
@@ -332,7 +368,8 @@ pyqt6-linguistic-tools/
 │
 ├── third-party/
 │   ├── sonnet/
-│   └── hunspell/
+│   ├── hunspell/
+│   └── mythes/
 │
 ├── src/
 │   └── pyqt6_linguistic_tools/
@@ -345,6 +382,9 @@ pyqt6-linguistic-tools/
 
 - [ ] Keep `third-party/sonnet` only as architectural reference.
 - [ ] Keep `third-party/hunspell` only as reference for the `spylls` hunspell fork, In case it is necessary to reinforce the source code.
+- [ ] Keep `third-party/mythes` only as the behavioral and file-format
+  reference for the maintained `pythes` fork unless the optional native phase
+  is explicitly activated later.
 - [ ] Ensure applications using this repository do not need to add Spylls and PyThes separately.
 
 ---
