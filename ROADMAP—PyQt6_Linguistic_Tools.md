@@ -456,7 +456,7 @@ backend interface.
   dictionary.
 - [x] Verify that applications never need to import Spylls directly.
 - [x] Reuse the preliminary compatibility tests as backend contract tests.
-- [ ] Make Spylls the default spelling backend on Linux, Windows and macOS for
+- [x] Make Spylls the default spelling backend on Linux, Windows and macOS for
   the first portable release.
 
 ---
@@ -474,7 +474,7 @@ backend interface.
 - [x] Expose backend version, capabilities and active thesaurus metadata.
 - [x] Verify that applications never need to import PyThes directly.
 - [x] Reuse the preliminary compatibility tests as backend contract tests.
-- [ ] Make PyThes the default thesaurus backend on Linux, Windows and macOS for
+- [x] Make PyThes the default thesaurus backend on Linux, Windows and macOS for
   the first portable release.
 
 ---
@@ -580,12 +580,12 @@ Available and compatible?
         └── no  → portable SpyllsBackend fallback
 ```
 
-- [ ] Default to `SpyllsBackend` on Linux, Windows and macOS in the first
+- [x] Default to `SpyllsBackend` on Linux, Windows and macOS in the first
   portable release.
-- [ ] Allow explicit backend selection for diagnostics and conformance tests.
-- [ ] Never silently change a document language when falling back between
+- [x] Allow explicit backend selection for diagnostics and conformance tests.
+- [x] Never silently change a document language when falling back between
   engines.
-- [ ] Report the selected backend and fallback reason through structured
+- [x] Report the selected backend and fallback reason through structured
   diagnostics.
 - [x] Ensure adding a native backend does not change the public service or Qt
   APIs.
@@ -611,7 +611,7 @@ ThesaurusBackend
 
 Potential future implementations must remain possible without changing the public API.
 
-- [ ] Default to `PyThesBackend` on Linux, Windows and macOS in the first
+- [x] Default to `PyThesBackend` on Linux, Windows and macOS in the first
   portable release.
 - [x] Keep a future `NativeMyThesBackend` optional and behind the same
   `ThesaurusBackend` interface.
