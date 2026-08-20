@@ -155,7 +155,7 @@ Before changing either fork:
 - [x] Define how future upstream changes will be reviewed and merged without
   losing local regression fixes.
 - [x] Run the existing upstream tests unchanged and record the baseline.
-- [ ] Add a changelog containing every deviation from upstream.
+- [x] Add a changelog containing every deviation from upstream.
 - [ ] Add a regression test before fixing each discovered defect.
 - [ ] Keep fixes focused so they can be proposed upstream when appropriate.
 - [ ] Never hide an incompatibility by silently changing a source dictionary.
@@ -167,17 +167,17 @@ port of Hunspell behavior, but it is not assumed to be fully equivalent to
 native Hunspell.
 
 - [ ] Review the complete Spylls fork.
-- [ ] Inventory parsed, implemented, partially implemented and ignored Hunspell
+- [x] Inventory parsed, implemented, partially implemented and ignored Hunspell
   directives.
-- [ ] Understand `.aff` parsing, `.dic` parsing, `lookup()` and `suggest()`.
+- [x] Understand `.aff` parsing, `.dic` parsing, `lookup()` and `suggest()`.
 - [ ] Verify Hunspell `SET` handling and Python codec-name normalization.
-- [ ] Test UTF-8, ISO-8859-1, ISO-8859-2, ISO-8859-7, ISO-8859-13,
+- [x] Test UTF-8, ISO-8859-1, ISO-8859-2, ISO-8859-7, ISO-8859-13,
   ISO-8859-15 and every other encoding found in the corpus.
 - [ ] Test accented Spanish words, `ñ`, combining Unicode characters and
   scripts outside Western European alphabets.
 - [ ] Compare representative results with native Hunspell using the same
   `.aff/.dic` files.
-- [ ] Cover compound rules, affix flags, forbidden words, capitalization,
+- [x] Cover compound rules, affix flags, forbidden words, capitalization,
   replacement tables, input conversion and output conversion.
 - [ ] Audit incomplete behaviors documented by Spylls, including rare Hunspell
   directives and language-specific branches.
@@ -187,7 +187,7 @@ native Hunspell.
   characters.
 - [ ] Load dictionaries lazily and define a bounded cache policy.
 - [ ] Add tests before changing Spylls behavior.
-- [ ] Document every deviation from upstream Spylls.
+- [x] Document every deviation from upstream Spylls.
 - [ ] Do not declare this gate complete merely because a dictionary loads; its
   representative morphology and suggestions must also pass.
 
