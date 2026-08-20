@@ -148,13 +148,13 @@ improvement is part of this project, not an incidental task.
 
 Before changing either fork:
 
-- [ ] Record the exact upstream repository, commit and license.
-- [ ] Create a branch/release policy for the maintained fork.
+- [x] Record the exact upstream repository, commit and license.
+- [x] Create a branch/release policy for the maintained fork.
 - [ ] Commit engine fixes and tests in each fork repository, then update the
   pinned submodule commit in `pyqt6-linguistic-tools`.
-- [ ] Define how future upstream changes will be reviewed and merged without
+- [x] Define how future upstream changes will be reviewed and merged without
   losing local regression fixes.
-- [ ] Run the existing upstream tests unchanged and record the baseline.
+- [x] Run the existing upstream tests unchanged and record the baseline.
 - [ ] Add a changelog containing every deviation from upstream.
 - [ ] Add a regression test before fixing each discovered defect.
 - [ ] Keep fixes focused so they can be proposed upstream when appropriate.
@@ -197,22 +197,22 @@ PyThes is the required initial thesaurus backend on all three platforms. Its
 handling of encodings and `.idx` byte offsets must be validated before building
 the thesaurus UI.
 
-- [ ] Review the complete PyThes fork.
-- [ ] Understand `.dat` parsing, `.idx` parsing and lookup behavior.
-- [ ] Verify that `.idx` offsets are treated as byte offsets and remain correct
+- [x] Review the complete PyThes fork.
+- [x] Understand `.dat` parsing, `.idx` parsing and lookup behavior.
+- [x] Verify that `.idx` offsets are treated as byte offsets and remain correct
   for UTF-8 and legacy encodings.
-- [ ] Test UTF-8, ISO-8859-* and every other encoding found in the corpus.
+- [x] Test UTF-8, ISO-8859-* and every other encoding found in the corpus.
 - [ ] Handle BOMs, CRLF/LF differences and encoding aliases safely.
 - [ ] Detect missing, truncated, malformed and stale indexes.
 - [ ] Validate index entry counts and verify that indexed words match `.dat`
   entries.
 - [ ] Regenerate an index from `.dat` when explicitly requested.
-- [ ] Allow a safe fallback without a usable `.idx`.
-- [ ] Preserve meanings, parts of speech, alternate senses and phrases.
+- [x] Allow a safe fallback without a usable `.idx`.
+- [x] Preserve meanings, parts of speech, alternate senses and phrases.
 - [ ] Add Unicode normalization and bounded caching.
 - [ ] Modernize paths, typing, exceptions and structured result types.
-- [ ] Add tests before changing PyThes behavior.
-- [ ] Document every deviation from upstream PyThes.
+- [x] Add tests before changing PyThes behavior.
+- [x] Document every deviation from upstream PyThes.
 
 ## LibreOffice dictionary compatibility corpus
 
@@ -246,7 +246,7 @@ Create these test levels under `tests/`:
 
 ### Curated integration suite — every pull request
 
-- [ ] Load a representative matrix of real LibreOffice dictionaries.
+- [x] Load a representative matrix of real LibreOffice dictionaries.
 - [ ] Include small, medium and large dictionaries.
 - [ ] Include regional variants and spelling-only/thesaurus-only languages.
 - [ ] Check representative correct words, incorrect words and suggestions.
@@ -281,21 +281,21 @@ redistribution terms.
 
 # Phase 0 — Repository foundation
 
-- [ ] Review the current repository structure.
-- [ ] Create a clean Python package structure.
-- [ ] Create `pyproject.toml`.
-- [ ] Define minimum supported Python version.
+- [x] Review the current repository structure.
+- [x] Create a clean Python package structure.
+- [x] Create `pyproject.toml`.
+- [x] Define minimum supported Python version.
 - [ ] Define minimum supported PyQt6 version.
-- [ ] Create `README.md`.
-- [ ] Create `CHANGELOG.md`.
-- [ ] Create `CONTRIBUTING.md`.
-- [ ] Keep this `ROADMAP—PyQt6_Linguistic_Tools.md` updated.
-- [ ] Add `.gitignore`.
+- [x] Create `README.md`.
+- [x] Create `CHANGELOG.md`.
+- [x] Create `CONTRIBUTING.md`.
+- [x] Keep this `ROADMAP—PyQt6_Linguistic_Tools.md` updated.
+- [x] Add `.gitignore`.
 - [ ] Add typing configuration.
-- [ ] Add `pytest`.
+- [x] Add `pytest`.
 - [ ] Add basic logging infrastructure.
-- [ ] Define semantic versioning.
-- [ ] Start development version as `0.1.0-dev`.
+- [x] Define semantic versioning.
+- [x] Start development version as `0.1.0-dev`.
 
 ---
 
