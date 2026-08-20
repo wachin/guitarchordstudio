@@ -775,27 +775,28 @@ Make words accumulated by users portable across reinstalls, computers,
 operating systems, ChordFlow, ChordPages and other applications using the
 toolkit.
 
-- [ ] Define a versioned, documented and platform-independent UTF-8 backup
+- [x] Define a versioned, documented and platform-independent UTF-8 backup
   format.
-- [ ] Export the personal dictionary for the active locale.
-- [ ] Export all personal dictionaries in one backup.
-- [ ] Inspect and validate the complete backup before changing local data.
-- [ ] Show an import preview containing locales and word counts.
-- [ ] Import in **merge** mode: preserve existing personal words, add missing
+- [x] Export the personal dictionary for the active locale.
+- [x] Export all personal dictionaries in one backup.
+- [x] Inspect and validate the complete backup before changing local data.
+- [x] Provide import preview data containing locales and word counts for the
+  future UI.
+- [x] Import in **merge** mode: preserve existing personal words, add missing
   personal words and remove duplicates.
-- [ ] Import in **replace** mode: replace only the selected personal
-  dictionary or dictionaries after an explicit warning.
-- [ ] Never merge into, replace or otherwise modify official Hunspell,
+- [x] Import in explicit **replace** mode: replace only the selected personal
+  dictionary or dictionaries; require the future UI to show a warning first.
+- [x] Never merge into, replace or otherwise modify official Hunspell,
   LibreOffice or managed source dictionaries.
-- [ ] Normalize imported locale identifiers and words using the same rules as
+- [x] Normalize imported locale identifiers and words using the same rules as
   `PersonalDictionary`.
-- [ ] Reject unsupported versions, malformed data and unsafe paths without
+- [x] Reject unsupported versions, malformed data and unsafe paths without
   partially importing the backup.
-- [ ] Make restore transactional so a failure leaves every existing personal
-  dictionary unchanged.
-- [ ] Provide backend-independent APIs so ChordFlow and ChordPages can create
+- [x] Make restore transactional so a reported failure restores every existing
+  personal dictionary unchanged.
+- [x] Provide backend-independent APIs so ChordFlow and ChordPages can create
   and restore the same backup without duplicating logic.
-- [ ] Test merge conflicts, duplicate words, multiple locales, non-ASCII text,
+- [x] Test merge conflicts, duplicate words, multiple locales, non-ASCII text,
   malformed backups, interrupted writes and Linux/Windows/macOS portability.
 
 In this phase, the phrases **current dictionary**, **merge** and **replace**
