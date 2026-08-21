@@ -1263,22 +1263,25 @@ coverage on top of those suites.
 
 Start with:
 
-- [ ] English.
-- [ ] Spanish.
-- [ ] French.
-- [ ] German.
-- [ ] Italian.
-- [ ] Portuguese.
-- [ ] Dutch.
+- [x] English (`en_US`).
+- [x] Spanish (`es_EC`).
+- [x] French (`fr`).
+- [x] German (`de_DE_frami`).
+- [x] Italian (`it_IT`).
+- [x] Portuguese (`pt_BR` and `pt_PT` as independent regional cases).
+- [x] Dutch (`nl_NL`).
 
 Then extend to:
 
-- [ ] Polish.
-- [ ] Russian.
-- [ ] Ukrainian.
-- [ ] Greek.
-- [ ] Turkish.
-- [ ] Other available LibreOffice languages.
+- [x] Polish (`pl_PL`).
+- [x] Russian (`ru_RU`).
+- [x] Ukrainian (`uk_UA`).
+- [x] Greek (`el_GR`).
+- [x] Turkish (`tr_TR`).
+- [x] Other available LibreOffice languages through complete registry
+  discovery, including explicit checks for Afrikaans, Arabic, Bulgarian,
+  Hebrew, Hindi, Korean, Thai and Vietnamese and at least twenty languages
+  beyond the curated acceptance matrix.
 
 Representative acceptance words should include, when the corresponding real
 dictionary is available:
@@ -1293,6 +1296,10 @@ French:  français, création, école
 Use clearly invented misspellings alongside valid words. Expected results must
 come from the pinned real dictionary or its recorded compatibility baseline,
 not from a second hard-coded word list in the application.
+
+Implemented in `tests/corpus/test_language_matrix.py`: every curated locale
+checks all recorded valid words plus a clearly invented `zzqxx…` word against
+the portable Spylls backend and verifies the loaded locale and encoding.
 
 ---
 
