@@ -45,31 +45,30 @@ The expected normal branches are `main` for GuitarChordStudio and the toolkit,
 and `master` for the Spylls and PyThes forks. A clean nested engine generally
 does not need to be touched for toolkit-layer work.
 
-## Completed objective: chord token filter and integration test
+## Completed objective: release preparation and reuse documentation
 
-The chord token filter and integration acceptance test are complete:
+The toolkit is ready for the 1.0 release cycle:
 
-- `chordflow/chord_token_filter.py` — `is_chord_token` function implementing
-  the `TokenFilter` protocol. Uses a comprehensive regex that recognizes all
-  common chord symbols including root + accidental, quality, extension
-  numbers, alterations (b5, #5, sus4, add9), and slash chords.
-- `chordflow/main_window.py` — the filter is registered on every
-  `LinguisticTextEditDecorator` instance via `add_token_filter()`, so chord
-  symbols are never sent to Spylls for spell checking.
-- `chordflow/tests/test_chord_token_filter.py` — 138 tests covering:
-  - 58 known chord symbols all match the regex
-  - 17 regular words are rejected by the regex
-  - All chord symbols are excluded by the filter
-  - All regular words are kept by the filter
-  - Integration acceptance test with a realistic lyrics-and-chords document
-    (INTRO X3 → VERSE → CHORUS structure)
-- All 58 chord symbols from the roadmap spec (A, Am, A#m, Bb, C#m7, Fmaj7,
-  Gsus4, D/F#, Cadd9, etc.) are confirmed to be excluded from spell checking.
+- `docs/release-checklist.md` — comprehensive pre-release verification steps
+  for Linux, Windows, macOS, cross-platform requirements, documentation
+  verification, reuse verification, and the release procedure.
+- `docs/reuse.md` — documented Git submodule, pip, and OS package integration
+  procedures with code examples.
+- Phase 39 (Reuse in another PyQt6 application) completed: the `examples/`
+  directory contains standalone PyQt6 applications, `docs/reuse.md` documents
+  the integration procedure, and the toolkit has no GuitarChordStudio imports.
+- All 276 fast suite tests pass, mypy reports no issues.
 
-## Next objective: post-1.0 release preparation
+## Next objective: Phase 40 — First stable release
 
-The remaining work involves release preparation, platform testing, and
-optional native backends (Phase 41). See the roadmap for detailed items.
+The remaining verifiable work on Linux is tracked in
+`docs/release-checklist.md`. Windows and macOS verification require those
+platforms. Key remaining items:
+
+- [ ] Spell checking works on Windows (requires platform)
+- [ ] Spell checking works on macOS (requires platform)
+- [ ] Verify Windows/macOS dictionary handling
+- [ ] Publish release 1.0.0
 
 ## Deliberately deferred or externally gated work
 

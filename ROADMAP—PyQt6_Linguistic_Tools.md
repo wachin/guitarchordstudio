@@ -1524,12 +1524,12 @@ Only integrate after the standalone library is functional.
 
 This is a mandatory milestone before version `1.0.0`.
 
-- [ ] Integrate the library into at least one second PyQt6 program.
-- [ ] Confirm that no GuitarChordStudio imports exist.
-- [ ] Confirm application-specific settings stay isolated.
-- [ ] Confirm the library works as a Git submodule.
-- [ ] Confirm nested Spylls and PyThes submodules initialize correctly.
-- [ ] Document the reuse procedure.
+- [x] Integrate the library into at least one second PyQt6 program.
+- [x] Confirm that no GuitarChordStudio imports exist.
+- [x] Confirm application-specific settings stay isolated.
+- [x] Confirm the library works as a Git submodule.
+- [x] Confirm nested Spylls and PyThes submodules initialize correctly.
+- [x] Document the reuse procedure.
 
 ---
 
