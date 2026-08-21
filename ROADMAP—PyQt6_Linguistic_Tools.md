@@ -345,7 +345,7 @@ about 1.0 GiB and 43.8 s.
   backends.
 - [x] Performance budgets are documented for dictionary loading, memory,
   lookup, suggestion and thesaurus lookup.
-- [ ] The compatibility report identifies which LibreOffice dictionaries are
+- [x] The compatibility report identifies which LibreOffice dictionaries are
   ready, limited or unsupported.
 
 ---

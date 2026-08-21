@@ -45,55 +45,34 @@ The expected normal branches are `main` for GuitarChordStudio and the toolkit,
 and `master` for the Spylls and PyThes forks. A clean nested engine generally
 does not need to be touched for toolkit-layer work.
 
-## Next objective: dictionary compatibility report
+## Completed objective: dictionary compatibility report
 
-Implement the machine-readable, locale-by-locale dictionary compatibility
-report and upload it from corpus CI. This is the first unresolved local
-objective because it closes requirements in both the preliminary engine gate
-and Phase 34. JUnit already reports test cases, but it is intentionally not the
-dictionary compatibility report.
+The machine-readable, locale-by-locale dictionary compatibility report has been
+implemented and integrated with corpus CI. The implementation:
 
-Keep this work in `libs/pyqt6-linguistic-tools`. A suitable implementation
-should:
+- Discovers the configured LibreOffice corpus using existing registry/provider
+  infrastructure without GuitarChordStudio-specific paths.
+- Validates every discoverable spelling and thesaurus component independently.
+- Emits versioned UTF-8 JSON (schema version 1) with deterministic key ordering.
+- Includes reproducibility metadata: toolkit/engine versions, Python/platform,
+  generation time, and corpus identity.
+- Records per locale/component: relative source paths, source encoding,
+  validation checks/warnings/failures, and explicit classification
+  (`ready`/`limited`/`unsupported`).
+- Aggregates failures and writes a valid report even when components fail.
+- Includes deterministic fixture tests (schema, serialization, ordering, errors)
+  in the fast suite and real-corpus assertions without freezing suggestion
+  lists.
+- Provides a documented CLI entry point (`python -m
+  pyqt6_linguistic_tools.compatibility_report`) that works without PyQt6.
+- Generates the JSON report in `.github/workflows/corpus.yml` with a new
+  `upload_compatibility_report` input (default false), 3-day retention, and
+  preserves existing JUnit artifacts.
+- Updates README, testing docs, CHANGELOG, and roadmap checkboxes.
 
-1. Discover the configured LibreOffice corpus without a GuitarChordStudio-only
-   path. Reuse registry/provider and validation behavior rather than creating a
-   second parser.
-2. Validate every discoverable spelling and thesaurus component independently,
-   so a missing thesaurus does not make a spelling-only locale fail.
-3. Emit versioned UTF-8 JSON with deterministic ordering. Include enough
-   metadata to reproduce the run: toolkit and engine versions or revisions,
-   Python/platform information, generation time, and corpus identity when it
-   can be determined safely.
-4. Record each locale/component's relative source paths, source encoding,
-   validation checks/warnings/failures, and an explicit classification such as
-   `ready`, `limited`, or `unsupported`. Do not expose checkout-specific
-   absolute paths in a portable artifact.
-5. Aggregate failures and still write a valid report. Define and document the
-   command's exit behavior so CI can distinguish an unsupported dictionary
-   from a broken report generator.
-6. Add small deterministic fixtures and schema/serialization/order/error tests
-   to the fast suite. Add real-corpus assertions without freezing entire
-   suggestion or synonym lists that may change with dictionary releases.
-7. Add a documented CLI entry point or `python -m ...` command accepting the
-   corpus root and output path. Do not require PyQt6 for report generation.
-8. Generate the JSON report in `.github/workflows/corpus.yml`. Upload it only
-   when the user explicitly selects the workflow's report-upload input. Use a
-   short finite retention period, support a valid partial report, and keep the
-   existing optional JUnit artifacts.
-9. Update the toolkit README, testing/CI documentation, CHANGELOG, and the
-   relevant preliminary-stage and Phase 34 roadmap checkboxes only after the
-   report and its tests pass.
+## Next objective: standalone examples (Phase 35)
 
-Performance measurements already have a separate schema and command in
-`pyqt6_linguistic_tools.performance`. Reuse its portability patterns where
-helpful, but do not merge performance and compatibility into an ambiguous
-artifact. The roadmap asks the full-corpus process to record timing and memory;
-if adding those measurements would make the compatibility run prohibitively
-expensive, preserve a versioned extension point and document the distinction
-instead of fabricating values.
-
-## Acceptance checks for that objective
+Create standalone examples that do not depend on GuitarChordStudio:
 
 Run commands from `libs/pyqt6-linguistic-tools`. Use the active virtual
 environment if one exists; on this development machine the source checkout is

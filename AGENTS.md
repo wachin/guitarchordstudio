@@ -58,4 +58,5 @@ build outputs, virtual environments, or unrelated user changes.
   listed in `libs/pyqt6-linguistic-tools/docs/testing.md`.
 - Keep GitHub Actions and every future release workflow manual-only. Do not add
   triggers for pushes, pull requests, tags, or schedules. Artifact uploads must
-  require an explicit user choice and use short retention.
+  require an explicit user choice and use short retention. Operational
+  instructions are maintained in `docs/GitHub_Actions/README.md`.
