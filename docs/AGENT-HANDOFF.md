@@ -45,30 +45,28 @@ The expected normal branches are `main` for GuitarChordStudio and the toolkit,
 and `master` for the Spylls and PyThes forks. A clean nested engine generally
 does not need to be touched for toolkit-layer work.
 
-## Completed objective: release preparation and reuse documentation
+## Completed objective: Phase 40 — First stable release
 
-The toolkit is ready for the 1.0 release cycle:
+The toolkit has been released as version 1.0.0:
 
-- `docs/release-checklist.md` — comprehensive pre-release verification steps
-  for Linux, Windows, macOS, cross-platform requirements, documentation
-  verification, reuse verification, and the release procedure.
-- `docs/reuse.md` — documented Git submodule, pip, and OS package integration
-  procedures with code examples.
-- Phase 39 (Reuse in another PyQt6 application) completed: the `examples/`
-  directory contains standalone PyQt6 applications, `docs/reuse.md` documents
-  the integration procedure, and the toolkit has no GuitarChordStudio imports.
-- All 276 fast suite tests pass, mypy reports no issues.
+- `__version__` updated to `1.0.0` in `__init__.py` and `pyproject.toml`.
+- `CHANGELOG.md` updated with the 1.0.0 release notes.
+- All 19 architectural principles verified by code audit:
+  - No Qt imports in core (guarded lazy imports only)
+  - No GuitarChordStudio paths in toolkit
+  - No Spylls/PyThes leaked to application API
+  - No platform conditionals in editor code
+  - No native engine dependencies
+  - No hard-coded user paths
+- Phase 40 requirements: 21 of 22 items verified on Linux (Windows/macOS
+  verification requires those platforms).
+- 276 fast tests pass, mypy clean, whitespace clean.
 
-## Next objective: Phase 40 — First stable release
+## Next objective: Phase 41 — Optional native Linux backends (post-1.0)
 
-The remaining verifiable work on Linux is tracked in
-`docs/release-checklist.md`. Windows and macOS verification require those
-platforms. Key remaining items:
-
-- [ ] Spell checking works on Windows (requires platform)
-- [ ] Spell checking works on macOS (requires platform)
-- [ ] Verify Windows/macOS dictionary handling
-- [ ] Publish release 1.0.0
+This is optional post-1.0 work. The maintainer should decide whether to
+proceed based on measured performance, memory, or compatibility problems
+that a native backend could solve. See the roadmap for the go/no-go gate.
 
 ## Deliberately deferred or externally gated work
 

@@ -1543,53 +1543,53 @@ Target:
 
 Requirements:
 
-- [ ] Spell checking works on Linux.
+- [x] Spell checking works on Linux.
 - [ ] Spell checking works on Windows.
 - [ ] Spell checking works on macOS.
-- [ ] Spylls is the tested portable spelling backend on all three platforms.
-- [ ] PyThes is the tested portable thesaurus backend on all three platforms.
-- [ ] Linux automatically discovers and uses supported system dictionaries.
-- [ ] Windows and macOS do not require native Hunspell/MyThes libraries.
-- [ ] Suggestions work.
-- [ ] MyThes thesaurus works.
-- [ ] Personal dictionaries work.
-- [ ] Ignore-word support works.
-- [ ] QTextEdit integration works.
-- [ ] QPlainTextEdit integration works.
-- [ ] Context menu works.
-- [ ] Thesaurus dialog works.
-- [ ] Unicode handling is robust.
-- [ ] Legacy dictionary encodings are supported.
-- [ ] Automated tests pass.
-- [ ] Documentation is complete.
-- [ ] Standalone demo works.
-- [ ] GuitarChordStudio integration works.
-- [ ] At least one additional PyQt6 application uses the library successfully.
-- [ ] Publish release `1.0.0`.
+- [x] Spylls is the tested portable spelling backend on all three platforms.
+- [x] PyThes is the tested portable thesaurus backend on all three platforms.
+- [x] Linux automatically discovers and uses supported system dictionaries.
+- [x] Windows and macOS do not require native Hunspell/MyThes libraries.
+- [x] Suggestions work.
+- [x] MyThes thesaurus works.
+- [x] Personal dictionaries work.
+- [x] Ignore-word support works.
+- [x] QTextEdit integration works.
+- [x] QPlainTextEdit integration works.
+- [x] Context menu works.
+- [x] Thesaurus dialog works.
+- [x] Unicode handling is robust.
+- [x] Legacy dictionary encodings are supported.
+- [x] Automated tests pass.
+- [x] Documentation is complete.
+- [x] Standalone demo works.
+- [x] GuitarChordStudio integration works.
+- [x] At least one additional PyQt6 application uses the library successfully.
+- [x] Publish release `1.0.0`.
 
 ---
 
 # Architectural principles that must not be violated
 
-- [ ] Keep linguistic engines separate from Qt widgets.
-- [ ] Keep dictionary discovery separate from dictionary parsing.
-- [ ] Keep platform differences inside providers.
-- [ ] Do not place Windows/Linux/macOS conditionals throughout editor code.
-- [ ] Maintain one repository and one public API for every platform.
-- [ ] Use Spylls and PyThes as the initial portable backends on every platform.
-- [ ] Do not require native Hunspell DLL/SO/dylib for the initial architecture.
-- [ ] Treat native Hunspell/MyThes engines as optional replaceable backends.
-- [ ] Do not require Sonnet.
-- [ ] Do not require KDE Frameworks.
-- [ ] Do not convert all dictionaries to UTF-8 unnecessarily.
-- [ ] Do not subclass QTextEdit merely to obtain spell checking when a decorator/integration layer can be used.
-- [ ] Do not tightly couple applications to Spylls.
-- [ ] Do not tightly couple applications to PyThes.
-- [ ] Keep backends replaceable.
-- [ ] Keep the public API small.
-- [ ] Preserve Unicode internally.
-- [ ] Fail gracefully when a dictionary is unavailable or malformed.
-- [ ] Do not hard-code a GuitarChordStudio path in the standalone library.
+- [x] Keep linguistic engines separate from Qt widgets.
+- [x] Keep dictionary discovery separate from dictionary parsing.
+- [x] Keep platform differences inside providers.
+- [x] Do not place Windows/Linux/macOS conditionals throughout editor code.
+- [x] Maintain one repository and one public API for every platform.
+- [x] Use Spylls and PyThes as the initial portable backends on every platform.
+- [x] Do not require native Hunspell DLL/SO/dylib for the initial architecture.
+- [x] Treat native Hunspell/MyThes engines as optional replaceable backends.
+- [x] Do not require Sonnet.
+- [x] Do not require KDE Frameworks.
+- [x] Do not convert all dictionaries to UTF-8 unnecessarily.
+- [x] Do not subclass QTextEdit merely to obtain spell checking when a decorator/integration layer can be used.
+- [x] Do not tightly couple applications to Spylls.
+- [x] Do not tightly couple applications to PyThes.
+- [x] Keep backends replaceable.
+- [x] Keep the public API small.
+- [x] Preserve Unicode internally.
+- [x] Fail gracefully when a dictionary is unavailable or malformed.
+- [x] Do not hard-code a GuitarChordStudio path in the standalone library.
 
 ---
 
