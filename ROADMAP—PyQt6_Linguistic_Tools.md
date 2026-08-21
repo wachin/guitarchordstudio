@@ -1004,10 +1004,12 @@ integration = LinguisticTextEditDecorator(
 
 # Phase 22 — QPlainTextEdit support
 
-- [ ] Support existing `QPlainTextEdit` instances.
-- [ ] Provide feature parity with `QTextEdit` where possible.
-- [ ] Test large plain-text documents.
-- [ ] Avoid excessive repainting.
+- [x] Support existing `QPlainTextEdit` instances.
+- [x] Provide parity with the current `QTextEdit` cursor operations: Unicode
+  detection, checking, suggestions, replacement and independent enable state.
+- [x] Test large plain-text documents with 20,001 blocks.
+- [x] Tokenize only the cursor's current block and verify read-only queries do
+  not edit the document or request viewport repainting.
 
 ---
 
@@ -1216,7 +1218,7 @@ coverage on top of those suites.
 ## Qt tests
 
 - [x] QTextEdit cursor detection, checking, suggestions and exact replacement.
-- [ ] QPlainTextEdit integration.
+- [x] QPlainTextEdit cursor-operation parity and large-document behavior.
 - [ ] QSyntaxHighlighter.
 - [ ] Context menu.
 - [ ] Thesaurus dialog.
