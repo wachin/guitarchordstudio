@@ -911,14 +911,14 @@ service.synonyms("rápido")
 
 # Phase 18 — Caching
 
-- [ ] Cache spelling results by `(locale, word)`.
-- [ ] Cache suggestions by `(locale, word)`.
-- [ ] Cache thesaurus results by `(locale, word)`.
-- [ ] Invalidate caches when dictionaries change.
-- [ ] Invalidate relevant entries when personal dictionary changes.
-- [ ] Invalidate relevant entries when a personal word is removed.
-- [ ] Invalidate language-dependent caches whenever the language changes.
-- [ ] Use bounded caches.
+- [x] Cache spelling results by `(locale, word)`.
+- [x] Cache suggestions by `(locale, word)`.
+- [x] Cache thesaurus results by `(locale, word)`.
+- [x] Invalidate caches when dictionaries change.
+- [x] Invalidate relevant entries when personal dictionary changes.
+- [x] Invalidate relevant entries when a personal word is removed.
+- [x] Invalidate language-dependent caches whenever the language changes.
+- [x] Use bounded caches.
 - [x] Benchmark memory consumption.
 
 ---
@@ -1179,14 +1179,14 @@ coverage on top of those suites.
 - [ ] Spylls backend.
 - [ ] PyThes backend.
 - [x] LinguisticService.
-- [ ] Caching.
+- [x] Caching.
 - [ ] Encoding handling.
 - [ ] Backend resolver selection and fallback.
 - [ ] Portable backend contracts that do not expose concrete Spylls/PyThes
   implementation types.
 - [ ] Unicode tokenizer cases: `Señor`, `creación`, `Straße`, `français`,
   `Москва`, `d’Artagnan` and `O'Connor`.
-- [ ] Language switching, cache invalidation and personal-dictionary reload.
+- [x] Language switching, cache invalidation and personal-dictionary reload.
 - [x] Spell-check-only languages, thesaurus-only languages and missing optional
   resources.
 - [ ] Explicit skips with a reason when an optional real dictionary is absent;
