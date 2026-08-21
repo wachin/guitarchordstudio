@@ -1351,22 +1351,29 @@ See `docs/platform-testing.md` in the toolkit repository.
 
 # Phase 34 — GitHub Actions
 
-- [ ] Linux CI.
-- [ ] Windows CI.
-- [ ] macOS CI.
-- [ ] Multiple supported Python versions.
-- [ ] Run `pytest`.
+- [x] Linux CI.
+- [x] Windows CI.
+- [x] macOS CI.
+- [x] Multiple supported Python versions.
+- [x] Run `pytest`.
 - [ ] Run typing checks.
-- [ ] Test Spylls loading.
-- [ ] Test PyThes loading.
-- [ ] Test Unicode.
-- [ ] Test representative legacy encodings.
-- [ ] Run the fast engine suite on every job.
-- [ ] Run the curated LibreOffice corpus suite on pull requests.
-- [ ] Run the full corpus suite on a schedule and by manual dispatch.
+- [x] Test Spylls loading.
+- [x] Test PyThes loading.
+- [x] Test Unicode.
+- [x] Test representative legacy encodings.
+- [x] Run the fast engine suite on every job.
+- [x] Run the curated LibreOffice corpus suite on pull requests.
+- [x] Run the full corpus suite on a schedule and by manual dispatch.
 - [ ] Upload the machine-readable dictionary compatibility report.
-- [ ] Run Qt tests headlessly where possible.
+- [x] Run Qt tests headlessly where possible.
 - [ ] Prevent stable releases when critical tests fail.
+
+Implemented in the standalone toolkit with separate fast and corpus workflows.
+Only the Spylls and PyThes runtime submodules are initialized, avoiding the
+unnecessary Hunspell, MyThes, and Sonnet reference-source downloads. Corpus
+jobs upload JUnit XML, but this is not marked as the richer locale-by-locale
+compatibility report. Typing and release protection remain visible work rather
+than being bypassed; see `docs/continuous-integration.md`.
 
 ---
 
