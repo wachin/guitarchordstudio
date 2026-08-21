@@ -1356,7 +1356,7 @@ See `docs/platform-testing.md` in the toolkit repository.
 - [x] macOS CI.
 - [x] Multiple supported Python versions.
 - [x] Run `pytest`.
-- [ ] Run typing checks.
+- [x] Run typing checks.
 - [x] Test Spylls loading.
 - [x] Test PyThes loading.
 - [x] Test Unicode.
@@ -1372,8 +1372,10 @@ Implemented in the standalone toolkit with separate fast and corpus workflows.
 Only the Spylls and PyThes runtime submodules are initialized, avoiding the
 unnecessary Hunspell, MyThes, and Sonnet reference-source downloads. Corpus
 jobs upload JUnit XML, but this is not marked as the richer locale-by-locale
-compatibility report. Typing and release protection remain visible work rather
-than being bypassed; see `docs/continuous-integration.md`.
+compatibility report. Release protection remains visible work rather than
+being bypassed. Static typing now checks the complete core and Qt source tree
+under the Python 3.10 contract, with no toolkit-package exclusions; see
+`docs/continuous-integration.md`.
 
 ---
 
