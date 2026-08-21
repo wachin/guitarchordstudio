@@ -17,6 +17,12 @@ Create a reusable, cross-platform linguistic toolkit for **Python + PyQt6** appl
 
 This repository must be designed as a reusable component that can be added as a Git submodule to multiple PyQt6 applications.
 
+Agents continuing the implementation should first read
+`docs/AGENT-HANDOFF.md`. It records the current checkpoint, the next locally
+actionable objective, validation commands, deferred work, and the required
+nested-submodule commit order. This roadmap remains the authoritative source
+for product scope and completion criteria.
+
 There will be **one repository and one public API** for every supported
 platform:
 
