@@ -972,17 +972,18 @@ integration = LinguisticTextEditDecorator(
 ```
 
 
-- [ ] Do not require subclassing `QTextEdit`.
-- [ ] Do not require subclassing `QPlainTextEdit`.
-- [ ] Attach behavior to existing editors.
-- [ ] Allow removal/disabling of integration.
-- [ ] Preserve host application's existing context menu.
-- [ ] Preserve host application's signals and behavior.
-- [ ] Allow host applications to add custom actions.
-- [ ] Allow host applications to register domain-specific token filters.
-- [ ] Expose explicit enable/disable methods without requiring editor
+- [x] Do not require subclassing `QTextEdit`.
+- [x] Do not require subclassing `QPlainTextEdit`.
+- [x] Attach behavior to existing editors.
+- [x] Allow removal/disabling of integration.
+- [x] Preserve host application's existing context menu.
+- [x] Preserve host application's signals and behavior.
+- [x] Allow host applications to register custom context-action providers;
+  Phase 25 invokes them when composing the visible menu.
+- [x] Allow host applications to register domain-specific token filters.
+- [x] Expose explicit enable/disable methods without requiring editor
   subclassing, for example `integration.set_spellcheck_enabled(False)`.
-- [ ] Allow thesaurus integration to be disabled independently.
+- [x] Allow thesaurus integration to be disabled independently.
 
 ---
 
@@ -1218,8 +1219,8 @@ coverage on top of those suites.
 - [ ] Context menu.
 - [ ] Thesaurus dialog.
 - [ ] Language changes.
-- [ ] Cleanup/decorator removal.
-- [ ] Enable/disable spelling and thesaurus independently.
+- [x] Cleanup/decorator removal.
+- [x] Enable/disable spelling and thesaurus independently.
 - [ ] Exact replacement under the cursor and safe capitalization preservation.
 - [ ] Bounded suggestion/synonym menus and translatable actions.
 
