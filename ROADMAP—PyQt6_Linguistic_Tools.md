@@ -941,6 +941,19 @@ qt/
 
 Core linguistic logic must remain usable without importing Qt widgets.
 
+- [x] Create the separate `pyqt6_linguistic_tools.qt` package.
+- [x] Establish module ownership for decorator, highlighter, context menu,
+  thesaurus dialog, dictionary manager and settings.
+- [x] Keep imports one-directional from the optional Qt layer to the core.
+- [x] Ensure importing the core never imports PyQt6.
+- [x] Ensure importing the lightweight Qt boundary does not eagerly import
+  `QtCore` or `QtWidgets`.
+- [x] Add lazy PyQt6 runtime detection and stable optional-dependency errors.
+- [x] Add a `PyQt6>=6.6` optional package extra without changing core
+  dependencies.
+- [x] Define validated shared UI defaults without persisting `QSettings` yet.
+- [x] Document host ownership, translation, lifecycle and module boundaries.
+
 ---
 
 # Phase 20 — Sonnet-inspired decorator
