@@ -22,8 +22,8 @@ inside it. The implemented toolkit currently includes:
   asynchronous checking, context actions, language selection, thesaurus UI,
   and the Dictionary Manager;
 - deterministic, Qt, platform, curated-corpus, and full-corpus test layers;
-- GitHub Actions for fast cross-platform tests, static typing, Linux installed
-  dictionary smoke tests, and curated/scheduled corpus tests.
+- manually dispatched GitHub Actions for fast cross-platform tests, static
+  typing, Linux installed dictionary smoke tests, and corpus tests.
 
 Phase 34's static typing objective is complete. Mypy checks all core and Qt
 source files against Python 3.10. At the checkpoint used to create this
@@ -77,9 +77,10 @@ should:
    suggestion or synonym lists that may change with dictionary releases.
 7. Add a documented CLI entry point or `python -m ...` command accepting the
    corpus root and output path. Do not require PyQt6 for report generation.
-8. Generate and upload the JSON artifact in `.github/workflows/corpus.yml`.
-   Use `if: always()` for upload when a valid partial report exists, give it a
-   finite retention period, and keep the existing JUnit artifacts.
+8. Generate the JSON report in `.github/workflows/corpus.yml`. Upload it only
+   when the user explicitly selects the workflow's report-upload input. Use a
+   short finite retention period, support a valid partial report, and keep the
+   existing optional JUnit artifacts.
 9. Update the toolkit README, testing/CI documentation, CHANGELOG, and the
    relevant preliminary-stage and Phase 34 roadmap checkboxes only after the
    report and its tests pass.
@@ -126,6 +127,10 @@ Validate edited workflow YAML and run `git diff --check` before handoff.
 - Branch protection and stable-release blocking require GitHub repository
   policy and a future release workflow. Workflow failures alone are not proof
   that releases are protected.
+- All GitHub Actions are intentionally manual-only to control minutes,
+  notifications, and artifact storage. Do not restore push, pull-request, tag,
+  or scheduled triggers. Any future release must also require an explicit
+  manual dispatch by the repository user.
 - Phase 35 standalone examples follow the compatibility report unless the
   maintainer explicitly reprioritizes them.
 - Phase 38 GuitarChordStudio integration begins only after the standalone
@@ -179,4 +184,3 @@ If a verified engine defect requires Spylls or PyThes changes, add the
 regression test and commit that deepest fork first. Then update the toolkit
 pointer, and finally the GuitarChordStudio pointer. Never force-reset a dirty
 submodule or include unrelated user work.
-

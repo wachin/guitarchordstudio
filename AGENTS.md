@@ -56,4 +56,6 @@ build outputs, virtual environments, or unrelated user changes.
 - Run the smallest relevant tests while iterating, then the documented fast
   suite and `python3 -m mypy` before handoff. Corpus and platform commands are
   listed in `libs/pyqt6-linguistic-tools/docs/testing.md`.
-
+- Keep GitHub Actions and every future release workflow manual-only. Do not add
+  triggers for pushes, pull requests, tags, or schedules. Artifact uploads must
+  require an explicit user choice and use short retention.

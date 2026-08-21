@@ -277,16 +277,17 @@ known test-data location.
 
 Create these test levels under `tests/`:
 
-### Fast suite — every commit
+### Fast suite — local development and manual CI
 
 - [ ] Keep small, license-compatible fixtures covering each important encoding
   and Hunspell/MyThes feature.
 - [ ] Run parser, lookup, suggestion and byte-offset regression tests.
-- [ ] Keep execution time suitable for local development and pull requests.
+- [ ] Keep execution time suitable for local development and manually requested
+  CI runs.
 - [ ] Convert every corpus failure into the smallest useful regression fixture,
   while preserving its required license and attribution.
 
-### Curated integration suite — every pull request
+### Curated integration suite — manual validation before milestones
 
 - [x] Load a representative matrix of real LibreOffice dictionaries.
 - [x] Include small, medium and large dictionaries.
@@ -294,7 +295,7 @@ Create these test levels under `tests/`:
 - [ ] Check representative correct words, incorrect words and suggestions.
 - [ ] Check representative thesaurus entries and index offsets.
 
-### Full corpus suite — scheduled/manual
+### Full corpus suite — explicit manual execution
 
 - [ ] Discover every `.aff/.dic` and `.dat/.idx` pair in the collection.
 - [ ] Validate every dictionary without converting its original encoding.
@@ -1368,13 +1369,16 @@ See `docs/platform-testing.md` in the toolkit repository.
 - [x] Test Unicode.
 - [x] Test representative legacy encodings.
 - [x] Run the fast engine suite on every job.
-- [x] Run the curated LibreOffice corpus suite on pull requests.
-- [x] Run the full corpus suite on a schedule and by manual dispatch.
+- [x] Make the curated LibreOffice corpus suite available by manual dispatch.
+- [x] Make the full corpus suite available by manual dispatch.
 - [ ] Upload the machine-readable dictionary compatibility report.
 - [x] Run Qt tests headlessly where possible.
 - [ ] Prevent stable releases when critical tests fail.
 
-Implemented in the standalone toolkit with separate fast and corpus workflows.
+Implemented in the standalone toolkit with separate manual-only fast and
+corpus workflows. No workflow runs on pushes, pull requests, tags, or a
+schedule. Corpus report uploads are opt-in and retained for only three days to
+control GitHub Actions storage and notifications.
 Only the Spylls and PyThes runtime submodules are initialized, avoiding the
 unnecessary Hunspell, MyThes, and Sonnet reference-source downloads. Corpus
 jobs upload JUnit XML, but this is not marked as the richer locale-by-locale
