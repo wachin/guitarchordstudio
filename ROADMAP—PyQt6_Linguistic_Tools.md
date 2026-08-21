@@ -1213,26 +1213,31 @@ coverage on top of those suites.
 ## Unit tests
 
 - [x] Tokenizer.
-- [ ] Registry.
-- [ ] Providers.
+- [x] Registry, including priority, regional fallback, caching, refresh,
+  tolerant service discovery and strict direct discovery.
+- [x] Directory, managed and user providers, including safe import/removal.
 - [x] Personal dictionary.
 - [x] Ignore-word management.
-- [ ] Spylls backend.
-- [ ] PyThes backend.
+- [x] Spylls backend, including lazy load, unload, lookup, suggestions, missing
+  pairs, malformed dictionaries and real-corpus contracts.
+- [x] PyThes backend, including lazy load, unload, lookup, missing entries,
+  meanings, synonyms, malformed data and real-corpus contracts.
 - [x] LinguisticService.
 - [x] Caching.
-- [ ] Encoding handling.
-- [ ] Backend resolver selection and fallback.
-- [ ] Portable backend contracts that do not expose concrete Spylls/PyThes
+- [x] UTF-8 and legacy encoding handling through small validation fixtures and
+  real Spylls/PyThes corpus matrices.
+- [x] Backend resolver selection, unavailable/unknown requests, diagnostics,
+  fallback control and invalid backend factories.
+- [x] Portable backend contracts that do not expose concrete Spylls/PyThes
   implementation types.
-- [ ] Unicode tokenizer cases: `Señor`, `creación`, `Straße`, `français`,
+- [x] Unicode tokenizer cases: `Señor`, `creación`, `Straße`, `français`,
   `Москва`, `d’Artagnan` and `O'Connor`.
 - [x] Language switching, cache invalidation and personal-dictionary reload.
 - [x] Spell-check-only languages, thesaurus-only languages and missing optional
   resources.
-- [ ] Explicit skips with a reason when an optional real dictionary is absent;
+- [x] Explicit skips with a setup reason when the optional corpus is absent;
   tests must not pretend that a resource exists.
-- [ ] PyThes lookup for existing/missing Unicode words, multiple meanings and
+- [x] PyThes lookup for existing/missing Unicode words, multiple meanings and
   duplicate synonyms.
 - [x] Verify that the service layer exposes backend suggestions unchanged;
   do not hard-code results that are not guaranteed by the selected dictionary
