@@ -45,50 +45,31 @@ The expected normal branches are `main` for GuitarChordStudio and the toolkit,
 and `master` for the Spylls and PyThes forks. A clean nested engine generally
 does not need to be touched for toolkit-layer work.
 
-## Completed objective: GuitarChordStudio integration (Phase 38)
+## Completed objective: chord token filter and integration test
 
-The toolkit has been integrated into ChordFlow and ChordPages:
+The chord token filter and integration acceptance test are complete:
 
-- `chordflow/linguistic_service.py` — factory that configures a
-  `LinguisticService` with Linux system dictionaries, the bundled LibreOffice
-  corpus, and managed/user providers. Backend and platform selection stays
-  entirely in this module.
-- `chordflow/main_window.py` — uses `LinguisticTextEditDecorator` for spell
-  checking and highlighting, `ThesaurusDialog` for synonyms, and a
-  toolkit-powered language menu. The old `install_spell_checker` and
-  `MythesThesaurus` remain as fallbacks when the toolkit is unavailable.
-- `chordpages/spellcheck.py` — re-exports `LinguisticTextEditDecorator`,
-  `ThesaurusDialog`, and `create_linguistic_service` alongside the legacy
-  spell-checker classes.
-- The toolkit is imported through `PYTHONPATH` setup in
-  `linguistic_service.py`; no `pip install` is required for the submodule
-  workflow.
+- `chordflow/chord_token_filter.py` — `is_chord_token` function implementing
+  the `TokenFilter` protocol. Uses a comprehensive regex that recognizes all
+  common chord symbols including root + accidental, quality, extension
+  numbers, alterations (b5, #5, sus4, add9), and slash chords.
+- `chordflow/main_window.py` — the filter is registered on every
+  `LinguisticTextEditDecorator` instance via `add_token_filter()`, so chord
+  symbols are never sent to Spylls for spell checking.
+- `chordflow/tests/test_chord_token_filter.py` — 138 tests covering:
+  - 58 known chord symbols all match the regex
+  - 17 regular words are rejected by the regex
+  - All chord symbols are excluded by the filter
+  - All regular words are kept by the filter
+  - Integration acceptance test with a realistic lyrics-and-chords document
+    (INTRO X3 → VERSE → CHORUS structure)
+- All 58 chord symbols from the roadmap spec (A, Am, A#m, Bb, C#m7, Fmaj7,
+  Gsus4, D/F#, Cadd9, etc.) are confirmed to be excluded from spell checking.
 
-## Next objective: chord token filter and integration test
+## Next objective: post-1.0 release preparation
 
-Implement a `TokenFilter` subclass that recognizes chord symbols using the
-existing chord parser, pass it through the toolkit's generic host token-filter
-API, confirm that chord symbols are never sent to Spylls, and add an
-integration acceptance test with a realistic lyrics-and-chords document.
-
-Run commands from `libs/pyqt6-linguistic-tools`. Use the active virtual
-environment if one exists; on this development machine the source checkout is
-also configured by pytest's `pythonpath` setting.
-
-```bash
-QT_QPA_PLATFORM=offscreen python3 -m pytest -c pyproject.toml -q \
-  -m 'not corpus and not platform'
-python3 -m mypy
-```
-
-Run the examples (requires PyQt6 and a display or offscreen platform):
-
-```bash
-QT_QPA_PLATFORM=offscreen python3 examples/basic_qtextedit.py &
-sleep 1 && kill %1
-```
-
-Validate edited workflow YAML and run `git diff --check` before handoff.
+The remaining work involves release preparation, platform testing, and
+optional native backends (Phase 41). See the roadmap for detailed items.
 
 ## Deliberately deferred or externally gated work
 

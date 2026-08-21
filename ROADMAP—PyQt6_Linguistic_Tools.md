@@ -1486,13 +1486,13 @@ Only integrate after the standalone library is functional.
 - [x] Integrate synonyms.
 - [x] Integrate thesaurus dialog.
 - [x] Integrate language settings.
-- [ ] Implement a GuitarChordStudio-owned `is_chord_token(token)` filter using
+- [x] Implement a GuitarChordStudio-owned `is_chord_token(token)` filter using
   the existing chord parser/grammar rather than duplicating it with a new
   regular expression inside the linguistic library.
-- [ ] Pass that filter through the library's generic host token-filter API.
-- [ ] Confirm that chord symbols such as `A`, `Am`, `A#m`, `Bb`, `C#m7`,
+- [x] Pass that filter through the library's generic host token-filter API.
+- [x] Confirm that chord symbols such as `A`, `Am`, `A#m`, `Bb`, `C#m7`,
   `Fmaj7`, `Gsus4`, `D/F#` and `Cadd9` are never sent to Spylls.
-- [ ] Add a GuitarChordStudio integration acceptance test using a realistic
+- [x] Add a GuitarChordStudio integration acceptance test using a realistic
   lyrics-and-chords document:
 
   ```text

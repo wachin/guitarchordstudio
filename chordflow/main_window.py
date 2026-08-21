@@ -40,6 +40,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from .chord_token_filter import is_chord_token as _is_chord_token
 from .chord_transposer import transpose_text
 from .config_manager import ConfigManager
 from .dict_manager import list_available, download_and_install, uninstall
@@ -403,6 +404,7 @@ class TextScrollerApp(QMainWindow):
             decorator = LinguisticTextEditDecorator(
                 text_widget, self._linguistic_service
             )
+            decorator.add_token_filter(_is_chord_token)
             self._decorators[index] = decorator
         else:
             # Fall back to the legacy spell checker
