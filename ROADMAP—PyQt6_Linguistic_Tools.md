@@ -300,7 +300,7 @@ Create these test levels under `tests/`:
 - [ ] Discover every `.aff/.dic` and `.dat/.idx` pair in the collection.
 - [ ] Validate every dictionary without converting its original encoding.
 - [ ] Record load time, peak memory, warnings, failures and backend version.
-- [ ] Produce a machine-readable compatibility report by locale.
+- [x] Produce a machine-readable compatibility report by locale.
 - [ ] Compare results against the previous baseline to detect regressions.
 - [ ] Run outside the fast unit-test job because the full collection is large.
 
@@ -1371,7 +1371,7 @@ See `docs/platform-testing.md` in the toolkit repository.
 - [x] Run the fast engine suite on every job.
 - [x] Make the curated LibreOffice corpus suite available by manual dispatch.
 - [x] Make the full corpus suite available by manual dispatch.
-- [ ] Upload the machine-readable dictionary compatibility report.
+- [x] Upload the machine-readable dictionary compatibility report.
 - [x] Run Qt tests headlessly where possible.
 - [ ] Prevent stable releases when critical tests fail.
 
@@ -1381,11 +1381,11 @@ schedule. Corpus report uploads are opt-in and retained for only three days to
 control GitHub Actions storage and notifications.
 Only the Spylls and PyThes runtime submodules are initialized, avoiding the
 unnecessary Hunspell, MyThes, and Sonnet reference-source downloads. Corpus
-jobs upload JUnit XML, but this is not marked as the richer locale-by-locale
-compatibility report. Release protection remains visible work rather than
-being bypassed. Static typing now checks the complete core and Qt source tree
-under the Python 3.10 contract, with no toolkit-package exclusions; see
-`docs/continuous-integration.md`.
+jobs can optionally upload the richer locale-by-locale compatibility report
+alongside the existing JUnit XML. Release protection remains visible work
+rather than being bypassed. Static typing now checks the complete core and Qt
+source tree under the Python 3.10 contract, with no toolkit-package exclusions;
+see `docs/continuous-integration.md`.
 
 ---
 
