@@ -996,7 +996,7 @@ integration = LinguisticTextEditDecorator(
 - [x] Replace misspelled words through a stale-safe, undoable `QTextCursor`
   edit that preserves surrounding rich text.
 - [x] Integrate the additive context menu.
-- [x] Emit a request to open the reusable thesaurus UI implemented in Phase 26.
+- [x] Open the reusable modeless thesaurus UI implemented in Phase 26.
 - [x] Change the shared service language and refresh asynchronous highlighting;
   Phase 27 adds persisted per-document selection.
 - [x] Enable/disable spell checking.
@@ -1089,8 +1089,7 @@ Language >
 - [x] Keep every library-owned action string translatable, using English source
   strings.
 - [x] Bound inline suggestions and synonyms so context menus do not become
-  enormous, and emit `more_synonyms_requested` from `More synonyms…`; Phase 26
-  supplies the complete dialog.
+  enormous; `More synonyms…` opens the complete reusable dialog.
 
 ---
 
@@ -1098,21 +1097,21 @@ Language >
 
 Create a reusable `ThesaurusDialog`.
 
-- [ ] Show queried word.
-- [ ] Show meanings.
-- [ ] Show part of speech.
-- [ ] Show synonyms.
-- [ ] Allow selecting a synonym.
-- [ ] Allow replacement in the editor.
-- [ ] Allow searching selected synonyms.
-- [ ] Add navigation history.
-- [ ] Add Back.
-- [ ] Add Forward.
-- [ ] Handle no-result cases.
-- [ ] Keep UI translatable.
-- [ ] Replace exactly the word under the cursor when a synonym is selected.
-- [ ] Preserve simple capitalization where safe (`word`, `Word`, `WORD`).
-- [ ] Do not attempt unsupported morphological transformations that could
+- [x] Show the queried word.
+- [x] Show meanings.
+- [x] Show parts of speech.
+- [x] Show nested synonyms.
+- [x] Allow selecting a meaning or synonym.
+- [x] Allow stale-safe replacement in the editor.
+- [x] Allow searching the selected meaning or synonym.
+- [x] Add branching navigation history.
+- [x] Add Back.
+- [x] Add Forward.
+- [x] Handle no-result cases explicitly.
+- [x] Keep every library-owned UI string translatable from English source text.
+- [x] Replace exactly the original word under the cursor when selected.
+- [x] Preserve simple capitalization where safe (`word`, `Word`, `WORD`).
+- [x] Do not attempt unsupported morphological transformations that could
   produce an incorrect replacement.
 
 ---
@@ -1223,12 +1222,12 @@ coverage on top of those suites.
 - [x] QPlainTextEdit cursor-operation parity and large-document behavior.
 - [x] QSyntaxHighlighter behavior, caching, style and targeted invalidation.
 - [x] Context-menu preservation, action scopes, bounds and extension hooks.
-- [ ] Thesaurus dialog.
+- [x] Thesaurus display, navigation, no-result and editor-replacement behavior.
 - [ ] Language changes.
 - [x] Cleanup/decorator removal.
 - [x] Enable/disable spelling and thesaurus independently.
-- [ ] Exact replacement under the cursor and safe capitalization preservation.
-- [ ] Bounded suggestion/synonym menus and translatable actions.
+- [x] Exact replacement under the cursor and safe capitalization preservation.
+- [x] Bounded suggestion/synonym menus and translatable actions.
 
 ---
 
