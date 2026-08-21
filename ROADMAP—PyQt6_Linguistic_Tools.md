@@ -1040,17 +1040,17 @@ SpellCheckHighlighter
 
 The UI must remain responsive.
 
-- [ ] Add debounce after typing.
-- [ ] Start around 300 ms and make configurable.
-- [ ] Use worker infrastructure for expensive operations.
-- [ ] Evaluate `QThreadPool`.
-- [ ] Evaluate `QRunnable`.
-- [ ] Never create one thread per word.
-- [ ] Cancel obsolete jobs.
-- [ ] Ignore stale results.
-- [ ] Test long documents.
-- [ ] Test long words.
-- [ ] Test rapid typing.
+- [x] Add single-shot debounce after typing.
+- [x] Default to 300 ms through configurable `QtLinguisticSettings.debounce_ms`.
+- [x] Move cache-miss engine operations outside the GUI thread.
+- [x] Use `QThreadPool` for reusable worker infrastructure.
+- [x] Use one `QRunnable` for each unique-word batch.
+- [x] Never create one thread or runnable per word.
+- [x] Signal cancellation to obsolete jobs and stop between word checks.
+- [x] Ignore results with stale generations, locales or document lifetimes.
+- [x] Test a 5,001-block plain-text document.
+- [x] Test a 4,096-character word.
+- [x] Test rapid typing, one-batch behavior and event-loop responsiveness.
 
 ---
 
