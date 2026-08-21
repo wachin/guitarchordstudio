@@ -1158,17 +1158,25 @@ This is not required for the first stable release.
 
 Create reusable UI for dictionaries.
 
-- [ ] List detected languages.
-- [ ] Show locale.
-- [ ] Show dictionary source.
-- [ ] Show spelling status.
-- [ ] Show thesaurus status.
-- [ ] Show file paths in an advanced/details view.
-- [ ] Allow manual dictionary import.
-- [ ] Allow removal of app-managed dictionaries.
-- [ ] Never remove Linux system dictionaries.
-- [ ] Prepare optional future download integration.
-- [ ] Prepare integration with `libreoffice-dictionaries-collection` through the `/dictionaries.json` file which contains the list to download and decompress all the dictionaries that were packaged from `/third-party/libreoffice-dictionaries-collection`
+- [x] List detected languages, including application-owned bundles shadowed by
+  a higher-priority source.
+- [x] Show locale.
+- [x] Show dictionary source.
+- [x] Show spelling status.
+- [x] Show thesaurus status.
+- [x] Show file paths in an advanced/details view.
+- [x] Allow manual dictionary import with deep validation outside the GUI
+  thread.
+- [x] Allow removal of direct app-managed and manually imported bundles with
+  explicit confirmation and path-containment checks.
+- [x] Never remove Linux system dictionaries: generic/system providers expose
+  no removal method and their rows keep the removal action disabled.
+- [x] Prepare optional future download integration through a host-handled Qt
+  signal; do not perform network access or extraction in the widget.
+- [x] Integrate the validated `dictionaries.json` metadata from
+  `libreoffice-dictionaries-collection`. Keep entries without SHA-256 visibly
+  unverified and non-downloadable until the catalog can support secure size,
+  checksum, and extraction verification.
 
 ---
 
@@ -1227,7 +1235,8 @@ coverage on top of those suites.
 - [x] QSyntaxHighlighter behavior, caching, style and targeted invalidation.
 - [x] Context-menu preservation, action scopes, bounds and extension hooks.
 - [x] Thesaurus display, navigation, no-result and editor-replacement behavior.
-- [ ] Language changes.
+- [x] Language changes, including independent editors, regional variants,
+  repeated switching, persistence, and explicit locale routing.
 - [x] Cleanup/decorator removal.
 - [x] Enable/disable spelling and thesaurus independently.
 - [x] Exact replacement under the cursor and safe capitalization preservation.
