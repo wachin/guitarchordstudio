@@ -995,9 +995,10 @@ integration = LinguisticTextEditDecorator(
 - [x] Highlight misspellings through the shared `SpellCheckHighlighter`.
 - [x] Replace misspelled words through a stale-safe, undoable `QTextCursor`
   edit that preserves surrounding rich text.
-- [ ] Integrate context menu.
-- [ ] Open thesaurus.
-- [ ] Change language.
+- [x] Integrate the additive context menu.
+- [x] Emit a request to open the reusable thesaurus UI implemented in Phase 26.
+- [x] Change the shared service language and refresh asynchronous highlighting;
+  Phase 27 adds persisted per-document selection.
 - [x] Enable/disable spell checking.
 
 ---
@@ -1075,20 +1076,21 @@ Open Thesaurus...
 Language >
 ```
 
-- [ ] Keep existing application actions.
-- [ ] Insert linguistic actions cleanly.
-- [ ] Replace words safely.
-- [ ] Support configurable suggestion count.
-- [ ] Support synonyms submenu.
-- [ ] Support language submenu.
-- [ ] Allow applications to disable individual actions.
-- [ ] Show spelling suggestions only for misspelled words.
-- [ ] Allow synonyms and language selection for correctly spelled words without
+- [x] Keep standard, registered and provider-supplied application actions.
+- [x] Insert linguistic actions cleanly and support host-built custom menus.
+- [x] Replace words through the decorator's stale-safe cursor operation.
+- [x] Support configurable suggestion count.
+- [x] Support a bounded synonyms submenu.
+- [x] Support a checked language submenu with localized display names.
+- [x] Allow applications to disable individual actions.
+- [x] Show spelling suggestions only for misspelled words.
+- [x] Allow synonyms and language selection for correctly spelled words without
   manufacturing a spelling error.
-- [ ] Keep every library-owned action string translatable, using English source
+- [x] Keep every library-owned action string translatable, using English source
   strings.
-- [ ] Bound the number of inline suggestions and synonyms so context menus do
-  not become enormous; provide a `More synonyms...` dialog when appropriate.
+- [x] Bound inline suggestions and synonyms so context menus do not become
+  enormous, and emit `more_synonyms_requested` from `More synonyms…`; Phase 26
+  supplies the complete dialog.
 
 ---
 
@@ -1220,7 +1222,7 @@ coverage on top of those suites.
 - [x] QTextEdit cursor detection, checking, suggestions and exact replacement.
 - [x] QPlainTextEdit cursor-operation parity and large-document behavior.
 - [x] QSyntaxHighlighter behavior, caching, style and targeted invalidation.
-- [ ] Context menu.
+- [x] Context-menu preservation, action scopes, bounds and extension hooks.
 - [ ] Thesaurus dialog.
 - [ ] Language changes.
 - [x] Cleanup/decorator removal.
