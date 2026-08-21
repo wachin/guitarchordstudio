@@ -992,7 +992,7 @@ integration = LinguisticTextEditDecorator(
 - [x] Support existing `QTextEdit` instances.
 - [x] Detect word under cursor with tokenizer-consistent Unicode boundaries and
   exact Qt UTF-16 positions.
-- [ ] Highlight misspellings.
+- [x] Highlight misspellings through the shared `SpellCheckHighlighter`.
 - [x] Replace misspelled words through a stale-safe, undoable `QTextCursor`
   edit that preserves surrounding rich text.
 - [ ] Integrate context menu.
@@ -1021,17 +1021,17 @@ Create:
 SpellCheckHighlighter
 ```
 
-- [ ] Use `QSyntaxHighlighter`.
-- [ ] Underline misspelled words.
-- [ ] Prefer a red wave underline where supported.
-- [ ] Do not perform expensive suggestion generation inside `highlightBlock()`.
-- [ ] Avoid re-checking unchanged words unnecessarily.
-- [ ] Rehighlight affected blocks only.
-- [ ] Allow configurable visual style.
-- [ ] Allow disabling highlighting separately from linguistic services.
-- [ ] Keep the highlighter's responsibility narrow: tokenize, apply configured
+- [x] Use `QSyntaxHighlighter`.
+- [x] Underline misspelled words.
+- [x] Prefer a red wave underline where supported.
+- [x] Do not perform expensive suggestion generation inside `highlightBlock()`.
+- [x] Avoid re-checking unchanged words with a bounded per-locale LRU cache.
+- [x] Rehighlight only blocks containing a specifically invalidated word.
+- [x] Allow configurable visual style through a copied `QTextCharFormat`.
+- [x] Allow disabling highlighting separately from linguistic services.
+- [x] Keep the highlighter's responsibility narrow: tokenize, apply configured
   filters, query cached spelling status and underline misspellings.
-- [ ] Never download dictionaries, inspect package managers, rescan the whole
+- [x] Never download dictionaries, inspect package managers, rescan the whole
   filesystem or rebuild an engine from the highlighter.
 
 ---
@@ -1219,7 +1219,7 @@ coverage on top of those suites.
 
 - [x] QTextEdit cursor detection, checking, suggestions and exact replacement.
 - [x] QPlainTextEdit cursor-operation parity and large-document behavior.
-- [ ] QSyntaxHighlighter.
+- [x] QSyntaxHighlighter behavior, caching, style and targeted invalidation.
 - [ ] Context menu.
 - [ ] Thesaurus dialog.
 - [ ] Language changes.
