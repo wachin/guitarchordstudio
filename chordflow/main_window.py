@@ -49,9 +49,21 @@ from .file_operations import (
     read_file,
     write_file,
 )
+from .linguistic_service import create_linguistic_service
 from .search_dialog import FindInFilesDialog, SynonymsDialog
 from .spellcheck import build_language_menu, install_spell_checker
 from .thesaurus import MythesThesaurus
+
+# Try to import the toolkit's enhanced integration; fall back to the
+# legacy spellcheck/thesaurus modules when the toolkit is unavailable.
+try:
+    from pyqt6_linguistic_tools.qt import (
+        LinguisticTextEditDecorator,
+        ThesaurusDialog,
+    )
+    _HAS_TOOLKIT = True
+except ImportError:
+    _HAS_TOOLKIT = False
 
 
 class CustomTextEdit(QTextEdit):
@@ -103,6 +115,8 @@ class TextScrollerApp(QMainWindow):
         self.opened_files = {}
         self.file_encodings = {}
         self.config = self.config_manager.load()
+        self._linguistic_service = create_linguistic_service() if _HAS_TOOLKIT else None
+        self._decorators: dict[int, object] = {}
         self.thesaurus = MythesThesaurus()
         self.opened_files = {}
 
@@ -383,7 +397,16 @@ class TextScrollerApp(QMainWindow):
         text_widget.setUndoRedoEnabled(True)
         text_widget.document().setModified(False)
         text_widget.textChanged.connect(self.on_text_changed)
-        install_spell_checker(text_widget)
+
+        # Attach the toolkit's linguistic decorator when available
+        if self._linguistic_service is not None:
+            decorator = LinguisticTextEditDecorator(
+                text_widget, self._linguistic_service
+            )
+            self._decorators[index] = decorator
+        else:
+            # Fall back to the legacy spell checker
+            install_spell_checker(text_widget)
 
         default_font = self.config.get("font_family", "Noto Mono")
         default_font_size = self.config.get("font_size", 10)
@@ -626,10 +649,13 @@ class TextScrollerApp(QMainWindow):
         options_menu.addAction(change_speed_action)
 
         options_menu.addSeparator()
-        spell_lang_menu = build_language_menu(
-            self, lambda: self.get_current_text_widget()
-        )
-        options_menu.addMenu(spell_lang_menu)
+        if self._linguistic_service is not None:
+            self._build_language_menu(options_menu)
+        else:
+            spell_lang_menu = build_language_menu(
+                self, lambda: self.get_current_text_widget()
+            )
+            options_menu.addMenu(spell_lang_menu)
 
         help_menu = menu_bar.addMenu("Ayuda")
 
@@ -655,6 +681,20 @@ class TextScrollerApp(QMainWindow):
         return selected
 
     def show_synonyms_dialog(self):
+        # Use the toolkit's ThesaurusDialog when available
+        if self._linguistic_service is not None:
+            word = self.selected_word_for_synonyms()
+            if not word:
+                QMessageBox.information(
+                    self, "Sinónimos", "Selecciona una palabra para buscar sinónimos."
+                )
+                return
+            dialog = ThesaurusDialog(self._linguistic_service, word, parent=self)
+            dialog.replacement_requested.connect(self.replace_selected_word)
+            dialog.exec()
+            return
+
+        # Fall back to the legacy thesaurus
         if not self.thesaurus.languages:
             QMessageBox.warning(
                 self,
@@ -670,6 +710,38 @@ class TextScrollerApp(QMainWindow):
 
         dialog = SynonymsDialog(self, word)
         dialog.exec()
+
+    def _build_language_menu(self, parent_menu: QMenu) -> None:
+        """Build a language-selection submenu from the toolkit's available languages."""
+        assert self._linguistic_service is not None
+        lang_menu = QMenu("Idioma del corrector", self)
+        available = self._linguistic_service.available_languages()
+        if not available:
+            action = lang_menu.addAction("(no hay diccionarios)")
+            action.setEnabled(False)
+        else:
+            group = QActionGroup(self)
+            group.setExclusive(True)
+            current = self._linguistic_service.language
+            for lang in available:
+                caps = self._linguistic_service.capabilities(lang)
+                label = f"{lang} — {'Ortografía' if caps.spell_check else ''}"
+                if caps.thesaurus:
+                    label += " + Sinónimos" if caps.spell_check else "Sinónimos"
+                action = lang_menu.addAction(label)
+                action.setData(lang)
+                action.setCheckable(True)
+                action.setChecked(lang == current)
+                action.triggered.connect(
+                    lambda _checked, l=lang: self._switch_language(l)
+                )
+                group.addAction(action)
+        parent_menu.addMenu(lang_menu)
+
+    def _switch_language(self, lang: str) -> None:
+        """Switch the linguistic service to a new language."""
+        if self._linguistic_service is not None:
+            self._linguistic_service.set_language(lang)
 
     def replace_selected_word(self, replacement):
         text_widget = self.get_current_text_widget()

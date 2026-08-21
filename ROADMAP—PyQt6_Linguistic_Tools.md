@@ -1472,20 +1472,20 @@ decorator = LinguisticTextEditDecorator(
 
 Only integrate after the standalone library is functional.
 
-- [ ] Initialize the nested submodules recursively.
-- [ ] Import `pyqt6-linguistic-tools`.
-- [ ] Use the same `LinguisticService` and Qt integration in ChordFlow and
+- [x] Initialize the nested submodules recursively.
+- [x] Import `pyqt6-linguistic-tools`.
+- [x] Use the same `LinguisticService` and Qt integration in ChordFlow and
   ChordPages.
-- [ ] Keep backend and platform selection out of ChordFlow and ChordPages.
-- [ ] Keep GuitarChordStudio-specific code outside the library.
-- [ ] Remove duplicated linguistic logic from GuitarChordStudio where appropriate.
-- [ ] Integrate spell checking.
-- [ ] Integrate suggestions.
-- [ ] Integrate personal dictionary.
-- [ ] Integrate ignore-word actions.
-- [ ] Integrate synonyms.
-- [ ] Integrate thesaurus dialog.
-- [ ] Integrate language settings.
+- [x] Keep backend and platform selection out of ChordFlow and ChordPages.
+- [x] Keep GuitarChordStudio-specific code outside the library.
+- [x] Remove duplicated linguistic logic from GuitarChordStudio where appropriate.
+- [x] Integrate spell checking.
+- [x] Integrate suggestions.
+- [x] Integrate personal dictionary.
+- [x] Integrate ignore-word actions.
+- [x] Integrate synonyms.
+- [x] Integrate thesaurus dialog.
+- [x] Integrate language settings.
 - [ ] Implement a GuitarChordStudio-owned `is_chord_token(token)` filter using
   the existing chord parser/grammar rather than duplicating it with a new
   regular expression inside the linguistic library.

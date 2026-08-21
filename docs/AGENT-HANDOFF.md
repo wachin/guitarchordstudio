@@ -45,54 +45,31 @@ The expected normal branches are `main` for GuitarChordStudio and the toolkit,
 and `master` for the Spylls and PyThes forks. A clean nested engine generally
 does not need to be touched for toolkit-layer work.
 
-## Completed objective: documentation (Phase 37)
+## Completed objective: GuitarChordStudio integration (Phase 38)
 
-All documentation items from the roadmap are covered:
+The toolkit has been integrated into ChordFlow and ChordPages:
 
-- `docs/linguistics-architecture.md` — layer diagram, module map, data-flow
-  diagrams, key design decisions, and installation method reference.
-- Installation, submodule installation, and recursive cloning — documented
-  in the README with `venv` setup instructions for Linux and Windows.
-- Backend API (`docs/backend-api.md`) — Spylls/PyThes lifecycle, lazy loading,
-  bounded LRU cache, resolver diagnostics.
-- Dictionary registry (`docs/dictionary-registry.md`) — discovery, pairing,
-  source priority, locale fallback.
-- Dictionary validation (`docs/dictionary-validation.md`) — Hunspell/MyThes
-  checks, encoding, entry count, representative words, index offsets.
-- Testing (`docs/testing.md`) — fast suite, corpus suite, coverage map, pinned
-  language acceptance matrix, compatibility report.
-- Qt architecture (`docs/qt-architecture.md`) — QTextEdit/QPlainTextEdit
-  integration, decorator, highlighter, context menu, thesaurus dialog,
-  dictionary manager, async spell checking, settings.
-- Personal dictionary (`docs/personal-dictionary.md`) — per-locale UTF-8 JSON
-  storage, NFC normalization, atomic writes, cross-process locks.
-- Ignored words (`docs/ignored-words.md`) — occurrence, document, session
-  scopes, per-locale state.
-- Error handling (`docs/error-handling.md`) — component isolation, structured
-  diagnostics, logging bridge, strict mode.
-- Result caching (`docs/result-caching.md`) — LRU caches, zero-sized mode,
-  registry revision invalidation.
-- Unicode tokenizer (`docs/unicode-tokenizer.md`) — combining marks, UTF-16
-  offsets, configurable technical token exclusions.
-- Managed dictionaries (`docs/managed-dictionaries.md`) — offline catalog,
-  atomic import, dictionary bundles.
-- Personal backups (`docs/personal-backups.md`) — versioned export, preview,
-  merge/replace restore, concurrency.
-- Engine baseline (`docs/engine-baseline.md`) — verified Hunspell directives,
-  lookup/suggestion scenarios, encoding coverage.
-- Performance budgets (`docs/performance-budgets.md`) — load time, memory,
-  lookup latency by dataset size.
-- Public API (`docs/public-api.md`) and deprecation policy
-  (`docs/deprecation-policy.md`) — stable surface, deprecation cycle.
+- `chordflow/linguistic_service.py` — factory that configures a
+  `LinguisticService` with Linux system dictionaries, the bundled LibreOffice
+  corpus, and managed/user providers. Backend and platform selection stays
+  entirely in this module.
+- `chordflow/main_window.py` — uses `LinguisticTextEditDecorator` for spell
+  checking and highlighting, `ThesaurusDialog` for synonyms, and a
+  toolkit-powered language menu. The old `install_spell_checker` and
+  `MythesThesaurus` remain as fallbacks when the toolkit is unavailable.
+- `chordpages/spellcheck.py` — re-exports `LinguisticTextEditDecorator`,
+  `ThesaurusDialog`, and `create_linguistic_service` alongside the legacy
+  spell-checker classes.
+- The toolkit is imported through `PYTHONPATH` setup in
+  `linguistic_service.py`; no `pip install` is required for the submodule
+  workflow.
 
-## Next objective: GuitarChordStudio integration (Phase 38)
+## Next objective: chord token filter and integration test
 
-Integrate the toolkit into ChordFlow and ChordPages. Initialize nested
-submodules recursively, import `pyqt6-linguistic-tools`, use the same
-`LinguisticService` and Qt integration in both applications, keep backend
-and platform selection out of the host applications, keep
-GuitarChordStudio-specific code outside the library, and remove duplicated
-linguistic logic where appropriate.
+Implement a `TokenFilter` subclass that recognizes chord symbols using the
+existing chord parser, pass it through the toolkit's generic host token-filter
+API, confirm that chord symbols are never sent to Spylls, and add an
+integration acceptance test with a realistic lyrics-and-chords document.
 
 Run commands from `libs/pyqt6-linguistic-tools`. Use the active virtual
 environment if one exists; on this development machine the source checkout is
@@ -129,9 +106,6 @@ Validate edited workflow YAML and run `git diff --check` before handoff.
   manual dispatch by the repository user.
 - Phase 35 standalone examples follow the compatibility report unless the
   maintainer explicitly reprioritizes them.
-- Phase 38 GuitarChordStudio integration begins only after the standalone
-  library is ready. ChordFlow and ChordPages must share the same service and Qt
-  integration.
 - Phase 41 native Hunspell/MyThes backends is optional post-1.0 work. The
   maintainer explicitly chose to continue with portable Spylls/PyThes; do not
   restart native backend development.
@@ -154,7 +128,7 @@ Validate edited workflow YAML and run `git diff --check` before handoff.
 
 ## Repository and commit discipline
 
-Do not commit from the top level first. For documentation or integration
+Do not commit from the top level first. For integration or token-filter
 work, commit and push the toolkit, then record its new pointer plus roadmap
 and handoff updates in GuitarChordStudio:
 
@@ -162,13 +136,13 @@ and handoff updates in GuitarChordStudio:
 cd libs/pyqt6-linguistic-tools
 git add .
 git diff --cached
-git commit -m "docs: add architecture overview and cross-references"
+git commit -m "feat(integration): add chord token filter and integration test"
 git push
 
 cd ../..
 git add .
 git diff --cached
-git commit -m "docs(roadmap): record documentation phase"
+git commit -m "docs(roadmap): record GuitarChordStudio integration"
 git push
 ```
 
