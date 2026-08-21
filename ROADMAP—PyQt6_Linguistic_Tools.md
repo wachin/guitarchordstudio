@@ -695,17 +695,24 @@ Search locations such as:
 /usr/share/mythes
 ```
 
-- [ ] Detect system Hunspell dictionaries.
-- [ ] Detect system MyThes thesauri.
-- [ ] Read discovered system dictionaries through Spylls/PyThes by default.
-- [ ] Do not require the Hunspell or MyThes shared libraries merely to use
+- [x] Detect system Hunspell dictionaries.
+- [x] Detect system MyThes thesauri.
+- [x] Read discovered system dictionaries through Spylls/PyThes by default.
+- [x] Do not require the Hunspell or MyThes shared libraries merely to use
   their installed dictionary files.
-- [ ] Never install Linux packages automatically.
-- [ ] Never request root privileges.
-- [ ] Never modify system dictionary files.
+- [x] Never install Linux packages automatically.
+- [x] Never request root privileges.
+- [x] Never modify system dictionary files.
 - [ ] Clearly report missing dictionaries.
 - [ ] Allow applications to tell users which packages may need installation.
-- [ ] Support user-provided dictionaries in addition to system dictionaries.
+- [x] Support user-provided dictionaries in addition to system dictionaries.
+
+Implemented with a read-only `LinuxSystemDictionaryProvider` which searches
+the conventional system paths without creating missing directories. The
+default service combines it with the higher-priority managed and user sources,
+while the selected files are still loaded exclusively through portable
+Spylls/PyThes. Missing-dictionary package guidance remains application- and
+distribution-specific work; it must not trigger package installation.
 
 ---
 
@@ -1307,14 +1314,20 @@ the portable Spylls backend and verifies the loaded locale and encoding.
 
 ## Linux
 
-- [ ] Debian.
+- [x] Debian 13 base (local AVL-MXe 25.2 execution).
 - [ ] Ubuntu.
-- [ ] MX Linux.
-- [ ] System Hunspell dictionaries.
-- [ ] System MyThes dictionaries.
-- [ ] User dictionaries.
-- [ ] Spylls/PyThes reading system-installed dictionary files.
+- [x] MX Linux family (local AVL-MXe 25.2 execution).
+- [x] System Hunspell dictionaries.
+- [x] System MyThes dictionaries.
+- [x] User dictionaries.
+- [x] Spylls/PyThes reading system-installed dictionary files.
 - [ ] Portable fallback when native shared libraries are absent.
+
+The local platform smoke test passed with the packaged `es_EC` Hunspell and
+MyThes files and selected only the `spylls` and `pythes` backends. This host
+does contain `libhunspell` and `libmythes`, so absence of those shared libraries
+is deliberately left unchecked until it is executed in a suitable clean image.
+See `docs/platform-testing.md` in the toolkit repository.
 
 ## Windows
 
