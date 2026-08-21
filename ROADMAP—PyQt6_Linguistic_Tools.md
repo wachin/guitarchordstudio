@@ -1434,12 +1434,12 @@ decorator = LinguisticTextEditDecorator(
 )
 ```
 
-- [ ] Define public modules.
-- [ ] Hide implementation details.
-- [ ] Document stable APIs.
-- [ ] Use semantic versioning.
-- [ ] Add deprecation policy.
-- [ ] Avoid breaking applications unnecessarily.
+- [x] Define public modules.
+- [x] Hide implementation details.
+- [x] Document stable APIs.
+- [x] Use semantic versioning.
+- [x] Add deprecation policy.
+- [x] Avoid breaking applications unnecessarily.
 
 ---
 

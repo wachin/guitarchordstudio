@@ -45,28 +45,32 @@ The expected normal branches are `main` for GuitarChordStudio and the toolkit,
 and `master` for the Spylls and PyThes forks. A clean nested engine generally
 does not need to be touched for toolkit-layer work.
 
-## Completed objective: standalone examples (Phase 35)
+## Completed objective: public API (Phase 36)
 
-Six standalone PyQt6 examples have been created in `examples/`:
+The public API surface has been defined and documented:
 
-- `basic_qtextedit.py` — minimal QTextEdit integration with spell checking
-- `basic_qplaintextedit.py` — minimal QPlainTextEdit integration
-- `spellcheck_demo.py` — interactive spell checking with suggestions, personal
-  dictionary, and ignore words
-- `thesaurus_demo.py` — thesaurus browser using `ThesaurusDialog`
-- `dictionary_manager_demo.py` — dictionary manager dialog
-- `full_demo.py` — full-featured demo combining all toolkit features
+- `docs/public-api.md` — stable public API surface with all exported names
+  grouped by category (core service, Qt integration, models, errors,
+  utilities).
+- `docs/deprecation-policy.md` — pre-1.0 and post-1.0 deprecation cycle,
+  what is not part of the public API, and how to report deprecations.
+- `py.typed` — PEP 561 marker for static type checking support.
+- `__init__.py` — reorganized `__all__` by category, added module docstring
+  with typical usage example.
 
-All examples use `LinuxSystemDictionaryProvider` by default and accept
-`LIBREOFFICE_DICTIONARIES_PATH` for additional dictionaries. They are
-syntactically valid, pass mypy, and import correctly. The full demo
-demonstrates that a PyQt6 application can integrate the complete toolkit
-with minimal code.
+All existing imports remain backward-compatible. The `__all__` now clearly
+separates the public API into categories: core service, registry/providers,
+backends, validation, compatibility report, personal dictionary, ignored
+words, locales, tokenizer, capabilities, models, errors, catalog, storage,
+and version.
 
-## Next objective: public API (Phase 36)
+## Next objective: documentation (Phase 37)
 
-Define public modules, hide implementation details, document stable APIs,
-use semantic versioning, and add a deprecation policy.
+Create comprehensive documentation including architecture overview,
+installation guide, submodule installation, recursive cloning, backend
+documentation, dictionary format documentation, encoding behavior, platform
+dictionary handling, Qt integration, context-menu customization, thesaurus
+usage, personal dictionary, and host-application integration.
 
 Run commands from `libs/pyqt6-linguistic-tools`. Use the active virtual
 environment if one exists; on this development machine the source checkout is
@@ -121,13 +125,13 @@ Validate edited workflow YAML and run `git diff --check` before handoff.
   application-facing linguistic facade.
 - `libs/pyqt6-linguistic-tools/src/pyqt6_linguistic_tools/qt/decorator.py`:
   widget-independent Qt editor integration.
-- `libs/pyqt6-linguistic-tools/examples/`: standalone example applications.
-- `libs/pyqt6-linguistic-tools/docs/testing.md` and
-  `docs/continuous-integration.md`: maintained test contracts.
+- `libs/pyqt6-linguistic-tools/docs/public-api.md`: stable public API surface.
+- `libs/pyqt6-linguistic-tools/docs/`: existing documentation (linguistic
+  service, backend API, registry, Qt architecture, etc.).
 
 ## Repository and commit discipline
 
-Do not commit from the top level first. For ordinary examples work,
+Do not commit from the top level first. For ordinary public-api work,
 commit and push the toolkit, then record its new pointer plus roadmap and
 handoff updates in GuitarChordStudio:
 
@@ -135,13 +139,13 @@ handoff updates in GuitarChordStudio:
 cd libs/pyqt6-linguistic-tools
 git add .
 git diff --cached
-git commit -m "feat(examples): add standalone PyQt6 examples"
+git commit -m "feat(api): define stable public API and deprecation policy"
 git push
 
 cd ../..
 git add .
 git diff --cached
-git commit -m "docs(roadmap): record standalone examples"
+git commit -m "docs(roadmap): record public API phase"
 git push
 ```
 
