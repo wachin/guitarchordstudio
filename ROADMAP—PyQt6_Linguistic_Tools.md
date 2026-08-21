@@ -1182,15 +1182,25 @@ Create reusable UI for dictionaries.
 
 # Phase 30 — Error handling
 
-- [ ] Never crash the host application because one dictionary is malformed.
-- [ ] Return clear structured errors.
-- [ ] Log backend failures.
-- [ ] Detect missing files.
-- [ ] Detect encoding errors.
-- [ ] Detect malformed Hunspell dictionaries.
-- [ ] Detect malformed MyThes files.
-- [ ] Disable only the failing language/backend where possible.
-- [ ] Keep other languages available.
+- [x] Never crash the host application because one dictionary is malformed;
+  tolerant services return conservative spelling, suggestion and thesaurus
+  fallbacks while strict mode remains available for tests and tools.
+- [x] Return bounded `LinguisticServiceDiagnostic` values with operation,
+  locale, component, backend, path, disabled state, and original cause.
+- [x] Log backend failures through the reusable standard-library
+  `logging_diagnostic_handler` bridge without imposing host logging policy.
+- [x] Detect missing files through typed backend and provider errors.
+- [x] Detect encoding errors during validation and preserve runtime causes in
+  diagnostics.
+- [x] Detect malformed Hunspell dictionaries through deep Spylls validation
+  and runtime `DictionaryLoadError` isolation.
+- [x] Detect malformed MyThes files through deep PyThes validation and runtime
+  `DictionaryLoadError` isolation.
+- [x] Disable only the failing exact `(locale, spelling/thesaurus)` component,
+  suppress repeated load attempts, and allow explicit retry or registry
+  refresh after repair.
+- [x] Keep other components, languages and healthy providers available when a
+  backend or provider fails.
 
 ---
 
