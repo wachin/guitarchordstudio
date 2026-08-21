@@ -997,8 +997,8 @@ integration = LinguisticTextEditDecorator(
   edit that preserves surrounding rich text.
 - [x] Integrate the additive context menu.
 - [x] Open the reusable modeless thesaurus UI implemented in Phase 26.
-- [x] Change the shared service language and refresh asynchronous highlighting;
-  Phase 27 adds persisted per-document selection.
+- [x] Change each editor's language independently and refresh asynchronous
+  highlighting without mutating a shared service's default language.
 - [x] Enable/disable spell checking.
 
 ---
@@ -1118,18 +1118,22 @@ Create a reusable `ThesaurusDialog`.
 
 # Phase 27 — Language selection
 
-- [ ] Show available locales.
-- [ ] Show friendly language names.
-- [ ] Show spelling availability.
-- [ ] Show thesaurus availability.
-- [ ] Support regional variants.
-- [ ] Remember default language.
-- [ ] Allow per-document language.
-- [ ] Store settings using `QSettings` in the Qt layer.
-- [ ] On language changes, unload the previous portable dictionary when it is
-  no longer cached, load the relevant personal dictionary, invalidate spelling
-  and suggestion caches, and update thesaurus availability.
-- [ ] Test repeated sequences such as
+- [x] Show available locales.
+- [x] Show friendly language names.
+- [x] Show spelling availability.
+- [x] Show thesaurus availability.
+- [x] Support regional variants.
+- [x] Remember default language.
+- [x] Allow per-document language so editors sharing one service do not change
+  each other's active locale.
+- [x] Store settings using an optional host-provided `QSettings` adapter in the
+  Qt layer, without imposing application or organization identifiers.
+- [x] On language changes, cancel obsolete asynchronous work, load the relevant
+  personal dictionary, invalidate the editor's locale-bound spelling status
+  cache, and update thesaurus availability when the menu is rebuilt. Preserve
+  reusable service results by their locale keys; the bounded backend LRU
+  unloads a portable dictionary only when it is actually evicted.
+- [x] Test repeated sequences such as
   `es_ES → de_DE → ru_RU → fr_FR → es_ES`.
 
 ---
