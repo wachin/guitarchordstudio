@@ -849,23 +849,25 @@ Evaluate Unicode properties such as `\p{L}` and `\p{M}` if the third-party
 dependency if equivalent behavior can be implemented reliably with Python's
 Unicode facilities.
 
-- [ ] Support Spanish accents.
-- [ ] Support `ñ`.
-- [ ] Support apostrophes.
-- [ ] Support linguistically valid hyphens.
-- [ ] Support Cyrillic.
-- [ ] Support Greek.
-- [ ] Prepare for additional scripts.
-- [ ] Exclude URLs.
-- [ ] Exclude email addresses.
-- [ ] Exclude numbers when appropriate.
-- [ ] Exclude configurable technical tokens.
-- [ ] Provide token positions in the original text.
-- [ ] Preserve offsets exactly even when a token contains combining marks or a
+- [x] Support Spanish accents.
+- [x] Support `ñ`.
+- [x] Support apostrophes.
+- [x] Support linguistically valid hyphens.
+- [x] Support Cyrillic.
+- [x] Support Greek.
+- [x] Prepare for additional scripts.
+- [x] Exclude URLs.
+- [x] Exclude email addresses.
+- [x] Exclude numbers when appropriate.
+- [x] Exclude configurable technical tokens.
+- [x] Provide token positions in the original text.
+- [x] Provide UTF-16 positions for future `QTextCursor` integration without
+  losing exact Python source positions.
+- [x] Preserve offsets exactly even when a token contains combining marks or a
   typographic apostrophe.
-- [ ] Provide a host-supplied token-filter interface so applications can exclude
+- [x] Provide a host-supplied token-filter interface so applications can exclude
   domain-specific tokens without coupling the core library to those domains.
-- [ ] Test `123`, `2026`, `x3`, URLs, `www` addresses and email addresses as
+- [x] Test `123`, `2026`, `x3`, URLs, `www` addresses and email addresses as
   configurable non-word exclusions.
 
 ---
@@ -1167,7 +1169,7 @@ coverage on top of those suites.
 
 ## Unit tests
 
-- [ ] Tokenizer.
+- [x] Tokenizer.
 - [ ] Registry.
 - [ ] Providers.
 - [x] Personal dictionary.
