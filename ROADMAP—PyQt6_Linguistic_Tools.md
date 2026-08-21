@@ -989,14 +989,16 @@ integration = LinguisticTextEditDecorator(
 
 # Phase 21 — QTextEdit support
 
-- [ ] Support existing `QTextEdit` instances.
-- [ ] Detect word under cursor.
+- [x] Support existing `QTextEdit` instances.
+- [x] Detect word under cursor with tokenizer-consistent Unicode boundaries and
+  exact Qt UTF-16 positions.
 - [ ] Highlight misspellings.
-- [ ] Replace misspelled words.
+- [x] Replace misspelled words through a stale-safe, undoable `QTextCursor`
+  edit that preserves surrounding rich text.
 - [ ] Integrate context menu.
 - [ ] Open thesaurus.
 - [ ] Change language.
-- [ ] Enable/disable spell checking.
+- [x] Enable/disable spell checking.
 
 ---
 
@@ -1213,7 +1215,7 @@ coverage on top of those suites.
 
 ## Qt tests
 
-- [ ] QTextEdit integration.
+- [x] QTextEdit cursor detection, checking, suggestions and exact replacement.
 - [ ] QPlainTextEdit integration.
 - [ ] QSyntaxHighlighter.
 - [ ] Context menu.
