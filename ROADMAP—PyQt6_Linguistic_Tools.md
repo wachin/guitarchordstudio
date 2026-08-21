@@ -886,23 +886,25 @@ service.suggestions("computdora")
 service.synonyms("rápido")
 ```
 
-- [ ] Integrate `DictionaryRegistry`.
-- [ ] Integrate `SpellCheckerBackend`.
-- [ ] Integrate `ThesaurusBackend`.
-- [ ] Integrate `PersonalDictionary`.
-- [ ] Integrate ignore-word management.
-- [ ] Implement `set_language()`.
-- [ ] Implement `check_word()`.
-- [ ] Implement `suggestions()`.
-- [ ] Implement `synonyms()`.
-- [ ] Implement `available_languages()`.
-- [ ] Implement `capabilities(locale)`.
-- [ ] Add graceful error handling.
-- [ ] Add caching.
-- [ ] Keep the service independent of widgets.
-- [ ] Keep spelling and thesaurus capabilities independently enableable.
-- [ ] Lazy-load thesaurus data only when synonyms are requested.
-- [ ] Ensure spell checking continues to work when no thesaurus exists for the
+- [x] Integrate `DictionaryRegistry`.
+- [x] Integrate `SpellCheckerBackend`.
+- [x] Integrate `ThesaurusBackend`.
+- [x] Integrate `PersonalDictionary`.
+- [x] Integrate ignore-word management.
+- [x] Implement `set_language()`.
+- [x] Implement `check_word()`.
+- [x] Implement `suggestions()`.
+- [x] Implement `synonyms()`.
+- [x] Implement `available_languages()`.
+- [x] Implement `capabilities(locale)`.
+- [x] Add graceful error handling with bounded structured diagnostics and an
+  opt-in strict mode.
+- [x] Add bounded lazy backend caching; keep per-word result caching and
+  revision invalidation in Phase 18.
+- [x] Keep the service independent of widgets.
+- [x] Keep spelling and thesaurus capabilities independently enableable.
+- [x] Lazy-load thesaurus data only when synonyms are requested.
+- [x] Ensure spell checking continues to work when no thesaurus exists for the
   active locale.
 
 ---
@@ -1176,7 +1178,7 @@ coverage on top of those suites.
 - [x] Ignore-word management.
 - [ ] Spylls backend.
 - [ ] PyThes backend.
-- [ ] LinguisticService.
+- [x] LinguisticService.
 - [ ] Caching.
 - [ ] Encoding handling.
 - [ ] Backend resolver selection and fallback.
@@ -1185,13 +1187,13 @@ coverage on top of those suites.
 - [ ] Unicode tokenizer cases: `Señor`, `creación`, `Straße`, `français`,
   `Москва`, `d’Artagnan` and `O'Connor`.
 - [ ] Language switching, cache invalidation and personal-dictionary reload.
-- [ ] Spell-check-only languages, thesaurus-only languages and missing optional
+- [x] Spell-check-only languages, thesaurus-only languages and missing optional
   resources.
 - [ ] Explicit skips with a reason when an optional real dictionary is absent;
   tests must not pretend that a resource exists.
 - [ ] PyThes lookup for existing/missing Unicode words, multiple meanings and
   duplicate synonyms.
-- [ ] Verify that the Qt/service layer exposes backend suggestions unchanged;
+- [x] Verify that the service layer exposes backend suggestions unchanged;
   do not hard-code results that are not guaranteed by the selected dictionary
   version.
 
