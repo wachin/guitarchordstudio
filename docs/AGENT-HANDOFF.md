@@ -45,32 +45,54 @@ The expected normal branches are `main` for GuitarChordStudio and the toolkit,
 and `master` for the Spylls and PyThes forks. A clean nested engine generally
 does not need to be touched for toolkit-layer work.
 
-## Completed objective: public API (Phase 36)
+## Completed objective: documentation (Phase 37)
 
-The public API surface has been defined and documented:
+All documentation items from the roadmap are covered:
 
-- `docs/public-api.md` — stable public API surface with all exported names
-  grouped by category (core service, Qt integration, models, errors,
-  utilities).
-- `docs/deprecation-policy.md` — pre-1.0 and post-1.0 deprecation cycle,
-  what is not part of the public API, and how to report deprecations.
-- `py.typed` — PEP 561 marker for static type checking support.
-- `__init__.py` — reorganized `__all__` by category, added module docstring
-  with typical usage example.
+- `docs/linguistics-architecture.md` — layer diagram, module map, data-flow
+  diagrams, key design decisions, and installation method reference.
+- Installation, submodule installation, and recursive cloning — documented
+  in the README with `venv` setup instructions for Linux and Windows.
+- Backend API (`docs/backend-api.md`) — Spylls/PyThes lifecycle, lazy loading,
+  bounded LRU cache, resolver diagnostics.
+- Dictionary registry (`docs/dictionary-registry.md`) — discovery, pairing,
+  source priority, locale fallback.
+- Dictionary validation (`docs/dictionary-validation.md`) — Hunspell/MyThes
+  checks, encoding, entry count, representative words, index offsets.
+- Testing (`docs/testing.md`) — fast suite, corpus suite, coverage map, pinned
+  language acceptance matrix, compatibility report.
+- Qt architecture (`docs/qt-architecture.md`) — QTextEdit/QPlainTextEdit
+  integration, decorator, highlighter, context menu, thesaurus dialog,
+  dictionary manager, async spell checking, settings.
+- Personal dictionary (`docs/personal-dictionary.md`) — per-locale UTF-8 JSON
+  storage, NFC normalization, atomic writes, cross-process locks.
+- Ignored words (`docs/ignored-words.md`) — occurrence, document, session
+  scopes, per-locale state.
+- Error handling (`docs/error-handling.md`) — component isolation, structured
+  diagnostics, logging bridge, strict mode.
+- Result caching (`docs/result-caching.md`) — LRU caches, zero-sized mode,
+  registry revision invalidation.
+- Unicode tokenizer (`docs/unicode-tokenizer.md`) — combining marks, UTF-16
+  offsets, configurable technical token exclusions.
+- Managed dictionaries (`docs/managed-dictionaries.md`) — offline catalog,
+  atomic import, dictionary bundles.
+- Personal backups (`docs/personal-backups.md`) — versioned export, preview,
+  merge/replace restore, concurrency.
+- Engine baseline (`docs/engine-baseline.md`) — verified Hunspell directives,
+  lookup/suggestion scenarios, encoding coverage.
+- Performance budgets (`docs/performance-budgets.md`) — load time, memory,
+  lookup latency by dataset size.
+- Public API (`docs/public-api.md`) and deprecation policy
+  (`docs/deprecation-policy.md`) — stable surface, deprecation cycle.
 
-All existing imports remain backward-compatible. The `__all__` now clearly
-separates the public API into categories: core service, registry/providers,
-backends, validation, compatibility report, personal dictionary, ignored
-words, locales, tokenizer, capabilities, models, errors, catalog, storage,
-and version.
+## Next objective: GuitarChordStudio integration (Phase 38)
 
-## Next objective: documentation (Phase 37)
-
-Create comprehensive documentation including architecture overview,
-installation guide, submodule installation, recursive cloning, backend
-documentation, dictionary format documentation, encoding behavior, platform
-dictionary handling, Qt integration, context-menu customization, thesaurus
-usage, personal dictionary, and host-application integration.
+Integrate the toolkit into ChordFlow and ChordPages. Initialize nested
+submodules recursively, import `pyqt6-linguistic-tools`, use the same
+`LinguisticService` and Qt integration in both applications, keep backend
+and platform selection out of the host applications, keep
+GuitarChordStudio-specific code outside the library, and remove duplicated
+linguistic logic where appropriate.
 
 Run commands from `libs/pyqt6-linguistic-tools`. Use the active virtual
 environment if one exists; on this development machine the source checkout is
@@ -125,27 +147,28 @@ Validate edited workflow YAML and run `git diff --check` before handoff.
   application-facing linguistic facade.
 - `libs/pyqt6-linguistic-tools/src/pyqt6_linguistic_tools/qt/decorator.py`:
   widget-independent Qt editor integration.
-- `libs/pyqt6-linguistic-tools/docs/public-api.md`: stable public API surface.
+- `libs/pyqt6-linguistic-tools/docs/linguistics-architecture.md`: architecture
+  overview, module map, and data-flow diagrams.
 - `libs/pyqt6-linguistic-tools/docs/`: existing documentation (linguistic
-  service, backend API, registry, Qt architecture, etc.).
+  service, backend API, registry, Qt architecture, testing, etc.).
 
 ## Repository and commit discipline
 
-Do not commit from the top level first. For ordinary public-api work,
-commit and push the toolkit, then record its new pointer plus roadmap and
-handoff updates in GuitarChordStudio:
+Do not commit from the top level first. For documentation or integration
+work, commit and push the toolkit, then record its new pointer plus roadmap
+and handoff updates in GuitarChordStudio:
 
 ```bash
 cd libs/pyqt6-linguistic-tools
 git add .
 git diff --cached
-git commit -m "feat(api): define stable public API and deprecation policy"
+git commit -m "docs: add architecture overview and cross-references"
 git push
 
 cd ../..
 git add .
 git diff --cached
-git commit -m "docs(roadmap): record public API phase"
+git commit -m "docs(roadmap): record documentation phase"
 git push
 ```
 

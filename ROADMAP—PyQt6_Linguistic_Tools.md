@@ -1445,26 +1445,26 @@ decorator = LinguisticTextEditDecorator(
 
 # Phase 37 — Documentation
 
-- [ ] Architecture overview.
-- [ ] Create `docs/linguistics-architecture.md`.
-- [ ] Installation.
-- [ ] Submodule installation.
-- [ ] Recursive cloning.
-- [ ] Spylls backend.
-- [ ] PyThes backend.
-- [ ] Portable default backend policy.
-- [ ] LibreOffice corpus test configuration.
-- [ ] Dictionary formats.
-- [ ] Encoding behavior.
-- [ ] Linux dictionary discovery.
-- [ ] Windows dictionary handling.
-- [ ] macOS dictionary handling.
-- [ ] QTextEdit integration.
-- [ ] QPlainTextEdit integration.
-- [ ] Context-menu customization.
-- [ ] Thesaurus usage.
-- [ ] Personal dictionary.
-- [ ] Host-application integration.
+- [x] Architecture overview.
+- [x] Create `docs/linguistics-architecture.md`.
+- [x] Installation.
+- [x] Submodule installation.
+- [x] Recursive cloning.
+- [x] Spylls backend.
+- [x] PyThes backend.
+- [x] Portable default backend policy.
+- [x] LibreOffice corpus test configuration.
+- [x] Dictionary formats.
+- [x] Encoding behavior.
+- [x] Linux dictionary discovery.
+- [x] Windows dictionary handling.
+- [x] macOS dictionary handling.
+- [x] QTextEdit integration.
+- [x] QPlainTextEdit integration.
+- [x] Context-menu customization.
+- [x] Thesaurus usage.
+- [x] Personal dictionary.
+- [x] Host-application integration.
 
 ---
 
