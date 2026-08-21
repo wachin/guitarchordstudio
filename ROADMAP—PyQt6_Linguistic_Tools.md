@@ -1393,12 +1393,12 @@ see `docs/continuous-integration.md`.
 
 Create standalone examples that do not depend on GuitarChordStudio.
 
-- [ ] `basic_qtextedit.py`.
-- [ ] `basic_qplaintextedit.py`.
-- [ ] `spellcheck_demo.py`.
-- [ ] `thesaurus_demo.py`.
-- [ ] `dictionary_manager_demo.py`.
-- [ ] `full_demo.py`.
+- [x] `basic_qtextedit.py`.
+- [x] `basic_qplaintextedit.py`.
+- [x] `spellcheck_demo.py`.
+- [x] `thesaurus_demo.py`.
+- [x] `dictionary_manager_demo.py`.
+- [x] `full_demo.py`.
 
 The full demo should prove that another PyQt6 application can integrate the toolkit with minimal code.
 

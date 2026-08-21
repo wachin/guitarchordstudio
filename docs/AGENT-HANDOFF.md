@@ -45,34 +45,28 @@ The expected normal branches are `main` for GuitarChordStudio and the toolkit,
 and `master` for the Spylls and PyThes forks. A clean nested engine generally
 does not need to be touched for toolkit-layer work.
 
-## Completed objective: dictionary compatibility report
+## Completed objective: standalone examples (Phase 35)
 
-The machine-readable, locale-by-locale dictionary compatibility report has been
-implemented and integrated with corpus CI. The implementation:
+Six standalone PyQt6 examples have been created in `examples/`:
 
-- Discovers the configured LibreOffice corpus using existing registry/provider
-  infrastructure without GuitarChordStudio-specific paths.
-- Validates every discoverable spelling and thesaurus component independently.
-- Emits versioned UTF-8 JSON (schema version 1) with deterministic key ordering.
-- Includes reproducibility metadata: toolkit/engine versions, Python/platform,
-  generation time, and corpus identity.
-- Records per locale/component: relative source paths, source encoding,
-  validation checks/warnings/failures, and explicit classification
-  (`ready`/`limited`/`unsupported`).
-- Aggregates failures and writes a valid report even when components fail.
-- Includes deterministic fixture tests (schema, serialization, ordering, errors)
-  in the fast suite and real-corpus assertions without freezing suggestion
-  lists.
-- Provides a documented CLI entry point (`python -m
-  pyqt6_linguistic_tools.compatibility_report`) that works without PyQt6.
-- Generates the JSON report in `.github/workflows/corpus.yml` with a new
-  `upload_compatibility_report` input (default false), 3-day retention, and
-  preserves existing JUnit artifacts.
-- Updates README, testing docs, CHANGELOG, and roadmap checkboxes.
+- `basic_qtextedit.py` — minimal QTextEdit integration with spell checking
+- `basic_qplaintextedit.py` — minimal QPlainTextEdit integration
+- `spellcheck_demo.py` — interactive spell checking with suggestions, personal
+  dictionary, and ignore words
+- `thesaurus_demo.py` — thesaurus browser using `ThesaurusDialog`
+- `dictionary_manager_demo.py` — dictionary manager dialog
+- `full_demo.py` — full-featured demo combining all toolkit features
 
-## Next objective: standalone examples (Phase 35)
+All examples use `LinuxSystemDictionaryProvider` by default and accept
+`LIBREOFFICE_DICTIONARIES_PATH` for additional dictionaries. They are
+syntactically valid, pass mypy, and import correctly. The full demo
+demonstrates that a PyQt6 application can integrate the complete toolkit
+with minimal code.
 
-Create standalone examples that do not depend on GuitarChordStudio:
+## Next objective: public API (Phase 36)
+
+Define public modules, hide implementation details, document stable APIs,
+use semantic versioning, and add a deprecation policy.
 
 Run commands from `libs/pyqt6-linguistic-tools`. Use the active virtual
 environment if one exists; on this development machine the source checkout is
@@ -84,16 +78,13 @@ QT_QPA_PLATFORM=offscreen python3 -m pytest -c pyproject.toml -q \
 python3 -m mypy
 ```
 
-Run the focused corpus-report test with the explicit local corpus:
+Run the examples (requires PyQt6 and a display or offscreen platform):
 
 ```bash
-python3 -m pytest -c pyproject.toml -q -m corpus \
-  --dictionary-corpus=../../third-party/libreoffice-dictionaries-collection/dicts
+QT_QPA_PLATFORM=offscreen python3 examples/basic_qtextedit.py &
+sleep 1 && kill %1
 ```
 
-The complete corpus can consume substantial time and memory. Run it only when
-the implementation needs it or before declaring full-corpus compatibility;
-do not repeatedly run it during small documentation or schema iterations.
 Validate edited workflow YAML and run `git diff --check` before handoff.
 
 ## Deliberately deferred or externally gated work
@@ -126,36 +117,31 @@ Validate edited workflow YAML and run `git diff --check` before handoff.
   modes.
 - `libs/pyqt6-linguistic-tools/CONTRIBUTING.md`: engine-fork and contribution
   policy.
-- `libs/pyqt6-linguistic-tools/src/pyqt6_linguistic_tools/validation.py`:
-  reusable structured validation.
-- `libs/pyqt6-linguistic-tools/src/pyqt6_linguistic_tools/providers.py` and
-  `registry.py`: discovery, priorities, and locale/component pairing.
-- `libs/pyqt6-linguistic-tools/src/pyqt6_linguistic_tools/models.py`: existing
-  immutable report and metadata types.
-- `libs/pyqt6-linguistic-tools/tests/conftest.py`: corpus option/environment
-  handling.
-- `libs/pyqt6-linguistic-tools/.github/workflows/corpus.yml`: current corpus
-  jobs and JUnit artifacts.
+- `libs/pyqt6-linguistic-tools/src/pyqt6_linguistic_tools/service.py`:
+  application-facing linguistic facade.
+- `libs/pyqt6-linguistic-tools/src/pyqt6_linguistic_tools/qt/decorator.py`:
+  widget-independent Qt editor integration.
+- `libs/pyqt6-linguistic-tools/examples/`: standalone example applications.
 - `libs/pyqt6-linguistic-tools/docs/testing.md` and
   `docs/continuous-integration.md`: maintained test contracts.
 
 ## Repository and commit discipline
 
-Do not commit from the top level first. For ordinary compatibility-report
-work, commit and push the toolkit, then record its new pointer plus roadmap and
+Do not commit from the top level first. For ordinary examples work,
+commit and push the toolkit, then record its new pointer plus roadmap and
 handoff updates in GuitarChordStudio:
 
 ```bash
 cd libs/pyqt6-linguistic-tools
 git add .
 git diff --cached
-git commit -m "feat(validation): add dictionary compatibility report"
+git commit -m "feat(examples): add standalone PyQt6 examples"
 git push
 
 cd ../..
 git add .
 git diff --cached
-git commit -m "docs(roadmap): record compatibility report support"
+git commit -m "docs(roadmap): record standalone examples"
 git push
 ```
 
