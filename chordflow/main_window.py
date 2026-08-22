@@ -405,7 +405,6 @@ class TextScrollerApp(QMainWindow):
                 text_widget, self._linguistic_service
             )
             decorator.add_token_filter(_is_chord_token)
-            self._decorators[index] = decorator
         else:
             # Fall back to the legacy spell checker
             install_spell_checker(text_widget)
@@ -420,6 +419,9 @@ class TextScrollerApp(QMainWindow):
 
         tab_name = file_name if file_name else "Nuevo archivo"
         index = self.tab_widget.addTab(text_widget, tab_name)
+
+        if self._linguistic_service is not None:
+            self._decorators[index] = decorator
 
         if file_path:
             self.opened_files[index] = file_path
