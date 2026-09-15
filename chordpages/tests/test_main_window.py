@@ -180,7 +180,7 @@ def test_main_window_starts_with_page_editor(qtbot, tmp_path):
     window = MainWindow(settings=temporary_settings(tmp_path))
     qtbot.addWidget(window)
 
-    assert window.windowTitle() == "ChordFlow Guitar - Untitled"
+    assert window.windowTitle() == "ChordPages - Untitled"
     assert not window.windowIcon().isNull()
     assert window.editor.text() == ""
     assert window.editor.page_layout().page_size == CHORDPAGES_PAGE_SIZE

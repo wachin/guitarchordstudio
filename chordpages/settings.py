@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import QMainWindow
 
 ORGANIZATION_NAME = "ChordFlow"
 APPLICATION_NAME = "ChordFlow"
-WINDOW_TITLE_NAME = "ChordFlow Guitar"
+WINDOW_TITLE_NAME = "ChordPages"
 
 # Configuration directory — shared across the suite
 CONFIG_DIR_NAME = "guitarchs"
