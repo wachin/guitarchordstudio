@@ -83,9 +83,12 @@ locally are now verified on Linux:
   A lowercase or mixed-case marker is only ignored when its whole line contains
   just markers, repeats and chords, so lyrics such as `Solo tú` keep their
   words.
-- Validation at this checkpoint: ChordFlow suite 160 passed; toolkit fast suite
-  276 passed, 12 skipped, 50 deselected; toolkit `mypy` clean in 32 source
-  files.
+- Validation at this checkpoint: ChordFlow suite 160 passed; ChordPages suite
+  190 passed; toolkit fast suite 276 passed, 12 skipped, 50 deselected; toolkit
+  `mypy` clean in 32 source files. The ChordPages suite no longer depends on
+  the host locale: `chordpages/tests/conftest.py` installs the
+  source-language UI before each test, so a Spanish desktop no longer fails
+  the English menu assertions.
 
 Windows and macOS integration tests, and a manual GUI regression pass, remain
 unchecked in the roadmap because they need those platforms or a human review.
