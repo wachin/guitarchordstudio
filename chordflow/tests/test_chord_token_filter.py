@@ -1,12 +1,14 @@
-"""Tests for the GuitarChordStudio chord token filter."""
+"""Tests for the GuitarChordStudio chord and marker token filter."""
 
 from __future__ import annotations
 
 import pytest
 
-from pyqt6_linguistic_tools import WordToken
+from pyqt6_linguistic_tools import UnicodeTokenizer, WordToken
 
-from chordflow.chord_token_filter import _CHORD_RE, is_chord_token
+from chordflow.chord_token_filter import is_chord_token
+from chordflow.chord_transposer import is_chord_symbol
+from chordflow.tests.documents import ROADMAP_DOCUMENT, SPANISH_LYRIC_WORDS
 
 
 # Known chord symbols that should be excluded from spell checking
@@ -84,6 +86,9 @@ REGULAR_WORDS = [
     "rock-n-roll",
 ]
 
+# The realistic lyrics-and-chords document required by roadmap Phase 38 lives in
+# ``chordflow.tests.documents`` so the acceptance test uses the same source.
+
 
 def _token(word: str) -> WordToken:
     return WordToken(
@@ -95,14 +100,22 @@ def _token(word: str) -> WordToken:
     )
 
 
-class TestChordPattern:
+def _kept_words(text: str) -> list[str]:
+    tokenizer = UnicodeTokenizer(token_filters=(is_chord_token,))
+    return [token.text for token in tokenizer.iter_tokens(text)]
+
+
+class TestChordGrammar:
     @pytest.mark.parametrize("chord", CHORD_SYMBOLS)
-    def test_chord_pattern_matches_known_chords(self, chord: str) -> None:
-        assert _CHORD_RE.fullmatch(chord) is not None, f"{chord!r} should match"
+    def test_recognizes_known_chords(self, chord: str) -> None:
+        assert is_chord_symbol(chord) is True, f"{chord!r} should match"
 
     @pytest.mark.parametrize("word", REGULAR_WORDS)
-    def test_chord_pattern_rejects_regular_words(self, word: str) -> None:
-        assert _CHORD_RE.fullmatch(word) is None, f"{word!r} should not match"
+    def test_rejects_regular_words(self, word: str) -> None:
+        assert is_chord_symbol(word) is False, f"{word!r} should not match"
+
+    def test_rejects_empty_string(self) -> None:
+        assert is_chord_symbol("") is False
 
 
 class TestIsChordToken:
@@ -124,55 +137,57 @@ class TestIsChordToken:
         assert is_chord_token(_token("A"), "") is False
 
 
-class TestIntegrationAcceptance:
-    """Integration acceptance test with a realistic lyrics-and-chords document."""
+class TestTokenizerPipeline:
+    """The filter must survive the tokenizer splitting chords on '#'."""
 
-    SAMPLE_DOCUMENT = """\
-INTRO X3
-A#m   G#   F#
+    def test_no_chord_fragments_reach_spellcheck(self) -> None:
+        kept = _kept_words(ROADMAP_DOCUMENT)
+        # ``A#m`` tokenizes as ``A`` + ``m``: the fragment must be excluded too.
+        assert "m" not in kept
+        for chord in ("A", "A#m", "G#", "F#", "C#", "B", "G"):
+            assert chord not in kept, f"{chord!r} leaked to spell checking"
 
-VERSE
-C#       G#       A#m      G#    F#
-Siento   un       vacío    en    mí
+    def test_section_markers_are_excluded(self) -> None:
+        kept = _kept_words(ROADMAP_DOCUMENT)
+        for marker in ("INTRO", "VERSE"):
+            assert marker not in kept
+        # ``X3`` is a repeat count, not a word.
+        assert "X3" not in kept
 
-CHORUS
-A#m      G#       F#       G#
-Nunca    pensé    llegar   hasta  aquí
-"""
+    def test_lyric_words_are_kept(self) -> None:
+        kept = _kept_words(ROADMAP_DOCUMENT)
+        for word in SPANISH_LYRIC_WORDS:
+            assert word in kept, f"{word!r} should be kept"
 
-    def test_chord_lines_are_not_sent_to_spellcheck(self) -> None:
-        """Verify that tokens in chord lines are excluded by the filter."""
-        for line in self.SAMPLE_DOCUMENT.split("\n"):
-            if not line.strip():
-                continue
-            tokens = line.split()
-            for token_text in tokens:
-                token = _token(token_text)
-                # Chord lines contain mostly chord symbols
-                chord_count = sum(
-                    1 for t in tokens if _CHORD_RE.fullmatch(t)
-                )
-                is_chord_line = chord_count > len(tokens) / 2
-                if is_chord_line and _CHORD_RE.fullmatch(token_text):
-                    # This token is a chord symbol in a chord line
-                    assert is_chord_token(token, "") is False, (
-                        f"{token_text!r} should be excluded"
-                    )
+    def test_only_lyric_and_marker_free_tokens_survive(self) -> None:
+        kept = _kept_words(ROADMAP_DOCUMENT)
+        assert kept == SPANISH_LYRIC_WORDS
 
-    def test_lyric_words_are_sent_to_spellcheck(self) -> None:
-        """Verify that tokens in lyric lines are kept by the filter."""
-        for line in self.SAMPLE_DOCUMENT.split("\n"):
-            if not line.strip():
-                continue
-            tokens = line.split()
-            chord_count = sum(1 for t in tokens if _CHORD_RE.fullmatch(t))
-            is_chord_line = chord_count > len(tokens) / 2
-            if not is_chord_line:
-                for token_text in tokens:
-                    if token_text.isupper() and len(token_text) > 1:
-                        continue  # Skip section markers like INTRO, VERSE, CHORUS
-                    token = _token(token_text)
-                    if token_text not in ("un", "en", "mi", "a"):
-                        assert is_chord_token(token, "") is True, (
-                            f"{token_text!r} should be kept"
-                        )
+
+class TestStructuralMarkers:
+    @pytest.mark.parametrize(
+        "marker",
+        ["INTRO", "VERSE", "CHORUS", "BRIDGE", "OUTRO", "PUENTE", "CORO", "X3", "x2"],
+    )
+    def test_uppercase_markers_are_excluded(self, marker: str) -> None:
+        assert is_chord_token(_token(marker), "") is False
+
+    def test_lowercase_marker_on_structural_line_is_excluded(self) -> None:
+        text = "Intro: A#m  G#  F#"
+        token = WordToken("Intro", 0, 5, 0, 5)
+        assert is_chord_token(token, text) is False
+
+    def test_lowercase_marker_inside_lyric_is_kept(self) -> None:
+        text = "Solo tú y yo"
+        token = WordToken("Solo", 0, 4, 0, 4)
+        assert is_chord_token(token, text) is True
+
+    def test_spanish_word_coro_inside_lyric_is_kept(self) -> None:
+        text = "Coro de ángeles"
+        token = WordToken("Coro", 0, 4, 0, 4)
+        assert is_chord_token(token, text) is True
+
+    def test_marker_with_trailing_colon_is_excluded(self) -> None:
+        text = "Chorus:"
+        token = WordToken("Chorus", 0, 6, 0, 6)
+        assert is_chord_token(token, text) is False

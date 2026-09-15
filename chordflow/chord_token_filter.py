@@ -1,16 +1,22 @@
-"""Chord token filter for the pyqt6-linguistic-tools tokenizer.
+"""Chord and structural-marker token filter for the toolkit tokenizer.
 
-Provides a ``TokenFilter``-compatible function that excludes chord symbols
-from spell checking. Uses the existing chord grammar from
-:mod:`chordflow.chord_transposer` to recognize chord symbols such as
-``A``, ``Am``, ``C#m7``, ``D/F#``, ``Fmaj7``, ``Gsus4``, and ``Cadd9``.
+Provides a ``TokenFilter``-compatible function that excludes GuitarChordStudio
+chord symbols and non-word structural markers (section labels and repeat
+counts) from spell checking. Chord recognition reuses the shared grammar in
+:mod:`chordflow.chord_transposer`; this module does not define a second chord
+pattern.
+
+The toolkit tokenizer splits ``A#m`` into the tokens ``A`` and ``m`` because
+``#`` is not a word character. A per-token regular expression alone would
+therefore let the ``m`` fragment reach Spylls, so the filter inspects the
+surrounding whitespace-delimited chunk through the token's source offsets from
+the full document text passed by the tokenizer.
 """
 
 from __future__ import annotations
 
 import re
 import sys
-import unicodedata
 from pathlib import Path
 
 
@@ -26,38 +32,149 @@ for _path in [
         sys.path.insert(0, _path)
 
 
-from pyqt6_linguistic_tools import TokenFilter, WordToken  # noqa: E402
+from pyqt6_linguistic_tools import WordToken  # noqa: E402
 
-# Reuse the chord grammar from chord_transposer.
-# Matches chord symbols: root note (A-G) + optional accidental (#/b)
-# + optional quality (m, maj, min, dim, aug, sus, add, M, M7, dom)
-# + optional extension number (2-13)
-# + optional alterations (sus4, b5, #5, add9, etc.)
-# + optional slash chord bass note (/A, /F#, etc.)
-_CHORD_RE = re.compile(
-    r"\b[A-G](#|b)?"
-    r"(?:maj|min|dim|aug|sus|add|m|M|M7|dom)?"
-    r"(?:[0-9]|1[0-3])?"
-    r"(?:sus[0-9]|b[0-9]|#[0-9]|add[0-9])*"
-    r"(?:/[A-G](#|b)?)?"
-    r"(?!\w)"
+from .chord_transposer import is_chord_symbol  # noqa: E402
+
+
+# Punctuation that may surround a chunk in a chord chart (``Intro:``, ``(x4)``,
+# ``A#m,``). It is stripped only for recognition; the source text is untouched.
+_CHUNK_EDGE_PUNCTUATION = ".,;:!?¡¿()[]{}<>\"'`|*_–—…"
+
+# Section labels used by GuitarChordStudio chord charts. They are structure, not
+# words, and must never be spell checked.
+_MARKER_KEYWORDS = frozenset(
+    {
+        # English
+        "intro",
+        "outro",
+        "verse",
+        "chorus",
+        "bridge",
+        "pre-chorus",
+        "prechorus",
+        "refrain",
+        "hook",
+        "solo",
+        "interlude",
+        "instrumental",
+        "coda",
+        "tag",
+        "vamp",
+        "turnaround",
+        "ending",
+        "repeat",
+        # Spanish
+        "estrofa",
+        "coro",
+        "estribillo",
+        "puente",
+        "precoro",
+        "pre-coro",
+        "introduccion",
+        "introducción",
+        "interludio",
+        "final",
+        "repeticion",
+        "repetición",
+    }
 )
 
+# Repeat/play counts such as ``X3``, ``x2`` or ``(x4)``.
+_REPEAT_MARKER_PATTERN = re.compile(r"\(?[xX]\d+\)?")
 
-def is_chord_token(token: WordToken, _text: str) -> bool:
-    """Return ``True`` to keep *token* (not a chord) or ``False`` to exclude it.
+
+def _clean(value: str) -> str:
+    """Strip chart punctuation from both ends of *value*."""
+    return value.strip(_CHUNK_EDGE_PUNCTUATION)
+
+
+def _source_chunk(text: str, token: WordToken) -> str:
+    """Return the whitespace-delimited chunk of *text* containing *token*."""
+    if not isinstance(text, str) or not text:
+        return ""
+    start, end = token.start, token.end
+    if not 0 <= start <= end <= len(text):
+        return ""
+    left = start
+    while left > 0 and not text[left - 1].isspace():
+        left -= 1
+    right = end
+    while right < len(text) and not text[right].isspace():
+        right += 1
+    return text[left:right]
+
+
+def _source_line(text: str, token: WordToken) -> str | None:
+    """Return the source line containing *token*, or ``None`` without context."""
+    if not isinstance(text, str) or not text:
+        return None
+    start, end = token.start, token.end
+    if not 0 <= start <= end <= len(text):
+        return None
+    line_start = text.rfind("\n", 0, start) + 1
+    line_end = text.find("\n", end)
+    if line_end == -1:
+        line_end = len(text)
+    return text[line_start:line_end]
+
+
+def _is_structural_line(line: str) -> bool:
+    """Return True when *line* contains only markers, repeats or chord symbols."""
+    words = line.split()
+    if not words:
+        return False
+    for word in words:
+        candidate = _clean(word)
+        if not candidate or _REPEAT_MARKER_PATTERN.fullmatch(candidate):
+            continue
+        if candidate.casefold() in _MARKER_KEYWORDS:
+            continue
+        if is_chord_symbol(candidate):
+            continue
+        return False
+    return True
+
+
+def _is_marker(chunk: str, line: str | None) -> bool:
+    """Return True when *chunk* is a structural marker rather than a word.
+
+    Uppercase labels (``INTRO``, ``VERSE``) are recognized directly. Lowercase
+    or mixed-case labels are only ignored when their whole line contains nothing
+    but markers, repeats and chords, so an ordinary lyric such as ``Solo tú``
+    keeps ``Solo`` as a real word.
+    """
+    candidate = _clean(chunk)
+    if not candidate:
+        return False
+    if _REPEAT_MARKER_PATTERN.fullmatch(candidate):
+        return True
+    if candidate.casefold() not in _MARKER_KEYWORDS:
+        return False
+    if candidate.isupper():
+        return True
+    return line is not None and _is_structural_line(line)
+
+
+def is_chord_token(token: WordToken, text: str) -> bool:
+    """Return ``True`` to keep *token* (a real word) or ``False`` to exclude it.
 
     This function is a ``TokenFilter`` — it can be passed to
     :meth:`LinguisticTextEditDecorator.add_token_filter` or included in
     the ``token_filters`` constructor parameter.
 
+    A token is excluded when it belongs to a chord symbol, a section marker or
+    a repeat count. Numbers are kept so a host dictionary or the toolkit decides
+    what to do with them.
+
     Args:
         token: The word token being evaluated.
-        _text: The full document text (unused by this filter).
+        text: The full document (or block) text the token came from.
 
     Returns:
         ``True`` if the token is a regular word (keep it),
-        ``False`` if it matches a chord symbol (exclude from spell checking).
+        ``False`` if it is chord or structural markup (exclude from spell
+        checking).
     """
     word = token.text
 
@@ -65,14 +182,13 @@ def is_chord_token(token: WordToken, _text: str) -> bool:
     if word.isdigit():
         return True
 
-    # Check against the chord pattern
-    if _CHORD_RE.fullmatch(word):
+    chunk = _source_chunk(text, token) or word
+    if is_chord_symbol(_clean(chunk)):
+        return False
+    if _is_marker(chunk, _source_line(text, token)):
         return False
 
     return True
 
 
-__all__ = [
-    "_CHORD_RE",
-    "is_chord_token",
-]
+__all__ = ["is_chord_token"]

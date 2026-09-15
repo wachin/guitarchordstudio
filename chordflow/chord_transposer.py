@@ -22,6 +22,39 @@ CHORD_BASE = [
 
 CHORD_PATTERN = re.compile(r"\b[A-G](#|b)?(m|maj|min|dim|aug|sus|add)?[0-9]?(?!\w)")
 
+# Single source of truth for *chord-symbol recognition*. ``CHORD_PATTERN`` above
+# stays deliberately narrow because transposition splits a chord into root,
+# accidental and suffix; recognition needs the complete chord vocabulary
+# (qualities, extensions, alterations and slash basses) so that spell checking
+# never receives a chord fragment.
+#
+# Matches: root note (A-G) + optional accidental (#/b)
+# + optional quality (m, maj, min, dim, aug, sus, add, M, M7, dom)
+# + optional extension number (2-13)
+# + optional alterations (sus4, b5, #5, add9, ...)
+# + optional slash-chord bass note (/A, /F#, ...)
+CHORD_SYMBOL_PATTERN = re.compile(
+    r"\b[A-G](#|b)?"
+    r"(?:maj|min|dim|aug|sus|add|m|M|M7|dom)?"
+    r"(?:[0-9]|1[0-3])?"
+    r"(?:sus[0-9]|b[0-9]|#[0-9]|add[0-9])*"
+    r"(?:/[A-G](#|b)?)?"
+    r"(?!\w)"
+)
+
+
+def is_chord_symbol(text: str) -> bool:
+    """Return True when *text* is exactly one chord symbol.
+
+    Recognizes the same symbols as :data:`CHORD_SYMBOL_PATTERN`, for example
+    ``A``, ``Am``, ``A#m``, ``Bb``, ``C#m7``, ``Fmaj7``, ``Gsus4``, ``D/F#`` and
+    ``Cadd9``. This is the shared recognizer used by the spell-check token
+    filter in :mod:`chordflow.chord_token_filter`.
+    """
+    if not text:
+        return False
+    return CHORD_SYMBOL_PATTERN.fullmatch(text) is not None
+
 
 def is_chord_line(line: str) -> bool:
     """Return True if more than half of the words in *line* look like chords."""
@@ -86,7 +119,9 @@ def transpose_text(text: str, semitones: int, use_sharps: bool) -> str:
 __all__ = [
     "CHORD_BASE",
     "CHORD_PATTERN",
+    "CHORD_SYMBOL_PATTERN",
     "is_chord_line",
+    "is_chord_symbol",
     "transpose_chord",
     "transpose_text",
 ]
