@@ -2,8 +2,13 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
+
+
+# Qt tests must not open windows.
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 
 # Add the pyqt6-linguistic-tools toolkit to the Python path.

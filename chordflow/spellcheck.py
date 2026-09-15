@@ -15,7 +15,7 @@ import re
 import sys
 from pathlib import Path
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QPoint, Qt
 from PyQt6.QtGui import QAction, QSyntaxHighlighter, QTextCharFormat, QTextCursor
 from PyQt6.QtWidgets import QMenu, QTextEdit
 
@@ -402,45 +402,118 @@ def install_spell_checker(
     editor._spell_checker = checker
 
     def _context_menu(event):
-        menu = editor.createStandardContextMenu()
-        cursor = editor.cursorForPosition(event.pos())
-        cursor.select(QTextCursor.SelectionType.WordUnderCursor)
-        word = cursor.selectedText()
-        editor.setTextCursor(cursor)
-
-        if word and not checker.check(word):
-            suggestions = checker.suggest(word)
-            if suggestions:
-                insert_pos = menu.actions()[0] if menu.actions() else None
-                for s in suggestions[:10]:
-                    action = QAction(s, editor)
-                    action.triggered.connect(
-                        lambda checked, sug=s: _replace_word(editor, sug)
-                    )
-                    menu.insertAction(insert_pos, action)
-                menu.insertSeparator(insert_pos)
-
-            add_action = QAction(f'Add "{word}" to dictionary', editor)
-            add_action.triggered.connect(
-                lambda checked: _add_word(editor, checker, word)
-            )
-            menu.insertAction(
-                menu.actions()[0] if menu.actions() else None,
-                add_action,
-            )
-            menu.insertSeparator(
-                menu.actions()[0] if menu.actions() else None,
-            )
-
+        menu = build_spell_context_menu(editor, checker, event.pos())
         menu.exec(event.globalPos())
 
     editor.contextMenuEvent = _context_menu
     return checker
 
 
-def _replace_word(editor: QTextEdit, replacement: str) -> None:
-    cursor = editor.textCursor()
+def build_spell_context_menu(
+    editor: QTextEdit,
+    checker: SpellChecker,
+    position: QPoint,
+) -> QMenu:
+    """Return the standard editor menu plus spelling suggestions.
+
+    The user's selection is preserved so Copy and Cut keep acting on it; the
+    editor cursor is only moved when nothing is selected. Suggestions are
+    offered for the selected word, or for the word under *position* when there
+    is no selection.
+    """
+    menu = editor.createStandardContextMenu()
+    word_cursor = _spell_word_cursor(editor, position)
+    if word_cursor is None:
+        return menu
+
+    word = word_cursor.selectedText()
+    if not word or checker.check(word):
+        return menu
+
+    entries: list[QAction] = []
+    for suggestion in checker.suggest(word)[:10]:
+        action = QAction(suggestion, editor)
+        action.triggered.connect(
+            _make_replace_handler(editor, word_cursor, suggestion)
+        )
+        entries.append(action)
+
+    if entries:
+        entries.append(_menu_separator(editor))
+
+    add_action = QAction(f'Add "{word}" to dictionary', editor)
+    add_action.triggered.connect(
+        lambda checked=False: _add_word(editor, checker, word)
+    )
+    entries.extend((add_action, _menu_separator(editor)))
+
+    _prepend_actions(menu, entries)
+    return menu
+
+
+def _spell_word_cursor(
+    editor: QTextEdit,
+    position: QPoint,
+) -> QTextCursor | None:
+    """Return a cursor over the word to spell check.
+
+    A selection made by the user is never modified; only a single selected word
+    is returned so its suggestions can be offered. Without a selection the word
+    under the pointer is selected so replacement actions have a target.
+    """
+    selection = editor.textCursor()
+    if selection.hasSelection():
+        selected = selection.selectedText()
+        if not selected.strip() or any(
+            character.isspace() for character in selected
+        ):
+            return None
+        return QTextCursor(selection)
+
+    cursor = editor.cursorForPosition(position)
     cursor.select(QTextCursor.SelectionType.WordUnderCursor)
+    if not cursor.selectedText():
+        return None
+    editor.setTextCursor(cursor)
+    return cursor
+
+
+def _prepend_actions(menu: QMenu, actions: list[QAction]) -> None:
+    """Insert *actions* at the top of *menu*, preserving their order."""
+    existing = menu.actions()
+    if not existing:
+        for action in actions:
+            menu.addAction(action)
+        return
+    first = existing[0]
+    for action in reversed(actions):
+        menu.insertAction(first, action)
+
+
+def _menu_separator(parent: QTextEdit) -> QAction:
+    action = QAction(parent)
+    action.setSeparator(True)
+    return action
+
+
+def _make_replace_handler(
+    editor: QTextEdit,
+    target: QTextCursor,
+    replacement: str,
+):
+    """Return a ``triggered`` slot that replaces the captured word range."""
+
+    def handler(_checked: bool = False) -> None:
+        _replace_word(editor, QTextCursor(target), replacement)
+
+    return handler
+
+
+def _replace_word(
+    editor: QTextEdit, target: QTextCursor, replacement: str
+) -> None:
+    """Replace the captured word range with *replacement*."""
+    cursor = QTextCursor(target)
     cursor.insertText(replacement)
     editor.setTextCursor(cursor)
 
@@ -592,6 +665,7 @@ def _dictionary_paths(lang: str) -> list[tuple[Path, Path]]:
 __all__ = [
     "SpellChecker",
     "SpellHighlighter",
+    "build_spell_context_menu",
     "install_spell_checker",
     "build_language_menu",
 ]
