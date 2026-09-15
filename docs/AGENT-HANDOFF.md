@@ -83,7 +83,12 @@ locally are now verified on Linux:
   A lowercase or mixed-case marker is only ignored when its whole line contains
   just markers, repeats and chords, so lyrics such as `Solo tú` keep their
   words.
-- Validation at this checkpoint: ChordFlow suite 160 passed; ChordPages suite
+- Reported ChordPages GUI defects fixed: the window title is now `ChordPages`
+  (`WINDOW_TITLE_NAME`) instead of `ChordFlow Guitar`, and the spell-check
+  context menu no longer replaces the user's selection with the word under the
+  pointer, so Copy and Cut act on the selected text again. Regression tests
+  live in `chordflow/tests/test_spellcheck_context_menu.py`.
+- Validation at this checkpoint: ChordFlow suite 167 passed; ChordPages suite
   190 passed; toolkit fast suite 276 passed, 12 skipped, 50 deselected; toolkit
   `mypy` clean in 32 source files. The ChordPages suite no longer depends on
   the host locale: `chordpages/tests/conftest.py` installs the
