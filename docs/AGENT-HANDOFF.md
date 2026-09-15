@@ -62,11 +62,46 @@ The toolkit has been released as version 1.0.0:
   verification requires those platforms).
 - 276 fast tests pass, mypy clean, whitespace clean.
 
+## Completed objective: Phase 38 — Linux integration verification
+
+The GuitarChordStudio integration acceptance criteria that can be checked
+locally are now verified on Linux:
+
+- `chordflow/tests/test_integration_acceptance.py` runs the roadmap's realistic
+  lyrics-and-chords document through the toolkit tokenizer with the
+  GuitarChordStudio token filter and a pinned LibreOffice `es_ES` dictionary
+  read by Spylls. Only the lyric words survive the filter, all of them are
+  accepted by the dictionary, `marabillas` is rejected, and `maravillas` is
+  offered as a suggestion. The test skips with a concrete message when no
+  dictionary is configured instead of pretending to pass.
+- The filter reuses one shared chord grammar
+  (`chordflow/chord_transposer.py`: `CHORD_SYMBOL_PATTERN`, `is_chord_symbol`)
+  instead of keeping a second chord regular expression, and it reads the source
+  chunk through the token offsets. That excludes the `m` fragment the tokenizer
+  splits out of `A#m`/`C#m7`, which previously leaked to Spylls.
+- Section labels (`INTRO`, `VERSE`, ...) and repeat counts (`X3`) are excluded.
+  A lowercase or mixed-case marker is only ignored when its whole line contains
+  just markers, repeats and chords, so lyrics such as `Solo tú` keep their
+  words.
+- Validation at this checkpoint: ChordFlow suite 160 passed; toolkit fast suite
+  276 passed, 12 skipped, 50 deselected; toolkit `mypy` clean in 32 source
+  files.
+
+Windows and macOS integration tests, and a manual GUI regression pass, remain
+unchecked in the roadmap because they need those platforms or a human review.
+`chordflow/spellcheck.py` still carries the legacy native-Hunspell fallback
+used only when the toolkit cannot be imported; removing that duplicate is a
+candidate objective, not completed work.
+
 ## Next objective: Phase 41 — Optional native Linux backends (post-1.0)
 
 This is optional post-1.0 work. The maintainer should decide whether to
 proceed based on measured performance, memory, or compatibility problems
 that a native backend could solve. See the roadmap for the go/no-go gate.
+
+No mandatory Phase 40 item is actionable from this checkout anymore: the
+remaining unchecked boxes need Windows/macOS hardware or a manual GUI review.
+Do not check them off from Linux evidence.
 
 ## Deliberately deferred or externally gated work
 

@@ -1491,7 +1491,10 @@ Only integrate after the standalone library is functional.
   regular expression inside the linguistic library.
 - [x] Pass that filter through the library's generic host token-filter API.
 - [x] Confirm that chord symbols such as `A`, `Am`, `A#m`, `Bb`, `C#m7`,
-  `Fmaj7`, `Gsus4`, `D/F#` and `Cadd9` are never sent to Spylls.
+  `Fmaj7`, `Gsus4`, `D/F#` and `Cadd9` are never sent to Spylls. The shared
+  chord grammar lives in `chordflow.chord_transposer` (`is_chord_symbol`) and
+  the filter reconstructs the source chunk, so the `m` fragment that the
+  tokenizer splits out of `A#m`/`C#m7` is excluded as well.
 - [x] Add a GuitarChordStudio integration acceptance test using a realistic
   lyrics-and-chords document:
 
@@ -1508,15 +1511,22 @@ Only integrate after the standalone library is functional.
   las maravillas de tu amor
   ```
 
-- [ ] Verify that chords/non-word markers are ignored while ordinary Spanish
-  words are checked according to the active dictionary.
-- [ ] Verify that a misspelling such as `marabillas` exposes the suggestions
+- [x] Verify that chords/non-word markers are ignored while ordinary Spanish
+  words are checked according to the active dictionary. Verified on Linux by
+  `chordflow/tests/test_integration_acceptance.py` with the pinned LibreOffice
+  `es_ES` dictionary: only the lyric words survive the token filter and every
+  one of them is accepted.
+- [x] Verify that a misspelling such as `marabillas` exposes the suggestions
   returned by the active pinned dictionary, including `maravillas` when that
-  dictionary actually provides it.
-- [ ] Test Linux.
+  dictionary actually provides it. Verified on Linux: the test skips when the
+  active dictionary does not accept `maravillas` and otherwise requires it in
+  the suggestion list.
+- [x] Test Linux.
 - [ ] Test Windows.
 - [ ] Test macOS.
-- [ ] Verify no regressions in existing GuitarChordStudio features.
+- [ ] Verify no regressions in existing GuitarChordStudio features. The
+  automated ChordFlow suite passes; a manual GUI regression pass is still
+  pending.
 
 ---
 
