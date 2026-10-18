@@ -127,6 +127,9 @@ y soporte para archivos `.txt`
 - [x] El zoom escala la fuente junto con la pagina, igual que en LibreOffice.
 - [x] Atajos de zoom agregados: `Ctrl++`, `Ctrl+=`, `Ctrl+-` y `Ctrl+0`.
 - [x] Barra de herramientas agregada para controles de zoom.
+- [x] Iconos para nuevo, abrir, guardar, guardar como, exportar PDF, subir y
+      bajar tono, acercar, alejar y ajustar al ancho, con el texto como
+      sugerencia al pasar el cursor y adaptados al tema claro/oscuro.
 - [x] Ventana principal con acciones de archivo.
 - [x] Superficie de edicion de pagina A4 visible.
 - [x] Edicion basica de texto a traves de Qt.

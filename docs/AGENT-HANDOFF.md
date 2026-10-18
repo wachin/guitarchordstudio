@@ -88,8 +88,13 @@ locally are now verified on Linux:
   context menu no longer replaces the user's selection with the word under the
   pointer, so Copy and Cut act on the selected text again. Regression tests
   live in `chordflow/tests/test_spellcheck_context_menu.py`.
+- ChordPages toolbar: ten SVG icons in `chordpages/assets/toolbar/` cover new,
+  open, save, save as, export PDF, transpose down/up, zoom out/in and fit
+  width; Save As now sits next to Save. `chordpages/resources.py` tints the
+  `currentColor` SVGs for the light and dark palettes, and every action gets
+  its text as a hover tooltip. Covered by `chordpages/tests/test_toolbar.py`.
 - Validation at this checkpoint: ChordFlow suite 167 passed; ChordPages suite
-  190 passed; toolkit fast suite 276 passed, 12 skipped, 50 deselected; toolkit
+  194 passed; toolkit fast suite 276 passed, 12 skipped, 50 deselected; toolkit
   `mypy` clean in 32 source files. The ChordPages suite no longer depends on
   the host locale: `chordpages/tests/conftest.py` installs the
   source-language UI before each test, so a Spanish desktop no longer fails
