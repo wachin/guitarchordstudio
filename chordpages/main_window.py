@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from PyQt6.QtCore import PYQT_VERSION_STR, QT_VERSION_STR, QMarginsF, QSizeF, Qt, QTimer
+from PyQt6.QtCore import PYQT_VERSION_STR, QT_VERSION_STR, QMarginsF, QSize, QSizeF, Qt, QTimer
 from PyQt6.QtGui import (
     QAction,
     QActionGroup,
@@ -15,6 +15,7 @@ from PyQt6.QtGui import (
     QKeySequence,
     QPageLayout,
     QPageSize,
+    QPalette,
 )
 from PyQt6.QtPrintSupport import QPrinter
 from PyQt6.QtWidgets import (
@@ -42,7 +43,7 @@ from chordpages.document.text_file import (
 from chordpages.document.transpose import transpose_text
 from chordpages.fonts import default_editor_font, make_editor_font
 from chordpages.i18n import install_translations
-from chordpages.resources import app_icon
+from chordpages.resources import app_icon, toolbar_icon
 from chordpages.recovery import RecoveryDraft, RecoveryManager
 from chordpages.settings import (
     DEFAULT_LANGUAGE,
@@ -55,7 +56,7 @@ from chordpages.settings import (
     WINDOW_TITLE_NAME,
 )
 from chordpages.spellcheck import build_language_menu
-from chordpages.theme import apply_theme
+from chordpages.theme import EFFECTIVE_THEME_PROPERTY, apply_theme
 from chordpages.ui.page_editor import (
     MAX_ZOOM,
     MIN_ZOOM,
@@ -72,6 +73,20 @@ ZOOM_STEP = 0.1
 DEFAULT_ENCODING = "utf-8"
 DEFAULT_NEWLINE = "\n"
 DEFAULT_FILE_TYPE = "text"
+
+# Toolbar actions that receive an icon, in display order.
+TOOLBAR_ICON_ACTIONS: tuple[tuple[str, str], ...] = (
+    ("new_action", "new"),
+    ("open_action", "open"),
+    ("save_action", "save"),
+    ("save_as_action", "save-as"),
+    ("export_pdf_action", "export-pdf"),
+    ("transpose_down_action", "transpose-down"),
+    ("transpose_up_action", "transpose-up"),
+    ("zoom_out_action", "zoom-out"),
+    ("zoom_in_action", "zoom-in"),
+    ("fit_width_action", "fit-width"),
+)
 
 
 @dataclass(slots=True)
@@ -489,6 +504,7 @@ class MainWindow(QMainWindow):
         self.settings.set_theme(theme)
         self.settings.sync()
         self._apply_current_theme()
+        self._refresh_toolbar_icons()
         self._sync_theme_actions()
         self.statusBar().showMessage(
             self.tr("Theme: {theme}").format(theme=self._theme_label(self.settings.theme()))
@@ -788,6 +804,8 @@ class MainWindow(QMainWindow):
             THEME_DARK,
         )
 
+        self._refresh_toolbar_icons()
+
     def _create_menus(self) -> None:
         self.file_menu = self.menuBar().addMenu(self.tr("File"))
         self.file_menu.addAction(self.new_action)
@@ -842,9 +860,18 @@ class MainWindow(QMainWindow):
         self.toolbar = QToolBar(self.tr("Main Toolbar"), self)
         self.toolbar.setObjectName("mainToolbar")
         self.toolbar.setMovable(False)
+        # Fall back to text labels when the icons cannot be rendered.
+        has_icons = not self.new_action.icon().isNull()
+        self.toolbar.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonIconOnly
+            if has_icons
+            else Qt.ToolButtonStyle.ToolButtonTextOnly
+        )
+        self.toolbar.setIconSize(QSize(24, 24))
         self.toolbar.addAction(self.new_action)
         self.toolbar.addAction(self.open_action)
         self.toolbar.addAction(self.save_action)
+        self.toolbar.addAction(self.save_as_action)
         self.toolbar.addAction(self.export_pdf_action)
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.transpose_down_action)
@@ -880,6 +907,26 @@ class MainWindow(QMainWindow):
         self.font_size_spin.valueChanged.connect(self.set_editor_font_size)
         self.toolbar.addWidget(self.font_size_spin)
         self.addToolBar(self.toolbar)
+
+    def _refresh_toolbar_icons(self) -> None:
+        """Apply the theme-appropriate icons and hover tooltips."""
+        dark = self._is_dark_theme()
+        for attribute, icon_name in TOOLBAR_ICON_ACTIONS:
+            action = getattr(self, attribute, None)
+            if isinstance(action, QAction):
+                action.setIcon(toolbar_icon(icon_name, dark=dark))
+                action.setToolTip(action.text())
+
+    def _is_dark_theme(self) -> bool:
+        """Return whether the effective palette is the dark theme."""
+        app = QApplication.instance()
+        if not isinstance(app, QApplication):
+            return False
+        effective = app.property(EFFECTIVE_THEME_PROPERTY)
+        if isinstance(effective, str):
+            return effective == THEME_DARK
+        window = app.palette().color(QPalette.ColorRole.Window)
+        return window.lightness() < 128
 
     def _file_dialog_directory(self) -> str:
         directory = self.settings.last_directory()
@@ -1062,6 +1109,7 @@ class MainWindow(QMainWindow):
         self.zoom_label.setToolTip(self.tr("Current zoom"))
         self.font_family_combo.setToolTip(self.tr("Font family"))
         self.font_size_spin.setToolTip(self.tr("Font size"))
+        self._refresh_toolbar_icons()
         self._sync_zoom_display()
 
         self.setWindowTitle(
