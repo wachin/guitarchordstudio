@@ -15,7 +15,7 @@ except ImportError:  # pragma: no cover - depends on the Qt installation
 
 
 ASSETS_PATH = Path(__file__).with_name("assets")
-APP_ICON_PATH = ASSETS_PATH / "chordflow.svg"
+APP_ICON_PATH = ASSETS_PATH / "chordpages.svg"
 TOOLBAR_ICON_PATH = ASSETS_PATH / "toolbar"
 
 # Monochrome toolbar icons are tinted when rendered so the same SVGs work on
