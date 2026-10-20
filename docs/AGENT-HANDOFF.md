@@ -97,7 +97,9 @@ locally are now verified on Linux:
   through `chordflow/resources.py` and `build_application`, so the application
   and the main window share it. ChordPages points at its own
   `chordpages/assets/chordpages.svg` after the ChordFlow icon moved out of
-  `chordpages/assets/`. Covered by `chordflow/tests/test_resources.py`.
+  `chordpages/assets/`. ChordFlow's icon uses a warm amber/orange/red palette,
+  the complement of ChordPages' blue/teal, so both launchers are easy to tell
+  apart. Covered by `chordflow/tests/test_resources.py`.
 - Validation at this checkpoint: ChordFlow suite 170 passed; ChordPages suite
   194 passed; toolkit fast suite 276 passed, 12 skipped, 50 deselected; toolkit
   `mypy` clean in 32 source files. The ChordPages suite no longer depends on
