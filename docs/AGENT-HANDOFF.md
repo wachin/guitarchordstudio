@@ -93,7 +93,12 @@ locally are now verified on Linux:
   width; Save As now sits next to Save. `chordpages/resources.py` tints the
   `currentColor` SVGs for the light and dark palettes, and every action gets
   its text as a hover tooltip. Covered by `chordpages/tests/test_toolbar.py`.
-- Validation at this checkpoint: ChordFlow suite 167 passed; ChordPages suite
+- ChordFlow now installs its own icon from `chordflow/assets/chordflow.svg`
+  through `chordflow/resources.py` and `build_application`, so the application
+  and the main window share it. ChordPages points at its own
+  `chordpages/assets/chordpages.svg` after the ChordFlow icon moved out of
+  `chordpages/assets/`. Covered by `chordflow/tests/test_resources.py`.
+- Validation at this checkpoint: ChordFlow suite 170 passed; ChordPages suite
   194 passed; toolkit fast suite 276 passed, 12 skipped, 50 deselected; toolkit
   `mypy` clean in 32 source files. The ChordPages suite no longer depends on
   the host locale: `chordpages/tests/conftest.py` installs the

@@ -25,6 +25,8 @@ acompañar ensayos con desplazamiento automático.
 - [x] Marcado de documentos modificados con `*`.
 - [x] Advertencia antes de cerrar pestañas o salir si hay cambios sin guardar.
 - [x] Nuevo archivo.
+- [x] Icono propio de la aplicacion (`chordflow/assets/chordflow.svg`) en la
+      ventana y en el lanzador.
 - [x] Copiar, pegar, cortar y seleccionar todo.
 - [x] Deshacer y rehacer.
 - [x] Busqueda dentro del documento.
