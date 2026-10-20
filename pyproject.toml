@@ -21,7 +21,7 @@ where = [".", "chordpages"]
 include = ["chordflow*", "chordpages*"]
 
 [tool.setuptools.package-data]
-chordflow = ["dicts/**/*.aff", "dicts/**/*.dic", "dicts/**/*.dat", "dicts/**/*.idx"]
+chordflow = ["dicts/**/*.aff", "dicts/**/*.dic", "dicts/**/*.dat", "dicts/**/*.idx", "assets/*.svg"]
 chordpages = ["assets/*.svg", "assets/toolbar/*.svg"]
 
 [tool.setuptools.data-files]

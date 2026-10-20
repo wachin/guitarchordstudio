@@ -51,6 +51,7 @@ from .file_operations import (
     write_file,
 )
 from .linguistic_service import create_linguistic_service
+from .resources import app_icon
 from .search_dialog import FindInFilesDialog, SynonymsDialog
 from .spellcheck import build_language_menu, install_spell_checker
 from .thesaurus import MythesThesaurus
@@ -106,6 +107,7 @@ class TextScrollerApp(QMainWindow):
             QApplication.installTranslator(self.translator)
 
         self.setWindowTitle("Lector y Editor de Letras con Acordes")
+        self.setWindowIcon(app_icon())
         self.setGeometry(100, 100, 800, 500)
 
         self.current_file = None
