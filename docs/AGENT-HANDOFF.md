@@ -100,6 +100,12 @@ locally are now verified on Linux:
   `chordpages/assets/`. ChordFlow's icon uses a warm amber/orange/red palette,
   the complement of ChordPages' blue/teal, so both launchers are easy to tell
   apart. Covered by `chordflow/tests/test_resources.py`.
+- The toolkit no longer vendors the Hunspell, MyThes or Sonnet study sources.
+  The three `third-party/` submodules were removed from `.gitmodules`, from the
+  index, and from the cached git module directories; only the Spylls and PyThes
+  engine submodules remain. The design lessons are recorded in
+  `libs/pyqt6-linguistic-tools/docs/hunspell-sonnet-mythes-study.md`. Do not
+  add those sources back as submodules.
 - Validation at this checkpoint: ChordFlow suite 170 passed; ChordPages suite
   194 passed; toolkit fast suite 276 passed, 12 skipped, 50 deselected; toolkit
   `mypy` clean in 32 source files. The ChordPages suite no longer depends on
@@ -156,6 +162,8 @@ Do not check them off from Linux evidence.
   widget-independent Qt editor integration.
 - `libs/pyqt6-linguistic-tools/docs/linguistics-architecture.md`: architecture
   overview, module map, and data-flow diagrams.
+- `libs/pyqt6-linguistic-tools/docs/hunspell-sonnet-mythes-study.md`: why the
+  three reference sources were studied and where their lessons landed.
 - `libs/pyqt6-linguistic-tools/docs/`: existing documentation (linguistic
   service, backend API, registry, Qt architecture, testing, etc.).
 

@@ -76,13 +76,16 @@ GuitarChordStudio
 
 # IMPORTANT ARCHITECTURAL REFERENCE: SONNET
 
-The developer has intentionally placed as sub-module of the **Sonnet** source code at:
+The **Sonnet** source was studied from the temporary submodule at:
 
 ```text
 libs/pyqt6-linguistic-tools/third-party/sonnet
 ```
 
-Sonnet must be studied as an **architectural reference only**.
+It has since been removed to keep clones small. The detailed notes are in
+`libs/pyqt6-linguistic-tools/docs/hunspell-sonnet-mythes-study.md`.
+
+Sonnet was studied as an **architectural reference only**.
 
 Sonnet is a mature Qt spell-checking framework and contains useful architectural ideas such as:
 
@@ -124,31 +127,36 @@ The final product must remain a **Python-first PyQt6 library**.
 
 # IMPORTANT ARCHITECTURAL REFERENCE: HUNSPELL
 
-The developer has intentionally placed as sub-module the **hunspell** source code at:
+The **hunspell** source was studied from the temporary submodule at:
 
 ```text
 libs/pyqt6-linguistic-tools/third-party/hunspell
 ```
 
-Use Hunspell as the behavioral and dictionary-format reference when reinforcing
+It has since been removed; the study notes are in
+`libs/pyqt6-linguistic-tools/docs/hunspell-sonnet-mythes-study.md`.
+
+Hunspell was the behavioral and dictionary-format reference when reinforcing
 Spylls, which is a Python port of Hunspell concepts. Native Hunspell remains a
-test oracle and a possible optional backend; it is not a runtime requirement for
+possible optional backend and test oracle; it is not a runtime requirement for
 the first portable release.
 
 ---
 
 # IMPORTANT BEHAVIORAL REFERENCE: MYTHES
 
-The developer has intentionally placed the original **MyThes** source code as
-a submodule at:
+The original **MyThes** source was studied from the temporary submodule at:
 
 ```text
 libs/pyqt6-linguistic-tools/third-party/mythes
 ```
 
-MyThes is the native C++ implementation on which PyThes is based. Use this
-source as the authoritative behavioral and file-format reference whenever the
-maintained PyThes fork needs reinforcement, especially for:
+It has since been removed; the study notes are in
+`libs/pyqt6-linguistic-tools/docs/hunspell-sonnet-mythes-study.md`.
+
+MyThes is the native C++ implementation on which PyThes is based. It was the
+authoritative behavioral and file-format reference whenever the maintained
+PyThes fork needed reinforcement, especially for:
 
 - `.dat` parsing and meaning records.
 - `.idx` generation, declared entry counts and byte offsets.
@@ -383,11 +391,6 @@ pyqt6-linguistic-tools/
 │   ├── spylls/
 │   └── pythes/
 │
-├── third-party/
-│   ├── sonnet/
-│   ├── hunspell/
-│   └── mythes/
-│
 ├── src/
 │   └── pyqt6_linguistic_tools/
 │
@@ -397,40 +400,44 @@ pyqt6-linguistic-tools/
 └── ROADMAP.md
 ```
 
-- [x] Keep `third-party/sonnet` only as architectural reference.
-- [x] Keep `third-party/hunspell` only as reference for the `spylls` hunspell fork, In case it is necessary to reinforce the source code.
-- [x] Keep `third-party/mythes` only as the behavioral and file-format
-  reference for the maintained `pythes` fork unless the optional native phase
-  is explicitly activated later.
+- [x] Study `sonnet` as an architectural reference (the source was temporarily
+  vendored under `third-party/` and later removed).
+- [x] Use `hunspell` as the behavioral and dictionary-format reference for the
+  `spylls` fork (the source was temporarily vendored and later removed).
+- [x] Use `mythes` as the behavioral and file-format reference for the
+  maintained `pythes` fork (the source was temporarily vendored and later
+  removed).
+- [x] Record the lessons in
+  `libs/pyqt6-linguistic-tools/docs/hunspell-sonnet-mythes-study.md` and keep
+  the reference sources out of the repository.
 - [x] Ensure applications using this repository do not need to add Spylls and PyThes separately.
 
 ---
 
 # Phase 2 — Study Sonnet architecture
 
-Before designing our public API, inspect the Sonnet source code in:
+The Sonnet source was studied from the temporary submodule at
+`third-party/sonnet`; it was removed afterwards. The resulting notes and the
+concept mapping live in
+`libs/pyqt6-linguistic-tools/docs/hunspell-sonnet-mythes-study.md`.
 
-```text
-third-party/sonnet
-```
+Study points:
 
-Study specifically:
+- [x] Backend/plugin architecture.
+- [x] Spell-check decorator architecture.
+- [x] Dictionary discovery logic.
+- [x] Language selection.
+- [x] Automatic language detection concepts.
+- [x] Personal dictionary architecture.
+- [x] Ignore-word architecture.
+- [x] Suggestion APIs.
+- [x] Context-menu integration.
+- [x] Text-editor integration.
+- [x] Configuration separation.
+- [x] Error-handling design.
+- [x] How Sonnet avoids coupling applications directly to Hunspell.
 
-- [ ] Backend/plugin architecture.
-- [ ] Spell-check decorator architecture.
-- [ ] Dictionary discovery logic.
-- [ ] Language selection.
-- [ ] Automatic language detection concepts.
-- [ ] Personal dictionary architecture.
-- [ ] Ignore-word architecture.
-- [ ] Suggestion APIs.
-- [ ] Context-menu integration.
-- [ ] Text-editor integration.
-- [ ] Configuration separation.
-- [ ] Error-handling design.
-- [ ] How Sonnet avoids coupling applications directly to Hunspell.
-
-Create internal development notes describing:
+The development notes use this mapping, recorded in the study document:
 
 ```text
 Sonnet concept
@@ -446,7 +453,7 @@ Sonnet SpellCheckDecorator
 LinguisticTextEditDecorator
 ```
 
-Do not port implementation line by line.
+No implementation was ported line by line.
 
 ---
 
@@ -1642,7 +1649,10 @@ Spylls  Native* PyThes  Native*
 * Optional and deferred; portable Spylls/PyThes remain the fallback.
 ```
 
-`third-party/sonnet` remains outside this runtime architecture and exists only to help the Agent study proven architectural ideas from a mature Qt spell-checking framework.
+Sonnet was only an architectural reference and is outside this runtime
+architecture. It was studied from a temporary submodule that has been removed;
+the notes are in
+`libs/pyqt6-linguistic-tools/docs/hunspell-sonnet-mythes-study.md`.
 
 ---
 

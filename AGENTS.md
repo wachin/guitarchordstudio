@@ -14,8 +14,11 @@ This checkout contains independent Git repositories:
   linguistic code, tests, examples, package metadata, and toolkit CI.
 - `libs/pyqt6-linguistic-tools/libs/spylls` and `libs/pyqt6-linguistic-tools/libs/pythes`
   are maintained engine-fork submodules on `master`.
-- `third-party/hunspell`, `third-party/mythes`, and `third-party/sonnet` inside
-  the toolkit are reference sources, not initial runtime dependencies.
+- The Hunspell, MyThes, and Sonnet sources that informed the toolkit design were
+  studied from temporary submodules and have been removed. Their lessons are
+  recorded in
+  `libs/pyqt6-linguistic-tools/docs/hunspell-sonnet-mythes-study.md`; do not
+  add them back as submodules.
 - `third-party/libreoffice-dictionaries-collection` in GuitarChordStudio is
   external test data. Never rewrite its dictionaries to make a test pass.
 
