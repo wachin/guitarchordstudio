@@ -1516,6 +1516,9 @@ Only integrate after the standalone library is functional.
 - [x] Integrate synonyms.
 - [x] Integrate thesaurus dialog, including ChordPages' Tools → Synonyms
   action for the selected page word.
+- [x] Expose the thesaurus as the embeddable `ThesaurusWidget` plus a thin
+  `ThesaurusDialog`, and add `create_service()` plus a no-pip Git-submodule
+  bootstrap for third-party PyQt6 applications.
 - [x] Integrate language settings.
 - [x] Implement a GuitarChordStudio-owned `is_chord_token(token)` filter using
   the existing chord parser/grammar rather than duplicating it with a new

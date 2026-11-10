@@ -7,7 +7,22 @@ Uses the shared :mod:`pyqt6_linguistic_tools` ``LinguisticService`` and
 
 from __future__ import annotations
 
+import os
+import sys
+from pathlib import Path
 from typing import TYPE_CHECKING
+
+# Support a libs/pyqt6-linguistic-tools git submodule without pip.
+_TOOLKIT_ROOT = (
+    Path(__file__).resolve().parent.parent
+    / "libs"
+    / "pyqt6-linguistic-tools"
+)
+if _TOOLKIT_ROOT.is_dir():
+    _toolkit_text = str(_TOOLKIT_ROOT)
+    if _toolkit_text not in sys.path:
+        sys.path.insert(0, _toolkit_text)
+    import pyqt6_linguistic_tools_bootstrap  # noqa: F401
 
 from PyQt6.QtGui import QActionGroup
 from PyQt6.QtWidgets import QMenu
@@ -24,29 +39,61 @@ if TYPE_CHECKING:
 
 # Attempt to import the toolkit's enhanced integration.
 try:
+    from pyqt6_linguistic_tools import create_service
     from pyqt6_linguistic_tools.qt import (
         LinguisticTextEditDecorator,
         ThesaurusDialog,
     )
-    from chordflow.linguistic_service import create_linguistic_service
 
     _HAS_TOOLKIT = True
 except ImportError:
     _HAS_TOOLKIT = False
     LinguisticTextEditDecorator = None  # type: ignore[assignment,misc]
     ThesaurusDialog = None  # type: ignore[assignment,misc]
-    create_linguistic_service = None  # type: ignore[assignment]
+    create_service = None  # type: ignore[assignment]
 
 
 _SERVICE: "LinguisticService | None" = None
+
+
+def _corpus_root() -> Path | None:
+    """Return an optional local LibreOffice corpus for development builds."""
+    repo_root = Path(__file__).resolve().parent.parent
+    for candidate in (
+        repo_root
+        / "third-party"
+        / "libreoffice-dictionaries-collection"
+        / "dicts",
+        repo_root / "resources" / "dicts",
+    ):
+        if candidate.is_dir():
+            return candidate
+    environment = os.environ.get("LIBREOFFICE_DICTIONARIES_PATH")
+    if environment:
+        candidate = Path(environment).expanduser().resolve()
+        if candidate.is_dir():
+            return candidate
+    return None
+
+
+def create_linguistic_service(
+    *,
+    language: str | None = None,
+) -> "LinguisticService":
+    """Create the shared GuitarChordStudio service without ChordFlow imports."""
+    if not _HAS_TOOLKIT or create_service is None:
+        raise RuntimeError("pyqt6-linguistic-tools is not available")
+    return create_service(
+        language=language,
+        namespace="guitarchordstudio",
+        corpus_path=_corpus_root(),
+    )
 
 
 def get_linguistic_service() -> "LinguisticService":
     """Return the process-wide toolkit service used by every page editor."""
     global _SERVICE
     if _SERVICE is None:
-        if not _HAS_TOOLKIT or create_linguistic_service is None:
-            raise RuntimeError("pyqt6-linguistic-tools is not available")
         _SERVICE = create_linguistic_service()
     return _SERVICE
 

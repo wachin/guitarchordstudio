@@ -55,8 +55,8 @@ baseline rather than assertions that must never change.
   `install_toolkit_translations()`. The manager, thesaurus dialog and context
   menu are covered. See
   `libs/pyqt6-linguistic-tools/docs/translations.md`.
-- Current toolkit fast suite: 303 passed, 12 skipped, 50 deselected; mypy clean
-  in 35 source files. ChordPages is at 196 tests and ChordFlow at 170. The main
+- Current toolkit fast suite: 308 passed, 12 skipped, 50 deselected; mypy clean
+  in 36 source files. ChordPages is at 196 tests and ChordFlow at 170. The main
   screenshot is `libs/pyqt6-linguistic-tools/images/01-pyqt6-linguistic-tools.png`.
 - The dialog is now a normal modeless window with minimize/maximize/close,
   corner resizing, a screen-aware initial size and remembered geometry in
@@ -71,6 +71,13 @@ baseline rather than assertions that must never change.
 - The thesaurus dialog now copies HTML/RTF with bold meaning headings and
   synonym bullets for LibreOffice, plus Markdown (`**bold**` groups and `-`
   bullets) for Markdown editors.
+- `create_service()` is now the reusable toolkit factory; ChordFlow and
+  ChordPages both call it instead of assembling providers themselves.
+  ChordPages no longer imports ChordFlow's service factory.
+- `ThesaurusWidget` is the embeddable browser and `ThesaurusDialog` is its thin
+  window wrapper. A new `examples/thesaurus_demo.py` shows both, and
+  `pyqt6_linguistic_tools_bootstrap.py` supports a `libs/` git submodule
+  workflow without pip.
 - Still external: manual Windows/macOS runtime verification and additional
   languages beyond Spanish/English. ChordFlow keeps its legacy dialog only as a
   fallback when the toolkit cannot be imported.
@@ -155,8 +162,8 @@ locally are now verified on Linux:
   to `libs/pyqt6-linguistic-tools/tools/fetch-dict-list.py`; the top-level
   `dictionaries.json` and `tools/fetch-dict-list.py` were removed.
 - Validation at this checkpoint: ChordFlow suite 170 passed; ChordPages suite
-  196 passed; toolkit fast suite 303 passed, 12 skipped, 50 deselected; toolkit
-  `mypy` clean in 35 source files. The ChordPages suite no longer depends on
+  196 passed; toolkit fast suite 308 passed, 12 skipped, 50 deselected; toolkit
+  `mypy` clean in 36 source files. The ChordPages suite no longer depends on
   the host locale: `chordpages/tests/conftest.py` installs the
   source-language UI before each test, so a Spanish desktop no longer fails
   the English menu assertions.
