@@ -1516,6 +1516,9 @@ Only integrate after the standalone library is functional.
 - [x] Integrate synonyms.
 - [x] Integrate thesaurus dialog, including ChordPages' Tools → Synonyms
   action for the selected page word.
+- [x] Match LibreOffice's thesaurus controls: current word, installed
+  thesaurus language selector, numbered alternatives, editable replacement
+  field, and Replace/Cancel actions.
 - [x] Expose the thesaurus as the embeddable `ThesaurusWidget` plus a thin
   `ThesaurusDialog`, and add `create_service()` plus a no-pip Git-submodule
   bootstrap for third-party PyQt6 applications.
