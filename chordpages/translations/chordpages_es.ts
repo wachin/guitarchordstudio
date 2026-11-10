@@ -433,6 +433,30 @@
       <translation>Sinónimos</translation>
     </message>
     <message>
+      <source>system</source>
+      <translation>sistema</translation>
+    </message>
+    <message>
+      <source>bundled</source>
+      <translation>incluido</translation>
+    </message>
+    <message>
+      <source>managed</source>
+      <translation>gestionado</translation>
+    </message>
+    <message>
+      <source>user</source>
+      <translation>usuario</translation>
+    </message>
+    <message>
+      <source>unknown</source>
+      <translation>desconocido</translation>
+    </message>
+    <message>
+      <source>Dictionaries are unavailable.</source>
+      <translation>Los diccionarios no están disponibles.</translation>
+    </message>
+    <message>
       <source>Dictionary Download Manager...</source>
       <translation>Gestor de descargas de diccionarios...</translation>
     </message>

@@ -1521,6 +1521,9 @@ Only integrate after the standalone library is functional.
 - [x] Match LibreOffice's thesaurus controls: current word, installed
   thesaurus language selector, numbered alternatives, editable replacement
   field, and Replace/Cancel actions.
+- [x] Consolidate ChordPages on the toolkit's Linux/system dictionary
+  provider, remove its legacy ChordFlow fallback, show dictionary sources, and
+  cover system-only discovery.
 - [x] Expose the thesaurus as the embeddable `ThesaurusWidget` plus a thin
   `ThesaurusDialog`, and add `create_service()` plus a no-pip Git-submodule
   bootstrap for third-party PyQt6 applications.
