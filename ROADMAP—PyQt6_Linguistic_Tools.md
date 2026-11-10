@@ -1197,9 +1197,17 @@ Create reusable UI for dictionaries.
 - [x] Integrate the validated `dictionaries.json` metadata from
   `libreoffice-dictionaries-collection`. The 57-entry catalog now ships as
   package data in the toolkit and is loaded with
-  `load_bundled_dictionary_catalog()`. Keep entries without SHA-256 visibly
-  unverified and non-downloadable until the catalog can support secure size,
-  checksum, and extraction verification.
+  `load_bundled_dictionary_catalog()`. Regenerate it with SHA-256 checksums and
+  `spelling`/`thesaurus` capability flags; entries without SHA-256 remain
+  visibly unverified and non-downloadable, and hosts can now enable verified
+  downloads.
+- [x] Provide an embeddable `DictionaryManagerWidget` and a large 1180×720
+  `DictionaryManagerDialog` wrapper with search, state/component filters,
+  capability badges, installed/available groups, a details panel, and
+  install/remove actions.
+- [x] Ship toolkit-owned Spanish and English `.ts` sources and compiled `.qm`
+  catalogs plus `install_toolkit_translations()`, while keeping host
+  translators independent and override-capable.
 
 ---
 
