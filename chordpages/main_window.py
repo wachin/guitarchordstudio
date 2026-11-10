@@ -820,10 +820,18 @@ class MainWindow(QMainWindow):
         self.edit_menu = self.menuBar().addMenu(self.tr("Edit"))
         self.edit_menu.addAction(self.preferences_action)
         self.edit_menu.addSeparator()
-        spell_lang_menu = build_language_menu(
-            self, lambda: self.editor.page.editor if hasattr(self, 'editor') else None
+        self.spell_language_menu = build_language_menu(
+            self,
+            lambda: self.editor.page.editor if hasattr(self, "editor") else None,
         )
-        self.edit_menu.addMenu(spell_lang_menu)
+        self.edit_menu.addMenu(self.spell_language_menu)
+        self.dictionary_download_action = QAction(
+            self.tr("Dictionary Download Manager..."), self
+        )
+        self.dictionary_download_action.triggered.connect(
+            self.show_dictionary_download_manager
+        )
+        self.edit_menu.addAction(self.dictionary_download_action)
 
         self.transpose_menu = self.menuBar().addMenu(self.tr("Transpose"))
         self.transpose_menu.addAction(self.transpose_down_action)
@@ -855,6 +863,52 @@ class MainWindow(QMainWindow):
 
         self.help_menu = self.menuBar().addMenu(self.tr("Help"))
         self.help_menu.addAction(self.about_action)
+
+    def show_dictionary_download_manager(self) -> None:
+        """Open the shared dictionary downloader on Windows, macOS and Linux."""
+        try:
+            from pyqt6_linguistic_tools import load_bundled_dictionary_catalog
+            from pyqt6_linguistic_tools.qt import DictionaryDownloadManagerDialog
+            from chordpages.spellcheck import get_linguistic_service
+        except ImportError:
+            QMessageBox.information(
+                self,
+                self.tr("Dictionary Download Manager"),
+                self.tr("The pyqt6-linguistic-tools toolkit is not available."),
+            )
+            return
+
+        try:
+            service = get_linguistic_service()
+        except Exception as error:
+            QMessageBox.warning(
+                self,
+                self.tr("Dictionary Download Manager"),
+                str(error),
+            )
+            return
+
+        dialog = DictionaryDownloadManagerDialog(
+            service,
+            catalog=load_bundled_dictionary_catalog(),
+            parent=self,
+        )
+        dialog.exec()
+        self._rebuild_spell_language_menu()
+
+    def _rebuild_spell_language_menu(self) -> None:
+        """Refresh the language menu after a dictionary download or removal."""
+        if not hasattr(self, "spell_language_menu"):
+            return
+        self.edit_menu.removeAction(self.spell_language_menu.menuAction())
+        self.spell_language_menu = build_language_menu(
+            self,
+            lambda: self.editor.page.editor if hasattr(self, "editor") else None,
+        )
+        self.edit_menu.insertMenu(
+            self.dictionary_download_action,
+            self.spell_language_menu,
+        )
 
     def _create_toolbar(self) -> None:
         self.toolbar = QToolBar(self.tr("Main Toolbar"), self)

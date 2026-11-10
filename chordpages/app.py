@@ -31,6 +31,12 @@ def build_application(
     app.setWindowIcon(app_icon())
     settings_manager = settings or SettingsManager()
     install_translations(app, settings_manager.language())
+    try:
+        from pyqt6_linguistic_tools.qt import install_toolkit_translations
+
+        install_toolkit_translations(app, settings_manager.language())
+    except ImportError:
+        pass
     apply_theme(app, settings_manager.theme())
     return app
 

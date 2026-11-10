@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
+<?xml version='1.0' encoding='utf-8'?>
 <TS version="2.1" language="es">
   <context>
     <name>MainWindow</name>
@@ -416,6 +415,34 @@
     <message>
       <source>Language changes apply after restart.</source>
       <translation type="vanished">Los cambios de idioma se aplican después de reiniciar.</translation>
+    </message>
+    <message>
+      <source>Language</source>
+      <translation>Idioma</translation>
+    </message>
+    <message>
+      <source>(no dictionaries)</source>
+      <translation>(no hay diccionarios)</translation>
+    </message>
+    <message>
+      <source>Spelling</source>
+      <translation>Ortografía</translation>
+    </message>
+    <message>
+      <source>Thesaurus</source>
+      <translation>Sinónimos</translation>
+    </message>
+    <message>
+      <source>Dictionary Download Manager...</source>
+      <translation>Gestor de descargas de diccionarios...</translation>
+    </message>
+    <message>
+      <source>Dictionary Download Manager</source>
+      <translation>Gestor de descargas de diccionarios</translation>
+    </message>
+    <message>
+      <source>The pyqt6-linguistic-tools toolkit is not available.</source>
+      <translation>La biblioteca pyqt6-linguistic-tools no está disponible.</translation>
     </message>
   </context>
   <context>

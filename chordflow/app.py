@@ -16,6 +16,12 @@ def build_application(argv=None) -> QApplication:
     if app is None:
         app = QApplication(list(argv) if argv is not None else sys.argv)
     app.setWindowIcon(app_icon())
+    try:
+        from pyqt6_linguistic_tools.qt import install_toolkit_translations
+
+        install_toolkit_translations(app, "es")
+    except ImportError:
+        pass
     return app
 
 

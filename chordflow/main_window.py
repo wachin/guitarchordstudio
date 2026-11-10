@@ -620,11 +620,12 @@ class TextScrollerApp(QMainWindow):
         synonyms_action.triggered.connect(self.show_synonyms_dialog)
         tools_menu.addAction(synonyms_action)
 
-        dicts_action = QAction("Diccionarios...", self)
+        dicts_action = QAction("Gestor de descargas de diccionarios...", self)
         dicts_action.triggered.connect(self.show_dict_manager_dialog)
         tools_menu.addAction(dicts_action)
 
-        options_menu = menu_bar.addMenu("Opciones")
+        self.options_menu = menu_bar.addMenu("Opciones")
+        options_menu = self.options_menu
 
         sharps_action = QAction("Usar Sostenidos al bajar semitonos", self)
         sharps_action.setCheckable(True)
@@ -662,6 +663,7 @@ class TextScrollerApp(QMainWindow):
                 self, lambda: self.get_current_text_widget()
             )
             options_menu.addMenu(spell_lang_menu)
+            self._spell_language_menu = spell_lang_menu
 
         help_menu = menu_bar.addMenu("Ayuda")
 
@@ -720,6 +722,9 @@ class TextScrollerApp(QMainWindow):
     def _build_language_menu(self, parent_menu: QMenu) -> None:
         """Build a language-selection submenu from the toolkit's available languages."""
         assert self._linguistic_service is not None
+        existing = getattr(self, "_spell_language_menu", None)
+        if existing is not None:
+            parent_menu.removeAction(existing.menuAction())
         lang_menu = QMenu("Idioma del corrector", self)
         available = self._linguistic_service.available_languages()
         if not available:
@@ -743,6 +748,7 @@ class TextScrollerApp(QMainWindow):
                 )
                 group.addAction(action)
         parent_menu.addMenu(lang_menu)
+        self._spell_language_menu = lang_menu
 
     def _switch_language(self, lang: str) -> None:
         """Switch the linguistic service to a new language."""
@@ -1131,6 +1137,20 @@ class TextScrollerApp(QMainWindow):
         self.save_config()
 
     def show_dict_manager_dialog(self):
+        """Open the toolkit downloader, falling back to the legacy dialog."""
+        if self._linguistic_service is not None and _HAS_TOOLKIT:
+            from pyqt6_linguistic_tools import load_bundled_dictionary_catalog
+            from pyqt6_linguistic_tools.qt import DictionaryDownloadManagerDialog
+
+            dialog = DictionaryDownloadManagerDialog(
+                self._linguistic_service,
+                catalog=load_bundled_dictionary_catalog(),
+                parent=self,
+            )
+            dialog.exec()
+            self._linguistic_service.refresh_dictionaries()
+            self._build_language_menu(self.options_menu)
+            return
         dialog = _DictManagerDialog(self)
         dialog.exec()
 

@@ -20,7 +20,7 @@ inside it. The implemented toolkit currently includes:
 - a fault-isolating `LinguisticService` with bounded backend/result caches;
 - optional PyQt6 decorators for `QTextEdit` and `QPlainTextEdit`, highlighting,
   asynchronous checking, context actions, language selection, thesaurus UI,
-  and the Dictionary Manager;
+  and the Dictionary Download Manager;
 - deterministic, Qt, platform, curated-corpus, and full-corpus test layers;
 - manually dispatched GitHub Actions for fast cross-platform tests, static
   typing, Linux installed dictionary smoke tests, and corpus tests.
@@ -32,30 +32,35 @@ suite had 2 passing tests, the curated corpus suite had 34 passing tests, and
 mypy reported no issues in 31 source files. Treat these counts as a historical
 baseline rather than assertions that must never change.
 
-## Latest completed objective — Dictionary Manager UI and translations
+## Latest completed objective — Dictionary Download Manager and host integration
 
-- `DictionaryManagerWidget` is now embeddable and `DictionaryManagerDialog`
-  wraps it in a large 1180×720 window. Both provide search, installed/download
-  state filters, spelling/thesaurus component filters and badges, installed and
-  available groups, a details panel, and verified install/remove actions. The
-  widget still performs no network access; hosts handle `download_requested`,
-  publish the bundle, and refresh.
+- `DictionaryDownloadManagerWidget` and `DictionaryDownloadManagerDialog`
+  provide search, state/component filters, spelling/thesaurus badges, installed
+  and available groups, a details panel, progress, and automatic verified
+  downloads in a worker thread. The base `DictionaryManagerWidget`/`Dialog`
+  retain the host-delegated `download_requested` mode.
+- `download_dictionary()` streams HTTPS assets, checks catalog size and
+  SHA-256, rejects unsafe archive paths and links, deep validates every
+  component, skips malformed regional variants, and atomically publishes into
+  `ManagedDictionaryProvider`. `install_dictionary_archive()` handles assets a
+  host already downloaded.
 - The bundled 57-entry catalog was regenerated with SHA-256 checksums and
   `spelling`/`thesaurus` flags. `tools/fetch-dict-list.py` accepts
   `--dicts-dir` to derive the flags from the local LibreOffice collection.
-- The toolkit now ships its own Spanish and English `.ts` sources and `.qm`
-  catalogs. `install_toolkit_translations()`,
-  `uninstall_toolkit_translations()`, `installed_toolkit_translator()` and
-  `translation_candidates()` live in `pyqt6_linguistic_tools.qt`. The thesaurus
-  dialog and context menu were converted to extractable literal translation
-  contexts. See
+- ChordFlow and ChordPages now open the shared Dictionary Download Manager,
+  install into the `guitarchordstudio` managed namespace, refresh their
+  service, and attach the toolkit decorator to every editor. ChordPages has a
+  new Edit-menu action and uses a process-wide toolkit service.
+- The toolkit ships Spanish and English `.ts` sources and `.qm` catalogs via
+  `install_toolkit_translations()`. The manager, thesaurus dialog and context
+  menu are covered. See
   `libs/pyqt6-linguistic-tools/docs/translations.md`.
-- Current toolkit fast suite: 287 passed, 12 skipped, 50 deselected; mypy clean
-  in 33 source files. The new UI screenshot is
-  `libs/pyqt6-linguistic-tools/docs/assets/dictionary-manager.png`.
-- Still delegated to hosts: actual archive download, size/SHA-256 verification,
-  safe extraction, and atomic publication. Only Spanish and English are
-  shipped; additional languages follow the `.ts`/`lrelease` workflow.
+- Current toolkit fast suite: 299 passed, 12 skipped, 50 deselected; mypy clean
+  in 35 source files. ChordPages is at 195 tests and ChordFlow at 170. The main
+  screenshot is `libs/pyqt6-linguistic-tools/images/01-pyqt6-linguistic-tools.png`.
+- Still external: manual Windows/macOS runtime verification and additional
+  languages beyond Spanish/English. ChordFlow keeps its legacy dialog only as a
+  fallback when the toolkit cannot be imported.
 
 Before editing, verify the live state instead of trusting recorded commit IDs:
 
@@ -137,8 +142,8 @@ locally are now verified on Linux:
   to `libs/pyqt6-linguistic-tools/tools/fetch-dict-list.py`; the top-level
   `dictionaries.json` and `tools/fetch-dict-list.py` were removed.
 - Validation at this checkpoint: ChordFlow suite 170 passed; ChordPages suite
-  194 passed; toolkit fast suite 287 passed, 12 skipped, 50 deselected; toolkit
-  `mypy` clean in 33 source files. The ChordPages suite no longer depends on
+  195 passed; toolkit fast suite 299 passed, 12 skipped, 50 deselected; toolkit
+  `mypy` clean in 35 source files. The ChordPages suite no longer depends on
   the host locale: `chordpages/tests/conftest.py` installs the
   source-language UI before each test, so a Spanish desktop no longer fails
   the English menu assertions.

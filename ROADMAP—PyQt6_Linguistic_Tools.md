@@ -964,7 +964,7 @@ Core linguistic logic must remain usable without importing Qt widgets.
 
 - [x] Create the separate `pyqt6_linguistic_tools.qt` package.
 - [x] Establish module ownership for decorator, highlighter, context menu,
-  thesaurus dialog, dictionary manager and settings.
+  thesaurus dialog, dictionary download manager and settings.
 - [x] Keep imports one-directional from the optional Qt layer to the core.
 - [x] Ensure importing the core never imports PyQt6.
 - [x] Ensure importing the lightweight Qt boundary does not eagerly import
@@ -1175,7 +1175,7 @@ This is not required for the first stable release.
 
 ---
 
-# Phase 29 — Dictionary Manager
+# Phase 29 — Dictionary Download Manager
 
 Create reusable UI for dictionaries.
 
@@ -1192,8 +1192,9 @@ Create reusable UI for dictionaries.
   explicit confirmation and path-containment checks.
 - [x] Never remove Linux system dictionaries: generic/system providers expose
   no removal method and their rows keep the removal action disabled.
-- [x] Prepare optional future download integration through a host-handled Qt
-  signal; do not perform network access or extraction in the widget.
+- [x] Provide a host-delegated Qt signal and an in-app verified downloader:
+  HTTPS streaming, exact size/SHA-256 checks, safe extraction, deep validation,
+  and atomic publication. The base manager retains the host-delegated mode.
 - [x] Integrate the validated `dictionaries.json` metadata from
   `libreoffice-dictionaries-collection`. The 57-entry catalog now ships as
   package data in the toolkit and is loaded with
@@ -1201,10 +1202,13 @@ Create reusable UI for dictionaries.
   `spelling`/`thesaurus` capability flags; entries without SHA-256 remain
   visibly unverified and non-downloadable, and hosts can now enable verified
   downloads.
-- [x] Provide an embeddable `DictionaryManagerWidget` and a large 1180×720
-  `DictionaryManagerDialog` wrapper with search, state/component filters,
-  capability badges, installed/available groups, a details panel, and
-  install/remove actions.
+- [x] Provide embeddable `DictionaryDownloadManagerWidget` and a large
+  1180×720 `DictionaryDownloadManagerDialog` wrapper with search,
+  state/component filters, capability badges, installed/available groups, a
+  details panel, progress, and install/remove actions.
+- [x] Integrate the Dictionary Download Manager into ChordFlow and ChordPages so
+  both can install spelling and thesaurus bundles on Windows and macOS, refresh
+  their shared service, and attach the toolkit decorator to every editor.
 - [x] Ship toolkit-owned Spanish and English `.ts` sources and compiled `.qm`
   catalogs plus `install_toolkit_translations()`, while keeping host
   translators independent and override-capable.

@@ -702,3 +702,16 @@ def test_main_window_transposes_current_tab_chords(qtbot, tmp_path):
 
     assert window.editor.text() == "[D]Vine [A]a adorar\nBm    G\nletra\n"
     assert window.current_document().modified
+
+
+def test_dictionary_download_manager_action_and_toolkit_decorator(qtbot, tmp_path):
+    settings = temporary_settings(tmp_path)
+    settings.set_language("en")
+    build_application([], settings=settings)
+    window = MainWindow(settings=settings)
+    qtbot.addWidget(window)
+
+    action_texts = [action.text() for action in window.edit_menu.actions()]
+    assert "Dictionary Download Manager..." in action_texts
+    assert hasattr(window.editor.page.editor, "_linguistic_decorator")
+    assert window.spell_language_menu is not None
