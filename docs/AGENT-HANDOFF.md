@@ -66,7 +66,8 @@ baseline rather than assertions that must never change.
   using the same shared `LinguisticService` and `ThesaurusDialog` as ChordFlow.
   Its editor spellcheck also runs through the toolkit decorator. When a MyThes
   data set has no part-of-speech metadata (the Spanish LibreOffice thesaurus
-  uses `-`), the dialog hides the empty category column and shows a short note.
+  uses `-`), the dialog hides the empty category column, keeps meanings as bold
+  groups with indented synonyms, and shows a short note.
 - Still external: manual Windows/macOS runtime verification and additional
   languages beyond Spanish/English. ChordFlow keeps its legacy dialog only as a
   fallback when the toolkit cannot be imported.
