@@ -16,6 +16,7 @@ from PyQt6.QtGui import (
     QPageLayout,
     QPageSize,
     QPalette,
+    QTextCursor,
 )
 from PyQt6.QtPrintSupport import QPrinter
 from PyQt6.QtWidgets import (
@@ -825,13 +826,6 @@ class MainWindow(QMainWindow):
             lambda: self.editor.page.editor if hasattr(self, "editor") else None,
         )
         self.edit_menu.addMenu(self.spell_language_menu)
-        self.dictionary_download_action = QAction(
-            self.tr("Dictionary Download Manager..."), self
-        )
-        self.dictionary_download_action.triggered.connect(
-            self.show_dictionary_download_manager
-        )
-        self.edit_menu.addAction(self.dictionary_download_action)
 
         self.transpose_menu = self.menuBar().addMenu(self.tr("Transpose"))
         self.transpose_menu.addAction(self.transpose_down_action)
@@ -861,8 +855,85 @@ class MainWindow(QMainWindow):
         self.theme_menu.addAction(self.light_theme_action)
         self.theme_menu.addAction(self.dark_theme_action)
 
+        self.tools_menu = self.menuBar().addMenu(self.tr("Tools"))
+        self.synonyms_action = QAction(self.tr("Synonyms..."), self)
+        self.synonyms_action.setShortcut("Ctrl+F7")
+        self.synonyms_action.triggered.connect(self.show_synonyms_dialog)
+        self.tools_menu.addAction(self.synonyms_action)
+        self.dictionary_download_action = QAction(
+            self.tr("Dictionary Download Manager..."), self
+        )
+        self.dictionary_download_action.triggered.connect(
+            self.show_dictionary_download_manager
+        )
+        self.tools_menu.addAction(self.dictionary_download_action)
+
         self.help_menu = self.menuBar().addMenu(self.tr("Help"))
         self.help_menu.addAction(self.about_action)
+
+    def selected_word_for_synonyms(self) -> str:
+        """Return the selected word, or the word under the cursor."""
+        editor = self.editor.page.editor
+        cursor = editor.textCursor()
+        selected = cursor.selectedText().strip()
+        if selected:
+            return selected
+        cursor.select(QTextCursor.SelectionType.WordUnderCursor)
+        selected = cursor.selectedText().strip()
+        if selected:
+            editor.setTextCursor(cursor)
+        return selected
+
+    def replace_selected_word(self, replacement: str) -> None:
+        """Replace the selected word in the active page editor."""
+        editor = self.editor.page.editor
+        cursor = editor.textCursor()
+        if not cursor.hasSelection():
+            cursor.select(QTextCursor.SelectionType.WordUnderCursor)
+        cursor.insertText(replacement)
+        editor.setTextCursor(cursor)
+
+    def show_synonyms_dialog(self) -> None:
+        """Open the shared thesaurus dialog for the selected word."""
+        try:
+            from chordpages.spellcheck import (
+                ThesaurusDialog,
+                get_linguistic_service,
+            )
+        except ImportError:
+            QMessageBox.information(
+                self,
+                self.tr("Synonyms"),
+                self.tr("The pyqt6-linguistic-tools toolkit is not available."),
+            )
+            return
+        if ThesaurusDialog is None:
+            QMessageBox.information(
+                self,
+                self.tr("Synonyms"),
+                self.tr("The pyqt6-linguistic-tools toolkit is not available."),
+            )
+            return
+        try:
+            service = get_linguistic_service()
+        except Exception as error:
+            QMessageBox.warning(self, self.tr("Synonyms"), str(error))
+            return
+        word = self.selected_word_for_synonyms()
+        if not word:
+            QMessageBox.information(
+                self,
+                self.tr("Synonyms"),
+                self.tr("Select a word to look up synonyms."),
+            )
+            return
+        dialog = ThesaurusDialog(service, word, parent=self)
+        dialog.replacement_requested.connect(
+            lambda _source, replacement: self.replace_selected_word(
+                replacement
+            )
+        )
+        dialog.exec()
 
     def show_dictionary_download_manager(self) -> None:
         """Open the shared dictionary downloader on Windows, macOS and Linux."""
@@ -922,10 +993,7 @@ class MainWindow(QMainWindow):
             self,
             lambda: self.editor.page.editor if hasattr(self, "editor") else None,
         )
-        self.edit_menu.insertMenu(
-            self.dictionary_download_action,
-            self.spell_language_menu,
-        )
+        self.edit_menu.addMenu(self.spell_language_menu)
 
     def _create_toolbar(self) -> None:
         self.toolbar = QToolBar(self.tr("Main Toolbar"), self)

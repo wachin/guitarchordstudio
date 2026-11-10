@@ -1134,6 +1134,9 @@ Create a reusable `ThesaurusDialog`.
 - [x] Preserve simple capitalization where safe (`word`, `Word`, `WORD`).
 - [x] Do not attempt unsupported morphological transformations that could
   produce an incorrect replacement.
+- [x] Hide the "Part of speech" column and show a note when a MyThes data set
+  (such as the Spanish LibreOffice thesaurus) uses `-` and provides no
+  grammatical categories.
 
 ---
 
@@ -1508,7 +1511,8 @@ Only integrate after the standalone library is functional.
 - [x] Integrate personal dictionary.
 - [x] Integrate ignore-word actions.
 - [x] Integrate synonyms.
-- [x] Integrate thesaurus dialog.
+- [x] Integrate thesaurus dialog, including ChordPages' Tools → Synonyms
+  action for the selected page word.
 - [x] Integrate language settings.
 - [x] Implement a GuitarChordStudio-owned `is_chord_token(token)` filter using
   the existing chord parser/grammar rather than duplicating it with a new

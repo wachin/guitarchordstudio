@@ -444,6 +444,22 @@
       <source>The pyqt6-linguistic-tools toolkit is not available.</source>
       <translation>La biblioteca pyqt6-linguistic-tools no está disponible.</translation>
     </message>
+    <message>
+      <source>Tools</source>
+      <translation>Herramientas</translation>
+    </message>
+    <message>
+      <source>Synonyms...</source>
+      <translation>Sinónimos...</translation>
+    </message>
+    <message>
+      <source>Synonyms</source>
+      <translation>Sinónimos</translation>
+    </message>
+    <message>
+      <source>Select a word to look up synonyms.</source>
+      <translation>Selecciona una palabra para buscar sinónimos.</translation>
+    </message>
   </context>
   <context>
     <name>PageWidget</name>

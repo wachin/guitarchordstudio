@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 from PyQt6.QtCore import QByteArray, QSize
+from PyQt6.QtGui import QTextCursor
 from PyQt6.QtWidgets import QApplication, QDoubleSpinBox, QFontComboBox, QLabel
 
 from chordpages import __version__
@@ -711,7 +712,31 @@ def test_dictionary_download_manager_action_and_toolkit_decorator(qtbot, tmp_pat
     window = MainWindow(settings=settings)
     qtbot.addWidget(window)
 
-    action_texts = [action.text() for action in window.edit_menu.actions()]
+    action_texts = [action.text() for action in window.tools_menu.actions()]
     assert "Dictionary Download Manager..." in action_texts
+    assert "Synonyms..." in action_texts
     assert hasattr(window.editor.page.editor, "_linguistic_decorator")
     assert window.spell_language_menu is not None
+
+
+
+def test_synonyms_uses_the_selected_page_word(qtbot, tmp_path):
+    settings = temporary_settings(tmp_path)
+    settings.set_language("en")
+    build_application([], settings=settings)
+    window = MainWindow(settings=settings)
+    qtbot.addWidget(window)
+
+    editor = window.editor.page.editor
+    editor.setPlainText("feliz canción")
+    cursor = editor.textCursor()
+    cursor.setPosition(0)
+    cursor.movePosition(
+        QTextCursor.MoveOperation.Right,
+        QTextCursor.MoveMode.KeepAnchor,
+        len("feliz"),
+    )
+    editor.setTextCursor(cursor)
+
+    assert window.selected_word_for_synonyms() == "feliz"
+    assert "Synonyms..." in [action.text() for action in window.tools_menu.actions()]
