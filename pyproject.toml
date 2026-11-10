@@ -26,4 +26,4 @@ chordpages = ["assets/*.svg", "assets/toolbar/*.svg"]
 
 [tool.setuptools.data-files]
 "share/chordflow/translations" = ["chordpages/translations/*.qm"]
-"share/chordflow/resources" = ["resources/dicts/**/*", "dictionaries.json"]
+"share/chordflow/resources" = ["resources/dicts/**/*"]

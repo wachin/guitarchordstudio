@@ -33,41 +33,24 @@ Each archive contains a single `dict-XX/` folder with the Hunspell (`.aff`,
 
 ## fetch-dict-list.py
 
-Fetch the list of dictionary assets from a GitHub Release and generate a
-`dictionaries.json` file that can be consumed by ChordFlow, ChordPages, or
-any other application.
+The catalog generator now lives in the toolkit:
+`libs/pyqt6-linguistic-tools/tools/fetch-dict-list.py`. It writes the bundled
+catalog at
+`libs/pyqt6-linguistic-tools/src/pyqt6_linguistic_tools/data/dictionaries.json`,
+so the toolkit owns the download list and other applications get it with
+`load_bundled_dictionary_catalog()`.
 
 ### Usage
 
-From the repository root:
+From the GuitarChordStudio repository root:
 
 ```bash
-python3 tools/fetch-dict-list.py --tag v1.0-dictionaries-thesaurus
+python3 libs/pyqt6-linguistic-tools/tools/fetch-dict-list.py \
+  --tag v1.0-dictionaries-thesaurus
 ```
 
-### Output
-
-`dictionaries.json` is written to the current directory with the following
-structure:
-
-```json
-{
-  "source": "wachin/libreoffice-dictionaries-collection/releases/tag/v1.0-dictionaries-thesaurus",
-  "dictionaries": [
-    {
-      "code": "en",
-      "name": "English",
-      "url": "https://github.com/.../dict-en.tar.gz",
-      "size": 6841341
-    },
-    ...
-  ]
-}
-```
-
-### Options
-
-- `--tag TAG` — Fetch a specific release tag (default: latest release).
+See `libs/pyqt6-linguistic-tools/tools/README.md` for the output schema and
+options.
 
 ---
 
@@ -89,11 +72,12 @@ To publish a new dictionary release:
    [libreoffice-dictionaries-collection](https://github.com/wachin/libreoffice-dictionaries-collection)
    repository.
 
-4. After publishing the release, generate the dictionary list:
+4. After publishing the release, regenerate the bundled catalog from the
+   toolkit:
    ```bash
-   python3 tools/fetch-dict-list.py --tag <TAG_NAME>
+   python3 libs/pyqt6-linguistic-tools/tools/fetch-dict-list.py --tag <TAG_NAME>
    ```
 
-5. Commit the resulting `dictionaries.json` to the
-   [guitarchordstudio](https://github.com/wachin/guitarchordstudio) repository
-   so the applications can use it.
+5. Commit the updated catalog in the
+   [pyqt6-linguistic-tools](https://github.com/wachin/pyqt6-linguistic-tools)
+   repository, then update the GuitarChordStudio submodule pointer.

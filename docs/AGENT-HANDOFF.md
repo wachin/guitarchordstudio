@@ -106,8 +106,13 @@ locally are now verified on Linux:
   engine submodules remain. The design lessons are recorded in
   `libs/pyqt6-linguistic-tools/docs/hunspell-sonnet-mythes-study.md`. Do not
   add those sources back as submodules.
+- The 57-entry dictionary catalog now lives in the toolkit as package data at
+  `libs/pyqt6-linguistic-tools/src/pyqt6_linguistic_tools/data/dictionaries.json`
+  and is loaded with `load_bundled_dictionary_catalog()`. Its generator moved
+  to `libs/pyqt6-linguistic-tools/tools/fetch-dict-list.py`; the top-level
+  `dictionaries.json` and `tools/fetch-dict-list.py` were removed.
 - Validation at this checkpoint: ChordFlow suite 170 passed; ChordPages suite
-  194 passed; toolkit fast suite 276 passed, 12 skipped, 50 deselected; toolkit
+  194 passed; toolkit fast suite 279 passed, 12 skipped, 50 deselected; toolkit
   `mypy` clean in 32 source files. The ChordPages suite no longer depends on
   the host locale: `chordpages/tests/conftest.py` installs the
   source-language UI before each test, so a Spanish desktop no longer fails

@@ -1195,7 +1195,9 @@ Create reusable UI for dictionaries.
 - [x] Prepare optional future download integration through a host-handled Qt
   signal; do not perform network access or extraction in the widget.
 - [x] Integrate the validated `dictionaries.json` metadata from
-  `libreoffice-dictionaries-collection`. Keep entries without SHA-256 visibly
+  `libreoffice-dictionaries-collection`. The 57-entry catalog now ships as
+  package data in the toolkit and is loaded with
+  `load_bundled_dictionary_catalog()`. Keep entries without SHA-256 visibly
   unverified and non-downloadable until the catalog can support secure size,
   checksum, and extraction verification.
 

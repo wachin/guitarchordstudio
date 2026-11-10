@@ -62,22 +62,25 @@ def _bundled_dicts() -> Path:
 
 
 def _catalog_path() -> Path:
-    """Return the path to the dictionaries catalog (dictionaries.json).
+    """Return the catalog shipped by the pyqt6-linguistic-tools submodule.
 
-    Searches in order:
-    1. Project root /dictionaries.json (development)
-    2. Bundled resources/dictionaries.json (Nuitka build)
-    3. Falls back to built-in minimal catalog
+    The toolkit owns the 57-entry dictionary list; ChordFlow only reads it.
+    Returns an empty ``Path`` when the submodule is not initialized, in which
+    case :func:`load_catalog` falls back to its minimal built-in list.
     """
     module = Path(__file__).resolve().parent  # chordflow/
     for parent in (module.parent, module.parent.parent):
-        candidate = parent / "dictionaries.json"
-        if candidate.exists():
-            return candidate
-        # Also check resources/ for Nuitka builds
-        resources = parent / "resources" / "dictionaries.json"
-        if resources.exists():
-            return resources
+        toolkit = (
+            parent
+            / "libs"
+            / "pyqt6-linguistic-tools"
+            / "src"
+            / "pyqt6_linguistic_tools"
+            / "data"
+            / "dictionaries.json"
+        )
+        if toolkit.exists():
+            return toolkit
     return Path()
 
 
