@@ -1516,6 +1516,8 @@ Only integrate after the standalone library is functional.
 - [x] Integrate synonyms.
 - [x] Integrate thesaurus dialog, including ChordPages' Tools → Synonyms
   action for the selected page word.
+- [x] Use a compact 540×480 thesaurus window, make it resizable, and remember
+  the user's last position and size.
 - [x] Match LibreOffice's thesaurus controls: current word, installed
   thesaurus language selector, numbered alternatives, editable replacement
   field, and Replace/Cancel actions.

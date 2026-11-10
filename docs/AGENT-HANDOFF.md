@@ -55,7 +55,7 @@ baseline rather than assertions that must never change.
   `install_toolkit_translations()`. The manager, thesaurus dialog and context
   menu are covered. See
   `libs/pyqt6-linguistic-tools/docs/translations.md`.
-- Current toolkit fast suite: 311 passed, 12 skipped, 50 deselected; mypy clean
+- Current toolkit fast suite: 312 passed, 12 skipped, 50 deselected; mypy clean
   in 36 source files. ChordPages is at 196 tests and ChordFlow at 171. The main
   screenshot is `libs/pyqt6-linguistic-tools/images/01-pyqt6-linguistic-tools.png`.
 - The dialog is now a normal modeless window with minimize/maximize/close,
@@ -75,6 +75,9 @@ baseline rather than assertions that must never change.
   `replacement_requested(source, replacement)`, but ChordFlow connected that
   two-argument signal directly to a one-argument slot and therefore applied the
   source word. It now unpacks the signal and passes the replacement.
+- The thesaurus dialog now defaults to a compact 540×480, has
+  minimize/maximize and resize controls, and remembers its position and size
+  through `QSettings`.
 - The thesaurus window now matches the LibreOffice layout: editable current
   word, installed-thesaurus language selector with native names, numbered
   alternatives, an editable **Replace with** field, and Replace/Cancel.
@@ -169,7 +172,7 @@ locally are now verified on Linux:
   to `libs/pyqt6-linguistic-tools/tools/fetch-dict-list.py`; the top-level
   `dictionaries.json` and `tools/fetch-dict-list.py` were removed.
 - Validation at this checkpoint: ChordFlow suite 171 passed; ChordPages suite
-  196 passed; toolkit fast suite 311 passed, 12 skipped, 50 deselected; toolkit
+  196 passed; toolkit fast suite 312 passed, 12 skipped, 50 deselected; toolkit
   `mypy` clean in 36 source files. The ChordPages suite no longer depends on
   the host locale: `chordpages/tests/conftest.py` installs the
   source-language UI before each test, so a Spanish desktop no longer fails
