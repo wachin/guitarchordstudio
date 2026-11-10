@@ -698,7 +698,11 @@ class TextScrollerApp(QMainWindow):
                 )
                 return
             dialog = ThesaurusDialog(self._linguistic_service, word, parent=self)
-            dialog.replacement_requested.connect(self.replace_selected_word)
+            dialog.replacement_requested.connect(
+                lambda _source, replacement: self.replace_selected_word(
+                    replacement
+                )
+            )
             dialog.exec()
             return
 

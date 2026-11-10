@@ -56,7 +56,7 @@ baseline rather than assertions that must never change.
   menu are covered. See
   `libs/pyqt6-linguistic-tools/docs/translations.md`.
 - Current toolkit fast suite: 311 passed, 12 skipped, 50 deselected; mypy clean
-  in 36 source files. ChordPages is at 196 tests and ChordFlow at 170. The main
+  in 36 source files. ChordPages is at 196 tests and ChordFlow at 171. The main
   screenshot is `libs/pyqt6-linguistic-tools/images/01-pyqt6-linguistic-tools.png`.
 - The dialog is now a normal modeless window with minimize/maximize/close,
   corner resizing, a screen-aware initial size and remembered geometry in
@@ -71,6 +71,10 @@ baseline rather than assertions that must never change.
 - The thesaurus dialog now copies HTML/RTF with bold meaning headings and
   synonym bullets for LibreOffice, plus Markdown (`**bold**` groups and `-`
   bullets) for Markdown editors.
+- Fixed ChordFlow's thesaurus replacement: the shared dialog emits
+  `replacement_requested(source, replacement)`, but ChordFlow connected that
+  two-argument signal directly to a one-argument slot and therefore applied the
+  source word. It now unpacks the signal and passes the replacement.
 - The thesaurus window now matches the LibreOffice layout: editable current
   word, installed-thesaurus language selector with native names, numbered
   alternatives, an editable **Replace with** field, and Replace/Cancel.
@@ -164,7 +168,7 @@ locally are now verified on Linux:
   and is loaded with `load_bundled_dictionary_catalog()`. Its generator moved
   to `libs/pyqt6-linguistic-tools/tools/fetch-dict-list.py`; the top-level
   `dictionaries.json` and `tools/fetch-dict-list.py` were removed.
-- Validation at this checkpoint: ChordFlow suite 170 passed; ChordPages suite
+- Validation at this checkpoint: ChordFlow suite 171 passed; ChordPages suite
   196 passed; toolkit fast suite 311 passed, 12 skipped, 50 deselected; toolkit
   `mypy` clean in 36 source files. The ChordPages suite no longer depends on
   the host locale: `chordpages/tests/conftest.py` installs the
