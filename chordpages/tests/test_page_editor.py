@@ -1,11 +1,12 @@
 from PyQt6.QtCore import QRect, QSize, Qt
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QTextCharFormat, QTextCursor
 import pytest
 from PyQt6.QtWidgets import QGraphicsDropShadowEffect, QScrollArea
 
 from chordpages.document import CUSTOM_PAGE_SIZE, PageLayout, PageMargins
 from chordpages.document.page import DEFAULT_SCREEN_DPI, mm_to_px
 from chordpages.fonts import DEFAULT_EDITOR_FONT_SIZE_PT, make_editor_font
+from chordpages.spellcheck import get_linguistic_service
 from chordpages.ui.page_editor import (
     MAX_ZOOM,
     MIN_ZOOM,
@@ -557,3 +558,50 @@ def test_page_editor_rejects_empty_page_stack(qtbot):
 
     with pytest.raises(IndexError, match="out of range"):
         editor.page_at(1)
+
+
+
+def _spell_underline_ranges(editor) -> list[tuple[int, int]]:
+    ranges: list[tuple[int, int]] = []
+    document = editor.document()
+    for block_index in range(document.blockCount()):
+        block = document.findBlockByNumber(block_index)
+        for text_range in block.layout().formats():
+            if (
+                text_range.format.underlineStyle()
+                == QTextCharFormat.UnderlineStyle.SpellCheckUnderline
+            ):
+                ranges.append((block_index, text_range.length))
+    return ranges
+
+
+def test_page_editor_highlights_misspellings_and_ignores_chords(
+    qtbot, monkeypatch
+):
+    service = get_linguistic_service()
+    monkeypatch.setattr(
+        service,
+        "check_word",
+        lambda word, **_kwargs: word != "mundoerror",
+    )
+    editor = PageEditor()
+    qtbot.addWidget(editor)
+    editor.set_text("F#m E D\nmundoerror")
+
+    qtbot.waitUntil(
+        lambda: _spell_underline_ranges(editor.page.editor) == [(1, 10)],
+        timeout=5000,
+    )
+    assert _spell_underline_ranges(editor.page.editor) == [(1, 10)]
+
+    page = editor.page
+    cursor = QTextCursor(page.editor.document().findBlockByNumber(1))
+    cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+    page.editor.setTextCursor(cursor)
+    page.editor.insertPlainText(" mundoerror")
+
+    qtbot.waitUntil(
+        lambda: len(_spell_underline_ranges(page.editor)) == 2,
+        timeout=5000,
+    )
+    assert _spell_underline_ranges(page.editor) == [(1, 10), (1, 10)]

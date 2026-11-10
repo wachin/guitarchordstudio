@@ -56,7 +56,7 @@ baseline rather than assertions that must never change.
   menu are covered. See
   `libs/pyqt6-linguistic-tools/docs/translations.md`.
 - Current toolkit fast suite: 313 passed, 12 skipped, 50 deselected; mypy clean
-  in 36 source files. ChordPages is at 198 tests and ChordFlow at 171. The main
+  in 36 source files. ChordPages is at 199 tests and ChordFlow at 171. The main
   screenshot is `libs/pyqt6-linguistic-tools/images/01-pyqt6-linguistic-tools.png`.
 - The dialog is now a normal modeless window with minimize/maximize/close,
   corner resizing, a screen-aware initial size and remembered geometry in
@@ -71,6 +71,11 @@ baseline rather than assertions that must never change.
 - The thesaurus dialog now copies HTML/RTF with bold meaning headings and
   synonym bullets for LibreOffice, plus Markdown (`**bold**` groups and `-`
   bullets) for Markdown editors.
+- Fixed ChordPages' page editor spelling highlighter: its first page now gets a
+  fresh QTextDocument after layout, document signals are no longer blocked
+  during pagination, unchanged page text is not reassigned, and chord tokens
+  are filtered. This makes Hunspell system dictionaries visibly underline
+  misspellings and preserves the underline after typing.
 - ChordPages now uses the toolkit as its only spell-checking path. Its legacy
   `chordflow.spellcheck` fallback was removed, language-menu entries report the
   dictionary source (`system`, `corpus`, `managed`, `user`), and the system-only
@@ -176,7 +181,7 @@ locally are now verified on Linux:
   to `libs/pyqt6-linguistic-tools/tools/fetch-dict-list.py`; the top-level
   `dictionaries.json` and `tools/fetch-dict-list.py` were removed.
 - Validation at this checkpoint: ChordFlow suite 171 passed; ChordPages suite
-  198 passed; toolkit fast suite 313 passed, 12 skipped, 50 deselected; toolkit
+  199 passed; toolkit fast suite 313 passed, 12 skipped, 50 deselected; toolkit
   `mypy` clean in 36 source files. The ChordPages suite no longer depends on
   the host locale: `chordpages/tests/conftest.py` installs the
   source-language UI before each test, so a Spanish desktop no longer fails

@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import (
 
 from chordpages.document.page import DEFAULT_SCREEN_DPI, PageLayout
 from chordpages.fonts import default_editor_font
+from chordpages.chord_token_filter import is_chord_token
 from chordpages.spellcheck import install_spell_checker
 
 
@@ -50,7 +51,9 @@ class PageWidget(QFrame):
         self.editor.setAcceptRichText(False)
         self.editor.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
         self._apply_zoom_font()
-        install_spell_checker(self.editor)
+        decorator = install_spell_checker(self.editor)
+        if decorator is not None:
+            decorator.add_token_filter(is_chord_token)
         self.editor.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
@@ -130,6 +133,22 @@ class PageWidget(QFrame):
 
     def set_text(self, text: str) -> None:
         self.editor.setPlainText(text)
+
+    def reset_spellcheck_document(self) -> None:
+        """Rebuild the document and highlighter after the page is laid out.
+
+        The first QTextEdit document created inside the page-editor layout does
+        not reliably accept QSyntaxHighlighter formats on Qt 6. Replacing it
+        with a fresh document keeps the decorator and chord filter attached.
+        """
+        decorator = getattr(self.editor, "_linguistic_decorator", None)
+        if decorator is not None:
+            decorator.detach()
+        self.editor.setDocument(QTextDocument(self.editor))
+        self._apply_zoom_font()
+        decorator = install_spell_checker(self.editor)
+        if decorator is not None:
+            decorator.add_token_filter(is_chord_token)
 
     def text_height_for(self, text: str) -> float:
         document = QTextDocument()
@@ -238,6 +257,10 @@ class PageEditor(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._scroll_area)
+        self.page.reset_spellcheck_document()
+        self.page.editor.document().contentsChanged.connect(
+            lambda page=self.page: self._handle_page_text_changed(page)
+        )
 
     def text(self) -> str:
         return self._full_text
@@ -427,12 +450,11 @@ class PageEditor(QWidget):
         self._setting_page_text = True
         try:
             for page, page_text in zip(self._pages, page_texts):
-                document = page.editor.document()
-                signals_were_blocked = document.blockSignals(True)
-                try:
+                # Keep document signals enabled: the spelling highlighter and
+                # its async controller listen to contentsChange. The
+                # _setting_page_text guard prevents recursive pagination.
+                if page.text() != page_text:
                     page.set_text(page_text)
-                finally:
-                    document.blockSignals(signals_were_blocked)
         finally:
             self._setting_page_text = False
 
