@@ -1137,6 +1137,9 @@ Create a reusable `ThesaurusDialog`.
 - [x] Hide the "Part of speech" column and show a note when a MyThes data set
   (such as the Spanish LibreOffice thesaurus) uses `-` and provides no
   grammatical categories.
+- [x] Copy the result in one action as HTML/RTF with bold meaning groups and
+  synonym bullets for LibreOffice, plus Markdown with `**bold**` groups and
+  `-` bullets for Markdown editors.
 
 ---
 
