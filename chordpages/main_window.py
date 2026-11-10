@@ -888,13 +888,30 @@ class MainWindow(QMainWindow):
             )
             return
 
+        existing = getattr(self, "_dictionary_download_dialog", None)
+        if existing is not None:
+            existing.show()
+            existing.raise_()
+            existing.activateWindow()
+            return
         dialog = DictionaryDownloadManagerDialog(
             service,
             catalog=load_bundled_dictionary_catalog(),
             parent=self,
         )
-        dialog.exec()
-        self._rebuild_spell_language_menu()
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.dictionaries_changed.connect(
+            lambda _entries: self._rebuild_spell_language_menu()
+        )
+        dialog.finished.connect(
+            lambda _result: setattr(
+                self, "_dictionary_download_dialog", None
+            )
+        )
+        self._dictionary_download_dialog = dialog
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
 
     def _rebuild_spell_language_menu(self) -> None:
         """Refresh the language menu after a dictionary download or removal."""

@@ -1209,6 +1209,9 @@ Create reusable UI for dictionaries.
 - [x] Integrate the Dictionary Download Manager into ChordFlow and ChordPages so
   both can install spelling and thesaurus bundles on Windows and macOS, refresh
   their shared service, and attach the toolkit decorator to every editor.
+- [x] Make the download window modeless, movable, resizable from any corner,
+  minimizable/maximizable, screen-aware on small displays, and persistent across
+  sessions through saved geometry.
 - [x] Ship toolkit-owned Spanish and English `.ts` sources and compiled `.qm`
   catalogs plus `install_toolkit_translations()`, while keeping host
   translators independent and override-capable.

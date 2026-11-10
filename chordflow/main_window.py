@@ -1142,14 +1142,30 @@ class TextScrollerApp(QMainWindow):
             from pyqt6_linguistic_tools import load_bundled_dictionary_catalog
             from pyqt6_linguistic_tools.qt import DictionaryDownloadManagerDialog
 
+            existing = getattr(self, "_dictionary_download_dialog", None)
+            if existing is not None:
+                existing.show()
+                existing.raise_()
+                existing.activateWindow()
+                return
             dialog = DictionaryDownloadManagerDialog(
                 self._linguistic_service,
                 catalog=load_bundled_dictionary_catalog(),
                 parent=self,
             )
-            dialog.exec()
-            self._linguistic_service.refresh_dictionaries()
-            self._build_language_menu(self.options_menu)
+            dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            dialog.dictionaries_changed.connect(
+                lambda _entries: self._build_language_menu(self.options_menu)
+            )
+            dialog.finished.connect(
+                lambda _result: setattr(
+                    self, "_dictionary_download_dialog", None
+                )
+            )
+            self._dictionary_download_dialog = dialog
+            dialog.show()
+            dialog.raise_()
+            dialog.activateWindow()
             return
         dialog = _DictManagerDialog(self)
         dialog.exec()
