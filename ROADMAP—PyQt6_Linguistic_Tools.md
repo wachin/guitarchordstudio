@@ -1521,6 +1521,8 @@ Only integrate after the standalone library is functional.
 - [x] Match LibreOffice's thesaurus controls: current word, installed
   thesaurus language selector, numbered alternatives, editable replacement
   field, and Replace/Cancel actions.
+- [x] Remove the context-menu language submenu from ChordFlow and ChordPages
+  while keeping language selection in the main menus.
 - [x] Repair ChordPages' page-editor spelling highlighter and add a
   regression test covering chords, system dictionaries and typing.
 - [x] Consolidate ChordPages on the toolkit's Linux/system dictionary

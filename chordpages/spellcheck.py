@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 try:
     from pyqt6_linguistic_tools import create_service
     from pyqt6_linguistic_tools.qt import (
+        LinguisticAction,
         LinguisticTextEditDecorator,
         ThesaurusDialog,
     )
@@ -102,6 +103,7 @@ def install_spell_checker(editor, lang: str | None = None):
         logger.exception("Could not create the linguistic service")
         return None
     decorator = LinguisticTextEditDecorator(editor, service)
+    decorator.context_menu.set_action_enabled(LinguisticAction.LANGUAGE, False)
     editor._linguistic_decorator = decorator
     return decorator
 

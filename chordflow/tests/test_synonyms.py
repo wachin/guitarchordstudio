@@ -58,6 +58,7 @@ def test_thesaurus_replacement_uses_the_replacement_argument(monkeypatch):
     window = main_window_module.TextScrollerApp()
     editor = window.get_current_text_widget()
     assert editor is not None
+    assert not editor._linguistic_decorator.context_menu.action_enabled("language")
 
     editor.setPlainText("Presencia")
     cursor = editor.textCursor()

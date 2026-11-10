@@ -47,3 +47,12 @@ def test_unavailable_toolkit_shows_a_disabled_message(qapp, monkeypatch):
     assert not menu.actions()[0].isEnabled()
     assert "unavailable" in menu.actions()[0].text().lower()
     assert spellcheck.install_spell_checker(QTextEdit()) is None
+
+
+
+def test_installed_decorator_hides_context_menu_language(qapp):
+    editor = QTextEdit()
+    decorator = spellcheck.install_spell_checker(editor)
+
+    assert decorator is not None
+    assert not decorator.context_menu.action_enabled("language")

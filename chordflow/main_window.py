@@ -60,6 +60,7 @@ from .thesaurus import MythesThesaurus
 # legacy spellcheck/thesaurus modules when the toolkit is unavailable.
 try:
     from pyqt6_linguistic_tools.qt import (
+        LinguisticAction,
         LinguisticTextEditDecorator,
         ThesaurusDialog,
     )
@@ -407,6 +408,10 @@ class TextScrollerApp(QMainWindow):
                 text_widget, self._linguistic_service
             )
             decorator.add_token_filter(_is_chord_token)
+            decorator.context_menu.set_action_enabled(
+                LinguisticAction.LANGUAGE, False
+            )
+            text_widget._linguistic_decorator = decorator
         else:
             # Fall back to the legacy spell checker
             install_spell_checker(text_widget)
