@@ -789,3 +789,16 @@ def test_dark_theme_applies_dark_page_and_white_text(qtbot, tmp_path):
     finally:
         window.set_theme(THEME_LIGHT)
     assert "white" in window.editor.page.styleSheet()
+
+
+def test_dark_theme_updates_every_open_tab(qtbot, tmp_path):
+    window = MainWindow(settings=temporary_settings(tmp_path))
+    qtbot.addWidget(window)
+    second = window.add_document_tab("Segunda página")
+    try:
+        window.set_theme(THEME_DARK)
+        for editor in (window.editor, second):
+            assert "#1e1f22" in editor.page.styleSheet()
+            assert "#f1f3f4" in editor.page.styleSheet()
+    finally:
+        window.set_theme(THEME_LIGHT)

@@ -29,6 +29,8 @@ MAX_ZOOM = 4.0
 SINGLE_PAGE_VIEW_COLUMNS = 1
 MULTIPLE_PAGE_VIEW_COLUMNS = 3
 PAGE_GRID_START_COLUMN = 1
+MISSPELLING_COLOR_LIGHT = "#d02020"
+MISSPELLING_COLOR_DARK = "#ffd54f"
 
 
 class PageWidget(QFrame):
@@ -56,6 +58,7 @@ class PageWidget(QFrame):
         decorator = install_spell_checker(self.editor)
         if decorator is not None:
             decorator.add_token_filter(is_chord_token)
+        self._apply_misspelling_color()
         self.editor.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
@@ -87,6 +90,26 @@ class PageWidget(QFrame):
             return
         self._dark_mode = dark_mode
         self._apply_page_style()
+        self._apply_misspelling_color()
+
+    def _apply_misspelling_color(self) -> None:
+        """Use a high-contrast wave underline on dark paper."""
+        decorator = getattr(self.editor, "_linguistic_decorator", None)
+        if decorator is None:
+            return
+        try:
+            highlighter = decorator.highlighter
+            text_format = highlighter.misspelling_format
+            text_format.setUnderlineColor(
+                QColor(
+                    MISSPELLING_COLOR_DARK
+                    if self._dark_mode
+                    else MISSPELLING_COLOR_LIGHT
+                )
+            )
+            highlighter.set_misspelling_format(text_format)
+        except (AttributeError, RuntimeError):
+            return
 
     def _apply_page_style(self) -> None:
         if self._dark_mode:
@@ -176,6 +199,7 @@ class PageWidget(QFrame):
         decorator = install_spell_checker(self.editor)
         if decorator is not None:
             decorator.add_token_filter(is_chord_token)
+        self._apply_misspelling_color()
 
     def text_height_for(self, text: str) -> float:
         document = QTextDocument()

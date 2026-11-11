@@ -1306,8 +1306,9 @@ class MainWindow(QMainWindow):
         app = QApplication.instance()
         if isinstance(app, QApplication):
             apply_theme(app, self.settings.theme())
-        if hasattr(self, "editor"):
-            self.editor.set_dark_mode(self._is_dark_theme())
+        dark_mode = self._is_dark_theme()
+        for editor in getattr(self, "_documents", {}):
+            editor.set_dark_mode(dark_mode)
 
     def _theme_label(self, theme: str) -> str:
         labels = {
