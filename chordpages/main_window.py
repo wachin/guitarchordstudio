@@ -47,7 +47,12 @@ from chordpages.i18n import install_translations
 from chordpages.resources import app_icon, toolbar_icon
 from chordpages.recovery import RecoveryDraft, RecoveryManager
 from chordpages.settings import (
+    DEFAULT_ICON_SIZE,
     DEFAULT_LANGUAGE,
+    ICON_SIZE_EXTRA_LARGE,
+    ICON_SIZE_LARGE,
+    ICON_SIZE_SMALL,
+    ICON_SIZE_VERY_SMALL,
     APPLICATION_NAME,
     DocumentViewSettings,
     THEME_DARK,
@@ -55,6 +60,7 @@ from chordpages.settings import (
     THEME_SYSTEM,
     SettingsManager,
     WINDOW_TITLE_NAME,
+    normalized_icon_size,
 )
 from chordpages.spellcheck import build_language_menu
 from chordpages.theme import EFFECTIVE_THEME_PROPERTY, apply_theme
@@ -69,7 +75,8 @@ from chordpages.ui.preferences_dialog import PreferencesDialog
 from chordpages.ui.recovery_dialog import RecoveryDialog
 
 
-DEFAULT_ZOOM = 1.0
+DEFAULT_ZOOM = 1.4
+ACTUAL_SIZE_ZOOM = 1.0
 ZOOM_STEP = 0.1
 DEFAULT_ENCODING = "utf-8"
 DEFAULT_NEWLINE = "\n"
@@ -122,6 +129,7 @@ class MainWindow(QMainWindow):
         self._autosave_suspended = False
         self._editor_font = self._load_editor_font()
         self._default_zoom = self.settings.editor_zoom(DEFAULT_ZOOM)
+        self._icon_size = self.settings.icon_size(DEFAULT_ICON_SIZE)
         self._default_pages_per_row = self.settings.editor_pages_per_row(
             MULTIPLE_PAGE_VIEW_COLUMNS
         )
@@ -131,6 +139,9 @@ class MainWindow(QMainWindow):
         self._documents: dict[PageEditor, DocumentTab] = {}
         self.tabs = QTabWidget()
         self.tabs.setObjectName("documentTabs")
+        self.tabs.setStyleSheet(
+            "QTabBar::tab { padding: 2px 8px; min-height: 16px; }"
+        )
         self.tabs.setTabsClosable(True)
         self.tabs.setMovable(True)
         self.tabs.currentChanged.connect(self._handle_current_tab_changed)
@@ -174,6 +185,7 @@ class MainWindow(QMainWindow):
         file_info: TextFileInfo | None = None,
     ) -> PageEditor:
         editor = PageEditor(editor_font=self._editor_font)
+        editor.set_dark_mode(self._is_dark_theme())
         editor.set_zoom(self._default_zoom)
         editor.set_pages_per_row(self._default_pages_per_row)
         editor.textChanged.connect(lambda editor=editor: self._handle_editor_text_changed(editor))
@@ -193,6 +205,7 @@ class MainWindow(QMainWindow):
         self._set_tab_text_without_autosave(editor, text)
         tab_index = self.tabs.addTab(editor, self._tab_label(metadata))
         self.tabs.setCurrentIndex(tab_index)
+        QTimer.singleShot(0, editor.center_page)
         return editor
 
     def close_tab(self, index: int) -> None:
@@ -483,13 +496,55 @@ class MainWindow(QMainWindow):
             self._about_text(),
         )
 
+    def _active_editor(self):
+        if not hasattr(self, "editor"):
+            return None
+        return self.editor.page.editor
+
+    def _undo_active_editor(self) -> None:
+        editor = self._active_editor()
+        if editor is not None:
+            editor.undo()
+
+    def _redo_active_editor(self) -> None:
+        editor = self._active_editor()
+        if editor is not None:
+            editor.redo()
+
+    def _cut_active_editor(self) -> None:
+        editor = self._active_editor()
+        if editor is not None:
+            editor.cut()
+
+    def _copy_active_editor(self) -> None:
+        editor = self._active_editor()
+        if editor is not None:
+            editor.copy()
+
+    def _paste_active_editor(self) -> None:
+        editor = self._active_editor()
+        if editor is not None:
+            editor.paste()
+
+    def _select_all_active_editor(self) -> None:
+        editor = self._active_editor()
+        if editor is not None:
+            editor.selectAll()
+
     def show_preferences_dialog(self) -> None:
-        dialog = PreferencesDialog(self.settings.language(), self)
+        dialog = PreferencesDialog(
+            self.settings.language(),
+            self._icon_size,
+            self,
+        )
         if dialog.exec() != PreferencesDialog.DialogCode.Accepted:
             return
 
         language = dialog.selected_language()
+        icon_size = getattr(dialog, "selected_icon_size", lambda: self._icon_size)()
         self.settings.set_language(language)
+        self.settings.set_icon_size(icon_size)
+        self._apply_icon_size(icon_size)
         self.settings.sync()
         app = QApplication.instance()
         if isinstance(app, QApplication):
@@ -528,7 +583,7 @@ class MainWindow(QMainWindow):
         self.set_zoom(round(self.editor.zoom() - ZOOM_STEP, 2))
 
     def reset_zoom(self) -> None:
-        self.set_zoom(DEFAULT_ZOOM)
+        self.set_zoom(ACTUAL_SIZE_ZOOM)
 
     def set_editor_font_family(self, font: QFont) -> None:
         current_font = self.editor.editor_font()
@@ -723,6 +778,30 @@ class MainWindow(QMainWindow):
         self.preferences_action = QAction(self.tr("Preferences..."), self)
         self.preferences_action.triggered.connect(self.show_preferences_dialog)
 
+        self.undo_action = QAction(self.tr("Undo"), self)
+        self.undo_action.setShortcut(QKeySequence.StandardKey.Undo)
+        self.undo_action.triggered.connect(self._undo_active_editor)
+
+        self.redo_action = QAction(self.tr("Redo"), self)
+        self.redo_action.setShortcut(QKeySequence.StandardKey.Redo)
+        self.redo_action.triggered.connect(self._redo_active_editor)
+
+        self.cut_action = QAction(self.tr("Cut"), self)
+        self.cut_action.setShortcut(QKeySequence.StandardKey.Cut)
+        self.cut_action.triggered.connect(self._cut_active_editor)
+
+        self.copy_action = QAction(self.tr("Copy"), self)
+        self.copy_action.setShortcut(QKeySequence.StandardKey.Copy)
+        self.copy_action.triggered.connect(self._copy_active_editor)
+
+        self.paste_action = QAction(self.tr("Paste"), self)
+        self.paste_action.setShortcut(QKeySequence.StandardKey.Paste)
+        self.paste_action.triggered.connect(self._paste_active_editor)
+
+        self.select_all_action = QAction(self.tr("Select All"), self)
+        self.select_all_action.setShortcut(QKeySequence.StandardKey.SelectAll)
+        self.select_all_action.triggered.connect(self._select_all_active_editor)
+
         self.zoom_in_action = QAction(self.tr("Zoom In"), self)
         self.zoom_in_action.setShortcuts([QKeySequence("Ctrl++"), QKeySequence("Ctrl+=")])
         self.zoom_in_action.triggered.connect(self.zoom_in)
@@ -819,13 +898,24 @@ class MainWindow(QMainWindow):
         self.file_menu.addAction(self.quit_action)
 
         self.edit_menu = self.menuBar().addMenu(self.tr("Edit"))
-        self.edit_menu.addAction(self.preferences_action)
+        self.edit_menu.addAction(self.undo_action)
+        self.edit_menu.addAction(self.redo_action)
         self.edit_menu.addSeparator()
+        self.edit_menu.addAction(self.cut_action)
+        self.edit_menu.addAction(self.copy_action)
+        self.edit_menu.addAction(self.paste_action)
+        self.edit_menu.addSeparator()
+        self.edit_menu.addAction(self.select_all_action)
+
+        self.options_menu = self.menuBar().addMenu(self.tr("Options"))
+        self.options_menu.addAction(self.preferences_action)
+        self.options_menu.addSeparator()
         self.spell_language_menu = build_language_menu(
             self,
             lambda: self.editor.page.editor if hasattr(self, "editor") else None,
         )
-        self.edit_menu.addMenu(self.spell_language_menu)
+        self.spell_language_menu.setTitle(self.tr("Spell checker language"))
+        self.options_menu.addMenu(self.spell_language_menu)
 
         self.transpose_menu = self.menuBar().addMenu(self.tr("Transpose"))
         self.transpose_menu.addAction(self.transpose_down_action)
@@ -988,17 +1078,22 @@ class MainWindow(QMainWindow):
         """Refresh the language menu after a dictionary download or removal."""
         if not hasattr(self, "spell_language_menu"):
             return
-        self.edit_menu.removeAction(self.spell_language_menu.menuAction())
+        self.options_menu.removeAction(self.spell_language_menu.menuAction())
         self.spell_language_menu = build_language_menu(
             self,
             lambda: self.editor.page.editor if hasattr(self, "editor") else None,
         )
-        self.edit_menu.addMenu(self.spell_language_menu)
+        self.spell_language_menu.setTitle(self.tr("Spell checker language"))
+        self.options_menu.addMenu(self.spell_language_menu)
 
     def _create_toolbar(self) -> None:
         self.toolbar = QToolBar(self.tr("Main Toolbar"), self)
         self.toolbar.setObjectName("mainToolbar")
         self.toolbar.setMovable(False)
+        self.toolbar.setStyleSheet(
+            "QToolBar { spacing: 2px; padding: 1px; } "
+            "QToolButton { padding: 1px; margin: 0; }"
+        )
         # Fall back to text labels when the icons cannot be rendered.
         has_icons = not self.new_action.icon().isNull()
         self.toolbar.setToolButtonStyle(
@@ -1006,7 +1101,6 @@ class MainWindow(QMainWindow):
             if has_icons
             else Qt.ToolButtonStyle.ToolButtonTextOnly
         )
-        self.toolbar.setIconSize(QSize(24, 24))
         self.toolbar.addAction(self.new_action)
         self.toolbar.addAction(self.open_action)
         self.toolbar.addAction(self.save_action)
@@ -1045,7 +1139,30 @@ class MainWindow(QMainWindow):
         self.font_size_spin.setToolTip(self.tr("Font size"))
         self.font_size_spin.valueChanged.connect(self.set_editor_font_size)
         self.toolbar.addWidget(self.font_size_spin)
+        self.toolbar.setContentsMargins(2, 1, 2, 1)
         self.addToolBar(self.toolbar)
+        self._apply_icon_size(self._icon_size)
+
+    def _icon_size_pixels(self) -> int:
+        menu_height = max(12, self.menuBar().fontMetrics().height())
+        return {
+            ICON_SIZE_VERY_SMALL: menu_height,
+            ICON_SIZE_SMALL: 20,
+            ICON_SIZE_LARGE: 28,
+            ICON_SIZE_EXTRA_LARGE: 34,
+        }[self._icon_size]
+
+    def _apply_icon_size(self, size: str) -> None:
+        """Apply the persisted toolbar icon size and keep pages centered."""
+        self._icon_size = normalized_icon_size(size)
+        if not hasattr(self, "toolbar"):
+            return
+        pixels = self._icon_size_pixels()
+        self.toolbar.setIconSize(QSize(pixels, pixels))
+        self.toolbar.setMinimumHeight(pixels + 6)
+        self._refresh_toolbar_icons()
+        for editor in self._documents:
+            QTimer.singleShot(0, editor.center_page)
 
     def _refresh_toolbar_icons(self) -> None:
         """Apply the theme-appropriate icons and hover tooltips."""
@@ -1090,7 +1207,9 @@ class MainWindow(QMainWindow):
         current_zoom = self.editor.zoom()
         self.zoom_out_action.setEnabled(current_zoom > MIN_ZOOM)
         self.zoom_in_action.setEnabled(current_zoom < MAX_ZOOM)
-        self.reset_zoom_action.setEnabled(abs(current_zoom - DEFAULT_ZOOM) > 0.001)
+        self.reset_zoom_action.setEnabled(
+            abs(current_zoom - ACTUAL_SIZE_ZOOM) > 0.001
+        )
 
     def _sync_zoom_display(self) -> None:
         if hasattr(self, "zoom_label"):
@@ -1187,6 +1306,8 @@ class MainWindow(QMainWindow):
         app = QApplication.instance()
         if isinstance(app, QApplication):
             apply_theme(app, self.settings.theme())
+        if hasattr(self, "editor"):
+            self.editor.set_dark_mode(self._is_dark_theme())
 
     def _theme_label(self, theme: str) -> str:
         labels = {
@@ -1222,6 +1343,12 @@ class MainWindow(QMainWindow):
         self.export_pdf_action.setText(self.tr("Export PDF..."))
         self.quit_action.setText(self.tr("Quit"))
         self.preferences_action.setText(self.tr("Preferences..."))
+        self.undo_action.setText(self.tr("Undo"))
+        self.redo_action.setText(self.tr("Redo"))
+        self.cut_action.setText(self.tr("Cut"))
+        self.copy_action.setText(self.tr("Copy"))
+        self.paste_action.setText(self.tr("Paste"))
+        self.select_all_action.setText(self.tr("Select All"))
         self.zoom_in_action.setText(self.tr("Zoom In"))
         self.zoom_out_action.setText(self.tr("Zoom Out"))
         self.reset_zoom_action.setText(self.tr("Actual Size"))
@@ -1238,6 +1365,8 @@ class MainWindow(QMainWindow):
 
         self.file_menu.setTitle(self.tr("File"))
         self.edit_menu.setTitle(self.tr("Edit"))
+        self.options_menu.setTitle(self.tr("Options"))
+        self.spell_language_menu.setTitle(self.tr("Spell checker language"))
         self.transpose_menu.setTitle(self.tr("Transpose"))
         self.view_menu.setTitle(self.tr("View"))
         self.page_view_menu.setTitle(self.tr("Page View"))

@@ -39,11 +39,13 @@ class PageWidget(QFrame):
         layout: PageLayout | None = None,
         editor_font: QFont | None = None,
         editable: bool = True,
+        dark_mode: bool = False,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
         self._layout = layout or PageLayout()
         self._zoom = 1.0
+        self._dark_mode = bool(dark_mode)
         self._base_font = QFont(editor_font or default_editor_font())
         self.editor = QTextEdit(self)
         self.editor.setObjectName("pageTextEditor")
@@ -69,26 +71,7 @@ class PageWidget(QFrame):
         )
 
         self.setObjectName("pageWidget")
-        self.setStyleSheet(
-            """
-            QFrame#pageWidget {
-                background: white;
-                border: 1px solid #c8c8c8;
-            }
-
-            QTextEdit#pageTextEditor {
-                background: white;
-                color: #202124;
-                selection-background-color: #b8d7ff;
-                selection-color: #111827;
-            }
-
-            QFrame#printerSafeAreaFrame {
-                background: transparent;
-                border: 1px dashed #9aa0a6;
-            }
-            """
-        )
+        self._apply_page_style()
         shadow = QGraphicsDropShadowEffect(self)
         shadow.setBlurRadius(18.0)
         shadow.setOffset(0.0, 4.0)
@@ -96,6 +79,50 @@ class PageWidget(QFrame):
         self.setGraphicsEffect(shadow)
         self.set_editable(editable)
         self._apply_layout()
+
+    def set_dark_mode(self, dark_mode: bool) -> None:
+        """Apply dark or light paper colors without changing the document."""
+        dark_mode = bool(dark_mode)
+        if dark_mode == self._dark_mode:
+            return
+        self._dark_mode = dark_mode
+        self._apply_page_style()
+
+    def _apply_page_style(self) -> None:
+        if self._dark_mode:
+            page_background = "#1e1f22"
+            page_text = "#f1f3f4"
+            page_border = "#3c4043"
+            selection_background = "#3d8bfd"
+            selection_text = "#ffffff"
+            safe_area_border = "#6b7280"
+        else:
+            page_background = "white"
+            page_text = "#202124"
+            page_border = "#c8c8c8"
+            selection_background = "#b8d7ff"
+            selection_text = "#111827"
+            safe_area_border = "#9aa0a6"
+        self.setStyleSheet(
+            f"""
+            QFrame#pageWidget {{
+                background: {page_background};
+                border: 1px solid {page_border};
+            }}
+
+            QTextEdit#pageTextEditor {{
+                background: {page_background};
+                color: {page_text};
+                selection-background-color: {selection_background};
+                selection-color: {selection_text};
+            }}
+
+            QFrame#printerSafeAreaFrame {{
+                background: transparent;
+                border: 1px dashed {safe_area_border};
+            }}
+            """
+        )
 
     def page_layout(self) -> PageLayout:
         return self._layout
@@ -232,6 +259,7 @@ class PageEditor(QWidget):
         super().__init__(parent)
         self.setObjectName("pageEditor")
         self._pages: list[PageWidget] = []
+        self._dark_mode = False
         self._pages_per_row = MULTIPLE_PAGE_VIEW_COLUMNS
         self._editor_font = editor_font or default_editor_font()
         self._full_text = ""
@@ -240,6 +268,9 @@ class PageEditor(QWidget):
         self._scroll_area = QScrollArea()
         self._scroll_area.setObjectName("pageScrollArea")
         self._scroll_area.setWidgetResizable(True)
+        self._scroll_area.setAlignment(
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop
+        )
 
         self._content = QWidget()
         self._content.setObjectName("pageCanvas")
@@ -262,6 +293,12 @@ class PageEditor(QWidget):
             lambda page=self.page: self._handle_page_text_changed(page)
         )
 
+    def center_page(self) -> None:
+        """Center the current page horizontally after a viewport change."""
+        self._content_layout.activate()
+        scrollbar = self._scroll_area.horizontalScrollBar()
+        scrollbar.setValue((scrollbar.minimum() + scrollbar.maximum()) // 2)
+
     def text(self) -> str:
         return self._full_text
 
@@ -271,6 +308,13 @@ class PageEditor(QWidget):
 
     def text_document(self):
         return self.page.editor.document()
+
+    def set_dark_mode(self, dark_mode: bool) -> None:
+        """Apply the page theme to every current page and future pages."""
+        dark_mode = bool(dark_mode)
+        self._dark_mode = dark_mode
+        for page in self._pages:
+            page.set_dark_mode(dark_mode)
 
     def editor_font(self) -> QFont:
         return QFont(self._editor_font)
@@ -388,6 +432,7 @@ class PageEditor(QWidget):
             layout=layout,
             editor_font=self._editor_font,
             editable=editable,
+            dark_mode=self._dark_mode,
             parent=self._content,
         )
         page.editor.document().contentsChanged.connect(

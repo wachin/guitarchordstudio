@@ -245,21 +245,26 @@ def test_main_window_exposes_zoom_actions(qtbot, tmp_path):
     assert window.fit_page_action.text() == "Fit Page"
     assert isinstance(window.zoom_label, QLabel)
     assert window.zoom_label.objectName() == "zoomLabel"
-    assert window.zoom_label.text() == "100%"
-    assert not window.reset_zoom_action.isEnabled()
+    assert window.zoom_label.text() == "140%"
+    assert window.reset_zoom_action.isEnabled()
 
     window.zoom_in_action.trigger()
 
-    assert window.editor.zoom() == pytest.approx(1.1)
-    assert settings.editor_zoom(1.0) == pytest.approx(1.1)
-    assert window.zoom_label.text() == "110%"
+    assert window.editor.zoom() == pytest.approx(1.5)
+    assert settings.editor_zoom(1.0) == pytest.approx(1.5)
+    assert window.zoom_label.text() == "150%"
     assert window.reset_zoom_action.isEnabled()
-    assert window.statusBar().currentMessage() == "Zoom: 110%"
+    assert window.statusBar().currentMessage() == "Zoom: 150%"
 
     window.zoom_out_action.trigger()
 
+    assert window.editor.zoom() == pytest.approx(1.4)
+    assert settings.editor_zoom(1.5) == pytest.approx(1.4)
+    assert window.zoom_label.text() == "140%"
+    assert window.reset_zoom_action.isEnabled()
+
+    window.reset_zoom_action.trigger()
     assert window.editor.zoom() == pytest.approx(1.0)
-    assert settings.editor_zoom(1.1) == pytest.approx(1.0)
     assert window.zoom_label.text() == "100%"
     assert not window.reset_zoom_action.isEnabled()
 
@@ -452,8 +457,9 @@ def test_preferences_dialog_persists_selected_language(qtbot, monkeypatch, tmp_p
         class DialogCode:
             Accepted = 1
 
-        def __init__(self, language, parent):
+        def __init__(self, language, icon_size, parent):
             self.language = language
+            self.icon_size = icon_size
             self.parent = parent
 
         def exec(self):
@@ -461,6 +467,9 @@ def test_preferences_dialog_persists_selected_language(qtbot, monkeypatch, tmp_p
 
         def selected_language(self):
             return "es"
+
+        def selected_icon_size(self):
+            return "large"
 
     monkeypatch.setattr(main_window_module, "PreferencesDialog", FakePreferencesDialog)
     window = MainWindow(settings=settings)
@@ -740,3 +749,43 @@ def test_synonyms_uses_the_selected_page_word(qtbot, tmp_path):
 
     assert window.selected_word_for_synonyms() == "feliz"
     assert "Synonyms..." in [action.text() for action in window.tools_menu.actions()]
+
+
+def test_main_window_has_options_edit_menus_and_icon_sizes(qtbot, tmp_path):
+    window = MainWindow(settings=temporary_settings(tmp_path))
+    qtbot.addWidget(window)
+
+    menu_titles = [action.text() for action in window.menuBar().actions()]
+    assert "Options" in menu_titles
+    assert "Edit" in menu_titles
+
+    edit_labels = [action.text() for action in window.edit_menu.actions() if action.text()]
+    assert edit_labels == ["Undo", "Redo", "Cut", "Copy", "Paste", "Select All"]
+    assert "Preferences..." not in edit_labels
+
+    options_labels = [
+        action.text() for action in window.options_menu.actions() if action.text()
+    ]
+    assert "Preferences..." in options_labels
+    assert "Spell checker language" in options_labels
+
+    assert window.toolbar.iconSize().width() == 20
+    window._apply_icon_size("large")
+    assert window.toolbar.iconSize().width() == 28
+    window._apply_icon_size("very_small")
+    assert window.toolbar.iconSize().width() >= 12
+    window._apply_icon_size("extra_large")
+    assert window.toolbar.iconSize().width() == 34
+
+
+def test_dark_theme_applies_dark_page_and_white_text(qtbot, tmp_path):
+    window = MainWindow(settings=temporary_settings(tmp_path))
+    qtbot.addWidget(window)
+    try:
+        window.set_theme(THEME_DARK)
+        stylesheet = window.editor.page.styleSheet()
+        assert "#1e1f22" in stylesheet
+        assert "#f1f3f4" in stylesheet
+    finally:
+        window.set_theme(THEME_LIGHT)
+    assert "white" in window.editor.page.styleSheet()

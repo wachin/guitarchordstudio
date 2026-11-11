@@ -25,6 +25,17 @@ CONFIG_APP_NAME = "chordpages"
 DEFAULT_MAIN_WINDOW_SIZE = (1100, 850)
 DEFAULT_RECENT_FILE_LIMIT = 10
 DEFAULT_LANGUAGE = "system"
+ICON_SIZE_VERY_SMALL = "very_small"
+ICON_SIZE_SMALL = "small"
+ICON_SIZE_LARGE = "large"
+ICON_SIZE_EXTRA_LARGE = "extra_large"
+DEFAULT_ICON_SIZE = ICON_SIZE_SMALL
+SUPPORTED_ICON_SIZES = (
+    ICON_SIZE_VERY_SMALL,
+    ICON_SIZE_SMALL,
+    ICON_SIZE_LARGE,
+    ICON_SIZE_EXTRA_LARGE,
+)
 THEME_SYSTEM = "system"
 THEME_LIGHT = "light"
 THEME_DARK = "dark"
@@ -59,6 +70,7 @@ class SettingsManager:
     RECENT_FILES_KEY = "files/recent"
     LANGUAGE_KEY = "i18n/language"
     THEME_KEY = "ui/theme"
+    ICON_SIZE_KEY = "ui/iconSize"
     EDITOR_FONT_FAMILY_KEY = "editor/fontFamily"
     EDITOR_FONT_SIZE_KEY = "editor/fontSize"
     EDITOR_ZOOM_KEY = "editor/zoom"
@@ -211,6 +223,14 @@ class SettingsManager:
     def set_theme(self, theme: str) -> None:
         """Persist the requested UI theme."""
         self._settings.setValue(self.THEME_KEY, normalized_theme(theme))
+    def icon_size(self, default: str = DEFAULT_ICON_SIZE) -> str:
+        """Return the persisted toolbar icon-size preference."""
+        value = self._settings.value(self.ICON_SIZE_KEY, default)
+        return normalized_icon_size(str(value) if value not in (None, "") else default)
+
+    def set_icon_size(self, size: str) -> None:
+        """Persist the toolbar icon-size preference."""
+        self._settings.setValue(self.ICON_SIZE_KEY, normalized_icon_size(size))
 
     def editor_font_family(self, default_family: str) -> str:
         """Return the persisted editor font family."""
@@ -312,6 +332,14 @@ class SettingsManager:
             return stored_size
 
         return QSize(default_size[0], default_size[1])
+
+
+def normalized_icon_size(size: str) -> str:
+    """Return a supported toolbar icon-size name."""
+    normalized = size.strip().lower().replace("-", "_").replace(" ", "_")
+    if normalized in SUPPORTED_ICON_SIZES:
+        return normalized
+    return DEFAULT_ICON_SIZE
 
 
 def normalized_theme(theme: str) -> str:

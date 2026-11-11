@@ -39,7 +39,7 @@ def test_toolbar_is_icon_only(qtbot, tmp_path) -> None:
     qtbot.addWidget(window)
 
     assert window.toolbar.toolButtonStyle() == Qt.ToolButtonStyle.ToolButtonIconOnly
-    assert window.toolbar.iconSize().width() == 24
+    assert window.toolbar.iconSize().width() == 20
 
 
 def test_each_toolbar_action_has_an_icon_and_tooltip(qtbot, tmp_path) -> None:

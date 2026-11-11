@@ -185,7 +185,18 @@ def _stylesheet(
         QToolBar {{
             border: 0;
             border-bottom: 1px solid {border};
-            spacing: 4px;
+            spacing: 2px;
+            padding: 1px;
+        }}
+
+        QToolButton {{
+            padding: 1px;
+            margin: 0;
+        }}
+
+        QTabBar::tab {{
+            padding: 2px 8px;
+            min-height: 16px;
         }}
 
         QStatusBar {{

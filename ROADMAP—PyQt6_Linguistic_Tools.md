@@ -1516,6 +1516,8 @@ Only integrate after the standalone library is functional.
 - [x] Match LibreOffice's thesaurus controls: current word, installed
   thesaurus language selector, numbered alternatives, editable replacement
   field, and Replace/Cancel actions.
+- [x] Add ChordPages Options/Edit menus, configurable icon sizes, compact tabs
+  and toolbar, 140% default zoom, page centering, and dark page colors.
 - [x] Store both applications' settings in `settings.json`, add optional
   Enchant `.dic` import/export, and expose the dictionary folder plus personal
   backup/restore actions.

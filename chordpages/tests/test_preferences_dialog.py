@@ -20,3 +20,15 @@ def test_preferences_dialog_falls_back_to_system_language(qtbot):
     qtbot.addWidget(dialog)
 
     assert dialog.selected_language() == DEFAULT_LANGUAGE
+
+
+def test_preferences_dialog_has_view_icon_sizes(qtbot):
+    dialog = PreferencesDialog(language="en", icon_size="large")
+    qtbot.addWidget(dialog)
+
+    combo = dialog.findChild(QComboBox, "iconSizeComboBox")
+
+    assert combo is not None
+    assert combo.count() == 4
+    assert combo.currentData() == "large"
+    assert dialog.selected_icon_size() == "large"

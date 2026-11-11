@@ -24,7 +24,7 @@ TOOLBAR_ICON_COLORS = {
     False: "#3c4043",
     True: "#e8eaed",
 }
-TOOLBAR_ICON_SIZES = (24, 48, 72)
+TOOLBAR_ICON_SIZES = (14, 16, 18, 20, 22, 24, 28, 30, 34, 36, 48, 64)
 
 
 def app_icon() -> QIcon:
