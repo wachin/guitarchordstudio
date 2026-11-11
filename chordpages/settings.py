@@ -8,8 +8,10 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
-from PyQt6.QtCore import QByteArray, QSettings, QSize, QStandardPaths
+from PyQt6.QtCore import QByteArray, QSettings, QSize
 from PyQt6.QtWidgets import QMainWindow
+
+from guitarchordstudio_paths import app_config_dir
 
 
 ORGANIZATION_NAME = "ChordFlow"
@@ -17,7 +19,7 @@ APPLICATION_NAME = "ChordFlow"
 WINDOW_TITLE_NAME = "ChordPages"
 
 # Configuration directory — shared across the suite
-CONFIG_DIR_NAME = "guitarchs"
+CONFIG_DIR_NAME = "guitarchordstudio"
 CONFIG_APP_NAME = "chordpages"
 DEFAULT_MAIN_WINDOW_SIZE = (1100, 850)
 DEFAULT_RECENT_FILE_LIMIT = 10
@@ -44,9 +46,9 @@ class SettingsManager:
 
     Settings are stored in the platform-appropriate config directory:
 
-        Linux:   ~/.config/guitarchs/chordpages/settings.ini
-        Windows: %APPDATA%/guitarchs/chordpages/settings.ini
-        macOS:   ~/Library/Application Support/guitarchs/chordpages/settings.ini
+        Linux:   ~/.config/guitarchordstudio/chordpages/settings.ini
+        Windows: %APPDATA%/GuitarChordStudio/ChordPages/settings.ini
+        macOS:   ~/Library/Application Support/GuitarChordStudio/ChordPages/settings.ini
     """
 
     MAIN_WINDOW_GEOMETRY_KEY = "mainWindow/geometry"
@@ -361,15 +363,10 @@ def _optional_positive_int(value: Any) -> int | None:
 def _default_settings_path() -> Path:
     """Return the platform-appropriate settings INI path.
 
-    Linux:   ~/.config/guitarchs/chordpages/settings.ini
-    Windows: %APPDATA%/guitarchs/chordpages/settings.ini
-    macOS:   ~/Library/Application Support/guitarchs/chordpages/settings.ini
+    Linux:   ~/.config/guitarchordstudio/chordpages/settings.ini
+    Windows: %APPDATA%/GuitarChordStudio/ChordPages/settings.ini
+    macOS:   ~/Library/Application Support/GuitarChordStudio/ChordPages/settings.ini
     """
-    base = Path(
-        QStandardPaths.writableLocation(
-            QStandardPaths.StandardLocation.GenericConfigLocation
-        )
-    )
-    config_dir = base / CONFIG_DIR_NAME / CONFIG_APP_NAME
+    config_dir = app_config_dir("chordpages")
     config_dir.mkdir(parents=True, exist_ok=True)
     return config_dir / "settings.ini"

@@ -6,13 +6,14 @@ import os
 import sys
 from pathlib import Path
 
+from guitarchordstudio_paths import dictionaries_dir
+
 
 def _bundled_resources() -> Path:
     """Return the path to the bundled resources directory.
 
     Search order:
     1. ``resources/`` relative to project root (for Nuitka builds)
-    2. ``third-party/libreoffice-dictionaries-collection/dicts/`` (dev/submodule)
     """
     module = Path(__file__).resolve().parent  # chordflow/
     for parent in (module.parent, module.parent.parent):
@@ -20,15 +21,6 @@ def _bundled_resources() -> Path:
         resources = parent / "resources" / "dicts"
         if resources.is_dir():
             return resources
-        # Check for third-party submodule
-        third_party = (
-            parent
-            / "third-party"
-            / "libreoffice-dictionaries-collection"
-            / "dicts"
-        )
-        if third_party.is_dir():
-            return third_party
     return Path()
 
 
@@ -48,9 +40,7 @@ class MythesThesaurus:
 
         if sys.platform == "win32":
             # Windows: APPDATA + bundled resources
-            appdata = os.environ.get("APPDATA", "")
-            if appdata:
-                search_dirs.append(Path(appdata) / "guitarchs" / "mythes")
+            search_dirs.append(dictionaries_dir() / "mythes")
         else:
             # Linux system paths
             search_dirs.extend([

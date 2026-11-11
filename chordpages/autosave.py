@@ -11,10 +11,9 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from PyQt6.QtCore import QStandardPaths
 
 from chordpages.document.model import FRONT_MATTER_DELIMITER, ChordPagesDocument
-from chordpages.settings import APPLICATION_NAME
+from guitarchordstudio_paths import app_data_dir
 
 
 DEFAULT_AUTOSAVE_INTERVAL_MS = 30_000
@@ -74,10 +73,7 @@ class AutosaveManager:
 
 def default_autosave_directory() -> Path:
     """Return the platform-specific autosave draft directory."""
-    location = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
-    if location:
-        return Path(location) / "autosave"
-    return Path.home() / ".local" / "share" / APPLICATION_NAME / "autosave"
+    return app_data_dir("chordpages") / "autosave"
 
 
 def _draft_key(source_path: str | Path | None, draft_id: str) -> str:

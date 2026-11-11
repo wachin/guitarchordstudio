@@ -23,6 +23,7 @@ if _TOOLKIT_ROOT.is_dir():
         sys.path.insert(0, _toolkit_text)
     import pyqt6_linguistic_tools_bootstrap  # noqa: F401
 
+from guitarchordstudio_paths import dictionaries_dir
 from PyQt6.QtGui import QActionGroup
 from PyQt6.QtWidgets import QMenu
 
@@ -80,6 +81,7 @@ def create_linguistic_service(
         language=language,
         namespace="guitarchordstudio",
         corpus_path=_corpus_root(),
+        dictionary_root=dictionaries_dir(),
     )
 
 

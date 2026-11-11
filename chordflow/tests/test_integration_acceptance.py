@@ -48,11 +48,6 @@ def _dictionary_directory() -> Path | None:
     override = os.environ.get("LIBREOFFICE_DICTIONARIES_PATH")
     if override:
         candidates.append(Path(override).expanduser())
-    repository = Path(__file__).resolve().parents[2]
-    collection = (
-        repository / "third-party" / "libreoffice-dictionaries-collection" / "dicts"
-    )
-    candidates.extend([collection / "dict-es", collection])
     candidates.append(Path("/usr/share/hunspell"))
 
     for candidate in candidates:

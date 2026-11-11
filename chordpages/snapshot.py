@@ -11,11 +11,10 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from PyQt6.QtCore import QStandardPaths
 
 from chordpages.document import ChordPagesDocument, ChordPagesSongbook
 from chordpages.document.model import FRONT_MATTER_DELIMITER
-from chordpages.settings import APPLICATION_NAME
+from guitarchordstudio_paths import app_data_dir
 
 
 DOCUMENT_SNAPSHOT_SUFFIX = ".snapshot.mchord"
@@ -339,18 +338,12 @@ class SongbookSnapshotManager:
 
 def default_snapshot_directory() -> Path:
     """Return the platform-specific document snapshot directory."""
-    location = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
-    if location:
-        return Path(location) / "snapshots" / "documents"
-    return Path.home() / ".local" / "share" / APPLICATION_NAME / "snapshots" / "documents"
+    return app_data_dir("chordpages") / "snapshots" / "documents"
 
 
 def default_songbook_snapshot_directory() -> Path:
     """Return the platform-specific songbook snapshot directory."""
-    location = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
-    if location:
-        return Path(location) / "snapshots" / "songbooks"
-    return Path.home() / ".local" / "share" / APPLICATION_NAME / "snapshots" / "songbooks"
+    return app_data_dir("chordpages") / "snapshots" / "songbooks"
 
 
 def _serialize_snapshot(

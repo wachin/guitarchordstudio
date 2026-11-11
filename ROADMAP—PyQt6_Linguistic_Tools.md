@@ -266,15 +266,10 @@ the thesaurus UI.
 
 ## LibreOffice dictionary compatibility corpus
 
-Use the collection currently available in GuitarChordStudio at:
-
-```text
-third-party/libreoffice-dictionaries-collection/dicts/
-```
-
-The standalone library must not hard-code that GuitarChordStudio-specific path.
-Tests must accept the corpus root through a pytest option or an environment
-variable such as:
+The collection is no longer a GuitarChordStudio submodule. Point the tests at
+an external LibreOffice checkout with `LIBREOFFICE_DICTIONARIES_PATH` (or
+`--dictionary-corpus`). The standalone library must never hard-code a parent
+checkout path.
 
 ```text
 LIBREOFFICE_DICTIONARIES_PATH
@@ -1521,6 +1516,9 @@ Only integrate after the standalone library is functional.
 - [x] Match LibreOffice's thesaurus controls: current word, installed
   thesaurus language selector, numbered alternatives, editable replacement
   field, and Replace/Cancel actions.
+- [x] Move both applications to one shared `GuitarChordStudio` configuration
+  and data root, remove the LibreOffice corpus submodule, and make dictionary
+  downloads use the shared managed/user/personal directories.
 - [x] Remove the context-menu language submenu from ChordFlow and ChordPages
   while keeping language selection in the main menus.
 - [x] Repair ChordPages' page-editor spelling highlighter and add a

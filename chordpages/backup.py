@@ -10,9 +10,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from PyQt6.QtCore import QStandardPaths
 
-from chordpages.settings import APPLICATION_NAME
+from guitarchordstudio_paths import app_data_dir
 
 
 BACKUP_SUFFIX = ".backup"
@@ -91,10 +90,7 @@ class BackupManager:
 
 def default_backup_directory() -> Path:
     """Return the platform-specific backup snapshot directory."""
-    location = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
-    if location:
-        return Path(location) / "backups"
-    return Path.home() / ".local" / "share" / APPLICATION_NAME / "backups"
+    return app_data_dir("chordpages") / "backups"
 
 
 def _normalized_path(path: str | Path) -> Path:

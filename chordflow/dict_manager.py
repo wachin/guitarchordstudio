@@ -14,7 +14,7 @@ from pathlib import Path
 from urllib.request import urlopen
 from urllib.error import URLError
 
-from PyQt6.QtCore import QStandardPaths
+from guitarchordstudio_paths import dictionaries_dir
 
 
 # ---------------------------------------------------------------------------
@@ -24,16 +24,9 @@ from PyQt6.QtCore import QStandardPaths
 def _dicts_base() -> Path:
     """Return the base directory for installed dictionaries.
 
-    Linux:   ~/.local/share/guitarchs/dicts/
-    Windows: %APPDATA%/guitarchs/dicts/
-    macOS:   ~/Library/Application Support/guitarchs/dicts/
+    All platforms use the shared GuitarChordStudio data directory.
     """
-    data = Path(
-        QStandardPaths.writableLocation(
-            QStandardPaths.StandardLocation.AppDataLocation
-        )
-    )
-    base = data / "guitarchs" / "dicts"
+    base = dictionaries_dir() / "legacy"
     base.mkdir(parents=True, exist_ok=True)
     return base
 
@@ -43,21 +36,12 @@ def _bundled_dicts() -> Path:
 
     Search order:
     1. ``resources/dicts/`` at project root (dev + Nuitka)
-    2. ``third-party/libreoffice-dictionaries-collection/dicts/`` (submodule)
     """
     module = Path(__file__).resolve().parent  # chordflow/
     for parent in (module.parent, module.parent.parent):
         resources = parent / "resources" / "dicts"
         if resources.is_dir():
             return resources
-        third_party = (
-            parent
-            / "third-party"
-            / "libreoffice-dictionaries-collection"
-            / "dicts"
-        )
-        if third_party.is_dir():
-            return third_party
     return Path()
 
 

@@ -39,19 +39,12 @@ _ensure_toolkit_on_path()
 
 from pyqt6_linguistic_tools import LinguisticService, create_service  # noqa: E402
 
+from guitarchordstudio_paths import dictionaries_dir
+
 
 def _corpus_root() -> Path | None:
     """Return the path to the bundled LibreOffice dictionaries, or ``None``."""
     repo_root = Path(__file__).resolve().parent.parent
-
-    candidate = (
-        repo_root
-        / "third-party"
-        / "libreoffice-dictionaries-collection"
-        / "dicts"
-    )
-    if candidate.is_dir():
-        return candidate
 
     candidate = repo_root / "resources" / "dicts"
     if candidate.is_dir():
@@ -76,6 +69,7 @@ def create_linguistic_service(
         language=language,
         namespace=namespace,
         corpus_path=_corpus_root(),
+        dictionary_root=dictionaries_dir(),
     )
 
 

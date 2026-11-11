@@ -15,6 +15,8 @@ import re
 import sys
 from pathlib import Path
 
+from guitarchordstudio_paths import dictionaries_dir
+
 from PyQt6.QtCore import QPoint, Qt
 from PyQt6.QtGui import QAction, QSyntaxHighlighter, QTextCharFormat, QTextCursor
 from PyQt6.QtWidgets import QMenu, QTextEdit
@@ -644,9 +646,12 @@ def _dictionary_paths(lang: str) -> list[tuple[Path, Path]]:
     bases: list[Path] = []
 
     if sys.platform == "win32":
-        appdata = Path(os.environ.get("APPDATA", ""))
-        if appdata.exists():
-            bases.append(appdata / "guitarchs" / "dicts" / f"dict-{lang.split('_')[0].lower()}" / lang)
+        bases.append(
+            dictionaries_dir()
+            / "legacy"
+            / f"dict-{lang.split('_')[0].lower()}"
+            / lang
+        )
     else:
         bases.extend([
             Path(f"/usr/share/hunspell/{lang}"),

@@ -5,10 +5,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from PyQt6.QtCore import QStandardPaths
+from guitarchordstudio_paths import app_config_dir
 
 
-CONFIG_DIR_NAME = "guitarchs"
+CONFIG_DIR_NAME = "guitarchordstudio"
 APP_NAME = "chordflow"
 
 DEFAULT_CONFIG: dict = {
@@ -23,16 +23,11 @@ DEFAULT_CONFIG: dict = {
 def config_path() -> Path:
     """Return the platform-appropriate config directory for the app.
 
-    Linux:   ~/.config/guitarchs/chordflow/config.json
-    Windows: %APPDATA%/guitarchs/chordflow/config.json
-    macOS:   ~/Library/Application Support/guitarchs/chordflow/config.json
+    Linux:   ~/.config/guitarchordstudio/chordflow/config.json
+    Windows: %APPDATA%/GuitarChordStudio/ChordFlow/config.json
+    macOS:   ~/Library/Application Support/GuitarChordStudio/ChordFlow/config.json
     """
-    base = Path(
-        QStandardPaths.writableLocation(
-            QStandardPaths.StandardLocation.GenericConfigLocation
-        )
-    )
-    path = base / CONFIG_DIR_NAME / APP_NAME
+    path = app_config_dir("chordflow")
     path.mkdir(parents=True, exist_ok=True)
     return path / "config.json"
 

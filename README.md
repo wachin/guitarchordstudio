@@ -454,18 +454,37 @@ pip install pytest pytest-qt
 
 ---
 
-# Configuration Files
+# Configuration and shared data
 
-Each application stores its settings in the platform's standard configuration
-directory, under a shared `guitarchs` folder:
+Both applications use one per-user `GuitarChordStudio` root. Linux follows the
+XDG specification, so configuration and data are separate; Windows and macOS
+use the visible `GuitarChordStudio` folder under their application-data
+directory. Linux uses lowercase names, while Windows and macOS use
+`GuitarChordStudio`, `ChordFlow`, and `ChordPages`.
 
-| Application | Linux | Windows | macOS |
+| Content | Linux | Windows | macOS |
 |---|---|---|---|
-| **chordflow** | `~/.config/guitarchs/chordflow/config.json` | `%APPDATA%\guitarchs\chordflow\config.json` | `~/Library/Application Support/guitarchs/chordflow/config.json` |
-| **chordpages** | `~/.config/guitarchs/chordpages/settings.ini` | `%APPDATA%\guitarchs\chordpages\settings.ini` | `~/Library/Application Support/guitarchs/chordpages/settings.ini` |
+| ChordFlow settings | `~/.config/guitarchordstudio/chordflow/config.json` | `%APPDATA%\GuitarChordStudio\ChordFlow\config.json` | `~/Library/Application Support/GuitarChordStudio/ChordFlow/config.json` |
+| ChordPages settings | `~/.config/guitarchordstudio/chordpages/settings.ini` | `%APPDATA%\GuitarChordStudio\ChordPages\settings.ini` | `~/Library/Application Support/GuitarChordStudio/ChordPages/settings.ini` |
+| Dictionaries | `~/.local/share/guitarchordstudio/dictionaries/` | `%APPDATA%\GuitarChordStudio\dictionaries\` | `~/Library/Application Support/GuitarChordStudio/dictionaries/` |
+| Autosave, backups, snapshots | `~/.local/share/guitarchordstudio/chordpages/` | `%APPDATA%\GuitarChordStudio\ChordPages\` | `~/Library/Application Support/GuitarChordStudio/ChordPages/` |
 
-The files are created automatically when you first run the corresponding
-application. You can delete them to reset all settings to defaults.
+The managed dictionary layout is:
+
+```text
+dictionaries/
+├── managed/     downloaded bundles
+├── user/        manually imported bundles
+└── personal/    words added by the user
+```
+
+Linux dictionaries belong in `~/.local/share`, not `~/.config`; `.config` is
+reserved for settings. The old `~/.config/guitarchs` and
+`~/.local/share/ChordFlow` directories are no longer used and may be deleted.
+
+For a Windows installer, install both executables under
+`C:\Program Files\GuitarChordStudio` and keep user settings and dictionaries
+under `%APPDATA%\GuitarChordStudio`, never under Program Files.
 
 ---
 

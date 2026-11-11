@@ -19,8 +19,9 @@ This checkout contains independent Git repositories:
   recorded in
   `libs/pyqt6-linguistic-tools/docs/hunspell-sonnet-mythes-study.md`; do not
   add them back as submodules.
-- `third-party/libreoffice-dictionaries-collection` in GuitarChordStudio is
-  external test data. Never rewrite its dictionaries to make a test pass.
+- External LibreOffice dictionary test data is supplied through
+  `LIBREOFFICE_DICTIONARIES_PATH`; it is no longer a Git submodule. Never
+  rewrite external dictionaries to make a test pass.
 
 Make a change in the repository that owns the affected files. Commit and push
 from the deepest changed repository toward the top-level repository. Follow
