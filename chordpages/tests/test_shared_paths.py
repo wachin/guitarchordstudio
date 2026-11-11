@@ -28,6 +28,7 @@ def test_linux_paths_follow_xdg_and_use_lowercase(monkeypatch, tmp_path):
 def test_windows_paths_use_appdata_and_visible_names(monkeypatch, tmp_path):
     monkeypatch.setattr(paths.sys, "platform", "win32")
     monkeypatch.setenv("APPDATA", str(tmp_path / "appdata"))
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "localappdata"))
 
     assert paths.config_root() == tmp_path / "appdata" / "GuitarChordStudio"
     assert paths.app_config_dir("chordpages") == (
@@ -37,7 +38,7 @@ def test_windows_paths_use_appdata_and_visible_names(monkeypatch, tmp_path):
         tmp_path / "appdata" / "GuitarChordStudio" / "ChordFlow"
     )
     assert paths.dictionaries_dir() == (
-        tmp_path / "appdata" / "GuitarChordStudio" / "dictionaries"
+        tmp_path / "localappdata" / "GuitarChordStudio" / "dictionaries"
     )
 
 

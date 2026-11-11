@@ -55,7 +55,7 @@ baseline rather than assertions that must never change.
   `install_toolkit_translations()`. The manager, thesaurus dialog and context
   menu are covered. See
   `libs/pyqt6-linguistic-tools/docs/translations.md`.
-- Current toolkit fast suite: 314 passed, 12 skipped, 50 deselected; mypy clean
+- Current toolkit fast suite: 315 passed, 12 skipped, 50 deselected; mypy clean
   in 36 source files. ChordPages is at 203 tests and ChordFlow at 171. The main
   screenshot is `libs/pyqt6-linguistic-tools/images/01-pyqt6-linguistic-tools.png`.
 - The dialog is now a normal modeless window with minimize/maximize/close,
@@ -71,6 +71,10 @@ baseline rather than assertions that must never change.
 - The thesaurus dialog now copies HTML/RTF with bold meaning headings and
   synonym bullets for LibreOffice, plus Markdown (`**bold**` groups and `-`
   bullets) for Markdown editors.
+- The dictionary manager now offers **Open Dictionary Folder**, **Back Up
+  Personal Dictionary…**, and **Restore Personal Dictionary…**. Windows
+  dictionaries use `%LOCALAPPDATA%\GuitarChordStudio\dictionaries`; settings
+  remain in `%APPDATA%\GuitarChordStudio`.
 - Removed the LibreOffice dictionary corpus submodule. Added one shared
   `GuitarChordStudio` path root for both applications: lowercase on Linux,
   `GuitarChordStudio` on Windows/macOS. Dictionaries now live under the shared
@@ -191,7 +195,7 @@ locally are now verified on Linux:
   to `libs/pyqt6-linguistic-tools/tools/fetch-dict-list.py`; the top-level
   `dictionaries.json` and `tools/fetch-dict-list.py` were removed.
 - Validation at this checkpoint: ChordFlow suite 171 passed; ChordPages suite
-  203 passed; toolkit fast suite 314 passed, 12 skipped, 50 deselected; toolkit
+  203 passed; toolkit fast suite 315 passed, 12 skipped, 50 deselected; toolkit
   `mypy` clean in 36 source files. The ChordPages suite no longer depends on
   the host locale: `chordpages/tests/conftest.py` installs the
   source-language UI before each test, so a Spanish desktop no longer fails

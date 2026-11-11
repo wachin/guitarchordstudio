@@ -53,6 +53,15 @@ def _windows_appdata() -> Path:
     ).expanduser()
 
 
+def _windows_local_appdata() -> Path:
+    return Path(
+        os.environ.get(
+            "LOCALAPPDATA",
+            Path.home() / "AppData" / "Local",
+        )
+    ).expanduser()
+
+
 def config_root() -> Path:
     """Return the shared configuration root for this platform."""
     if sys.platform == "win32":
@@ -69,6 +78,13 @@ def data_root() -> Path:
     if sys.platform == "darwin":
         return Path.home() / "Library" / "Application Support" / _platform_app_dir()
     return _linux_data_home() / _platform_app_dir()
+
+
+def local_data_root() -> Path:
+    """Return the local (non-roaming) data root for this platform."""
+    if sys.platform == "win32":
+        return _windows_local_appdata() / _platform_app_dir()
+    return data_root()
 
 
 def app_directory_name(application: str) -> str:
@@ -90,8 +106,12 @@ def app_data_dir(application: str) -> Path:
 
 
 def dictionaries_dir() -> Path:
-    """Return the shared managed/user dictionary directory."""
-    return data_root() / "dictionaries"
+    """Return the shared managed/user dictionary directory.
+
+    Windows keeps dictionaries under ``%LOCALAPPDATA%`` because they are
+    downloaded data and can be large; configuration remains in ``%APPDATA%``.
+    """
+    return local_data_root() / "dictionaries"
 
 
 __all__ = [
@@ -101,4 +121,5 @@ __all__ = [
     "config_root",
     "data_root",
     "dictionaries_dir",
+    "local_data_root",
 ]

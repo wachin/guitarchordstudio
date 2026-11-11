@@ -466,7 +466,7 @@ directory. Linux uses lowercase names, while Windows and macOS use
 |---|---|---|---|
 | ChordFlow settings | `~/.config/guitarchordstudio/chordflow/config.json` | `%APPDATA%\GuitarChordStudio\ChordFlow\config.json` | `~/Library/Application Support/GuitarChordStudio/ChordFlow/config.json` |
 | ChordPages settings | `~/.config/guitarchordstudio/chordpages/settings.ini` | `%APPDATA%\GuitarChordStudio\ChordPages\settings.ini` | `~/Library/Application Support/GuitarChordStudio/ChordPages/settings.ini` |
-| Dictionaries | `~/.local/share/guitarchordstudio/dictionaries/` | `%APPDATA%\GuitarChordStudio\dictionaries\` | `~/Library/Application Support/GuitarChordStudio/dictionaries/` |
+| Dictionaries | `~/.local/share/guitarchordstudio/dictionaries/` | `%LOCALAPPDATA%\GuitarChordStudio\dictionaries\` | `~/Library/Application Support/GuitarChordStudio/dictionaries/` |
 | Autosave, backups, snapshots | `~/.local/share/guitarchordstudio/chordpages/` | `%APPDATA%\GuitarChordStudio\ChordPages\` | `~/Library/Application Support/GuitarChordStudio/ChordPages/` |
 
 The managed dictionary layout is:
@@ -479,8 +479,10 @@ dictionaries/
 ```
 
 Linux dictionaries belong in `~/.local/share`, not `~/.config`; `.config` is
-reserved for settings. The old `~/.config/guitarchs` and
-`~/.local/share/ChordFlow` directories are no longer used and may be deleted.
+reserved for settings. Windows keeps dictionaries under `%LOCALAPPDATA%`
+because they are downloaded data and can be large; configuration stays in
+`%APPDATA%`. The old `~/.config/guitarchs` and `~/.local/share/ChordFlow`
+directories are no longer used and may be deleted.
 
 For a Windows installer, install both executables under
 `C:\Program Files\GuitarChordStudio` and keep user settings and dictionaries
