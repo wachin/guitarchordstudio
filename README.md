@@ -464,8 +464,8 @@ directory. Linux uses lowercase names, while Windows and macOS use
 
 | Content | Linux | Windows | macOS |
 |---|---|---|---|
-| ChordFlow settings | `~/.config/guitarchordstudio/chordflow/config.json` | `%APPDATA%\GuitarChordStudio\ChordFlow\config.json` | `~/Library/Application Support/GuitarChordStudio/ChordFlow/config.json` |
-| ChordPages settings | `~/.config/guitarchordstudio/chordpages/settings.ini` | `%APPDATA%\GuitarChordStudio\ChordPages\settings.ini` | `~/Library/Application Support/GuitarChordStudio/ChordPages/settings.ini` |
+| ChordFlow settings | `~/.config/guitarchordstudio/chordflow/settings.json` | `%APPDATA%\GuitarChordStudio\ChordFlow\settings.json` | `~/Library/Application Support/GuitarChordStudio/ChordFlow/settings.json` |
+| ChordPages settings | `~/.config/guitarchordstudio/chordpages/settings.json` | `%APPDATA%\GuitarChordStudio\ChordPages\settings.json` | `~/Library/Application Support/GuitarChordStudio/ChordPages/settings.json` |
 | Dictionaries | `~/.local/share/guitarchordstudio/dictionaries/` | `%LOCALAPPDATA%\GuitarChordStudio\dictionaries\` | `~/Library/Application Support/GuitarChordStudio/dictionaries/` |
 | Autosave, backups, snapshots | `~/.local/share/guitarchordstudio/chordpages/` | `%APPDATA%\GuitarChordStudio\ChordPages\` | `~/Library/Application Support/GuitarChordStudio/ChordPages/` |
 

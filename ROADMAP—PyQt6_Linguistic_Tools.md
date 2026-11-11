@@ -1516,6 +1516,9 @@ Only integrate after the standalone library is functional.
 - [x] Match LibreOffice's thesaurus controls: current word, installed
   thesaurus language selector, numbered alternatives, editable replacement
   field, and Replace/Cancel actions.
+- [x] Store both applications' settings in `settings.json`, add optional
+  Enchant `.dic` import/export, and expose the dictionary folder plus personal
+  backup/restore actions.
 - [x] Move both applications to one shared `GuitarChordStudio` configuration
   and data root, remove the LibreOffice corpus submodule, and make dictionary
   downloads use the shared managed/user/personal directories.

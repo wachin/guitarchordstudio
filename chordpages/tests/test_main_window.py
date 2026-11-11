@@ -36,7 +36,7 @@ from chordpages.theme import CURRENT_THEME_PROPERTY, EFFECTIVE_THEME_PROPERTY
 
 
 def temporary_settings(tmp_path) -> SettingsManager:
-    return SettingsManager.from_file(tmp_path / "chordpages-settings.ini")
+    return SettingsManager.from_file(tmp_path / "chordpages-settings.json")
 
 
 def test_application_icon_asset_exists():

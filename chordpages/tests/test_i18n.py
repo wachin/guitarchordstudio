@@ -11,7 +11,7 @@ from chordpages.settings import SettingsManager
 
 
 def temporary_settings(tmp_path) -> SettingsManager:
-    return SettingsManager.from_file(tmp_path / "chordpages-settings.ini")
+    return SettingsManager.from_file(tmp_path / "chordpages-settings.json")
 
 
 def test_translation_assets_exist():

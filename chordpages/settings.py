@@ -11,6 +11,7 @@ from typing import Any
 from PyQt6.QtCore import QByteArray, QSettings, QSize
 from PyQt6.QtWidgets import QMainWindow
 
+from chordpages.settings_json import JsonSettings
 from guitarchordstudio_paths import app_config_dir
 
 
@@ -46,9 +47,9 @@ class SettingsManager:
 
     Settings are stored in the platform-appropriate config directory:
 
-        Linux:   ~/.config/guitarchordstudio/chordpages/settings.ini
-        Windows: %APPDATA%/GuitarChordStudio/ChordPages/settings.ini
-        macOS:   ~/Library/Application Support/GuitarChordStudio/ChordPages/settings.ini
+        Linux:   ~/.config/guitarchordstudio/chordpages/settings.json
+        Windows: %APPDATA%/GuitarChordStudio/ChordPages/settings.json
+        macOS:   ~/Library/Application Support/GuitarChordStudio/ChordPages/settings.json
     """
 
     MAIN_WINDOW_GEOMETRY_KEY = "mainWindow/geometry"
@@ -64,17 +65,20 @@ class SettingsManager:
     EDITOR_PAGES_PER_ROW_KEY = "editor/pagesPerRow"
     FILE_VIEW_SETTINGS_PREFIX = "files/viewSettings"
 
-    def __init__(self, qsettings: QSettings | None = None):
+    def __init__(self, qsettings: JsonSettings | None = None):
         if qsettings is not None:
             self._settings = qsettings
         else:
-            ini_path = _default_settings_path()
-            self._settings = QSettings(str(ini_path), QSettings.Format.IniFormat)
+            settings_path = _default_settings_path()
+            legacy_path = settings_path.with_suffix(".ini")
+            if not settings_path.exists() and legacy_path.exists():
+                _migrate_legacy_ini(legacy_path, settings_path)
+            self._settings = JsonSettings(settings_path)
 
     @classmethod
     def from_file(cls, path: str | Path) -> "SettingsManager":
-        """Create a settings manager backed by an INI file."""
-        return cls(QSettings(str(path), QSettings.Format.IniFormat))
+        """Create a settings manager backed by a JSON file."""
+        return cls(JsonSettings(path))
 
     def value(self, key: str, default: Any = None) -> Any:
         """Return a raw setting value."""
@@ -363,10 +367,19 @@ def _optional_positive_int(value: Any) -> int | None:
 def _default_settings_path() -> Path:
     """Return the platform-appropriate settings INI path.
 
-    Linux:   ~/.config/guitarchordstudio/chordpages/settings.ini
-    Windows: %APPDATA%/GuitarChordStudio/ChordPages/settings.ini
-    macOS:   ~/Library/Application Support/GuitarChordStudio/ChordPages/settings.ini
+    Linux:   ~/.config/guitarchordstudio/chordpages/settings.json
+    Windows: %APPDATA%/GuitarChordStudio/ChordPages/settings.json
+    macOS:   ~/Library/Application Support/GuitarChordStudio/ChordPages/settings.json
     """
     config_dir = app_config_dir("chordpages")
     config_dir.mkdir(parents=True, exist_ok=True)
-    return config_dir / "settings.ini"
+    return config_dir / "settings.json"
+
+
+def _migrate_legacy_ini(source: Path, destination: Path) -> None:
+    """Copy an existing QSettings INI file into the JSON backend."""
+    legacy = QSettings(str(source), QSettings.Format.IniFormat)
+    migrated = JsonSettings(destination)
+    for key in legacy.allKeys():
+        migrated.setValue(key, legacy.value(key))
+    migrated.sync()

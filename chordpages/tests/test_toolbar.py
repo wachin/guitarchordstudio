@@ -11,7 +11,7 @@ from chordpages.settings import THEME_DARK, THEME_LIGHT, SettingsManager
 
 
 def _window(tmp_path) -> MainWindow:
-    settings = SettingsManager.from_file(tmp_path / "chordpages-settings.ini")
+    settings = SettingsManager.from_file(tmp_path / "chordpages-settings.json")
     return MainWindow(settings=settings)
 
 
