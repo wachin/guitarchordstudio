@@ -55,6 +55,7 @@ from .linguistic_service import create_linguistic_service
 from .resources import app_icon
 from .search_dialog import FindInFilesDialog, SynonymsDialog
 from .ui.about_dialog import AboutDialog
+from .ui.save_encoding_dialog import SaveEncodingDialog
 from .spellcheck import build_language_menu, install_spell_checker
 from .theme import (
     THEME_DARK,
@@ -1046,52 +1047,32 @@ class TextScrollerApp(QMainWindow):
 
         index = self.tab_widget.currentIndex()
         suggested_name = self.opened_files.get(index, "Nuevo archivo.txt")
+
+        dialog = SaveEncodingDialog(self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        codec = dialog.selected_codec()
+        line_ending = dialog.selected_line_ending()
+
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Guardar archivo", suggested_name, "Archivos de texto (*.txt)"
         )
-        if file_path:
-            encoding, ok = QInputDialog.getItem(
-                self,
-                "Seleccionar codificacion",
-                "Codificacion:",
-                ["UTF-8", "UTF-16 LE", "UTF-16 BE", "UTF-8 con BOM", "ANSI", "ISO-8859-1"],
-                0,
-                False,
-            )
-            if not ok:
-                return
+        if not file_path:
+            return
 
-            line_ending, ok = QInputDialog.getItem(
-                self,
-                "Seleccionar terminador de linea",
-                "Terminador de linea:",
-                ["Windows (CRLF)", "Unix (LF)", "Mac (CR)"],
-                0,
-                False,
-            )
-            if not ok:
-                return
+        try:
+            content = current_widget.toPlainText()
+            write_file(file_path, content, codec, line_ending)
 
-            try:
-                content = current_widget.toPlainText()
-
-                if encoding == "UTF-8 con BOM":
-                    with open(file_path, "w", encoding="utf-8-sig") as file:
-                        file.write(content)
-                elif encoding == "ANSI":
-                    with open(file_path, "w", encoding="windows-1252") as file:
-                        file.write(content)
-                else:
-                    write_file(file_path, content, encoding.lower().replace(" ", "-"), line_ending)
-
-                self.opened_files[index] = file_path
-                self.file_encodings[file_path] = {
-                    "encoding": encoding,
-                    "line_ending": line_ending,
-                }
-                self.tab_widget.setTabText(index, os.path.basename(file_path))
-            except Exception as error:
-                QMessageBox.critical(self, "Error", f"No se pudo guardar el archivo: {error}")
+            self.opened_files[index] = file_path
+            self.file_encodings[file_path] = {
+                "encoding": codec,
+                "line_ending": line_ending,
+            }
+            self.tab_widget.setTabText(index, os.path.basename(file_path))
+            self.update_encoding_label(index)
+        except Exception as error:
+            QMessageBox.critical(self, "Error", f"No se pudo guardar el archivo: {error}")
 
     def start_scrolling(self):
         if not self.is_scrolling:

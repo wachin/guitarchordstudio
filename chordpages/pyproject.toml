@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "A lightweight WYSIWYG ChordPro-oriented word processor."
 readme = "README.md"
 requires-python = ">=3.11"
+dependencies = ["chardet"]
 
 [project.scripts]
 chordpages = "chordpages.app:main"

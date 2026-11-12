@@ -1516,6 +1516,8 @@ Only integrate after the standalone library is functional.
 - [x] Match LibreOffice's thesaurus controls: current word, installed
   thesaurus language selector, numbered alternatives, editable replacement
   field, and Replace/Cancel actions.
+- [x] Add `chardet`-backed legacy text detection to ChordPages and a dedicated
+  encoding/line-ending chooser for ChordFlow's Save Encoding As.
 - [x] Add ChordPages recent-file reopening plus persistent encoding and
   line-ending status.
 - [x] Add ChordPages edit-action toolbar icons, compact controls, a clickable

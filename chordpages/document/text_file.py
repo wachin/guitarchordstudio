@@ -5,6 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+try:  # Optional: improve detection of legacy Windows encodings.
+    import chardet
+except ImportError:  # pragma: no cover - dependency is declared by the package
+    chardet = None
+
 
 TEXT_FILE_SUFFIXES = {
     ".txt": "text",
@@ -75,7 +80,22 @@ def decode_text(raw: bytes) -> tuple[str, str]:
     if raw.startswith(b"\xfe\xff"):
         return raw.decode("utf-16"), "utf-16"
 
-    for encoding in ("utf-8", "cp1252", "latin-1"):
+    try:
+        return raw.decode("utf-8"), "utf-8"
+    except UnicodeDecodeError:
+        pass
+
+    if chardet is not None:
+        detected = chardet.detect(raw)
+        detected_encoding = detected.get("encoding")
+        confidence = float(detected.get("confidence") or 0.0)
+        if detected_encoding and confidence >= 0.5:
+            try:
+                return raw.decode(detected_encoding), detected_encoding
+            except (LookupError, UnicodeDecodeError):
+                pass
+
+    for encoding in ("cp1252", "latin-1"):
         try:
             return raw.decode(encoding), encoding
         except UnicodeDecodeError:
