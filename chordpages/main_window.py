@@ -198,6 +198,11 @@ class MainWindow(QMainWindow):
         self._create_actions()
         self._create_menus()
         self._create_toolbar()
+        self.encoding_label = QLabel(self)
+        self.encoding_label.setObjectName("encodingLabel")
+        self.statusBar().addPermanentWidget(self.encoding_label)
+        self._update_encoding_label()
+        self._rebuild_recent_files_menu()
         self._sync_theme_actions()
         self._sync_zoom_actions()
         self._sync_zoom_display()
@@ -267,6 +272,7 @@ class MainWindow(QMainWindow):
             self._set_tab_text_without_autosave(editor, "")
             self.current_path = None
             self._refresh_tab_label(editor)
+            self._update_encoding_label()
             self._sync_zoom_actions()
             self._sync_zoom_display()
             self._sync_page_view_actions()
@@ -286,6 +292,7 @@ class MainWindow(QMainWindow):
     def _handle_current_tab_changed(self, _index: int) -> None:
         metadata = self.current_document()
         self.current_path = metadata.path
+        self._update_encoding_label()
         self._autosave_draft_id = metadata.autosave_draft_id
         self._autosave_dirty = metadata.modified
         if hasattr(self, "zoom_in_action"):
@@ -466,6 +473,8 @@ class MainWindow(QMainWindow):
         self._refresh_tab_label(editor)
         self.current_path = metadata.path
         self.settings.remember_file(path)
+        self._rebuild_recent_files_menu()
+        self._update_encoding_label()
         self._sync_zoom_actions()
         self._sync_zoom_display()
         self._sync_page_view_actions()
@@ -521,6 +530,8 @@ class MainWindow(QMainWindow):
         self._autosave_timer.stop()
         self.settings.remember_file(path)
         self.settings.sync()
+        self._rebuild_recent_files_menu()
+        self._update_encoding_label()
         self._update_window_title()
         self.statusBar().showMessage(
             self.tr("Saved: {path} ({type}, {encoding}, {newline})").format(
@@ -922,6 +933,8 @@ class MainWindow(QMainWindow):
         self.file_menu = self.menuBar().addMenu(self.tr("File"))
         self.file_menu.addAction(self.new_action)
         self.file_menu.addAction(self.open_action)
+        self.recent_menu = QMenu(self.tr("Open Recent"), self)
+        self.file_menu.addMenu(self.recent_menu)
         self.file_menu.addAction(self.save_action)
         self.file_menu.addAction(self.save_as_action)
         self.file_menu.addSeparator()
@@ -1298,6 +1311,64 @@ class MainWindow(QMainWindow):
         finally:
             self.font_family_combo.blockSignals(font_signals_blocked)
             self.font_size_spin.blockSignals(size_signals_blocked)
+
+    def _update_encoding_label(self) -> None:
+        """Show the current document's encoding and line-ending style."""
+        if not hasattr(self, "encoding_label"):
+            return
+        metadata = self._documents.get(getattr(self, "editor", None))
+        if metadata is None:
+            text = self.tr("Encoding: N/A | Line endings: N/A")
+        else:
+            text = self.tr(
+                "Encoding: {encoding} | Line endings: {newline}"
+            ).format(
+                encoding=metadata.encoding,
+                newline=self._newline_label(metadata.newline),
+            )
+        self.encoding_label.setText(text)
+        self.encoding_label.setToolTip(text)
+
+    def _rebuild_recent_files_menu(self) -> None:
+        """Rebuild the File > Open Recent menu from saved paths."""
+        if not hasattr(self, "recent_menu"):
+            return
+        self.recent_menu.clear()
+        recent_files = self.settings.recent_files()
+        if not recent_files:
+            action = self.recent_menu.addAction(self.tr("No recent files"))
+            action.setEnabled(False)
+            return
+        for path in recent_files:
+            action = QAction(path.name, self)
+            action.setToolTip(str(path))
+            action.triggered.connect(
+                lambda checked=False, recent_path=path: self._open_recent_path(
+                    recent_path
+                )
+            )
+            self.recent_menu.addAction(action)
+            path_action = QAction(
+                self.tr("Path: {path}").format(path=path),
+                self,
+            )
+            path_action.setEnabled(False)
+            self.recent_menu.addAction(path_action)
+
+    def _open_recent_path(self, path: Path) -> None:
+        if not path.is_file():
+            QMessageBox.warning(
+                self,
+                self.tr("Open Recent"),
+                self.tr("File not found: {path}").format(path=path),
+            )
+            self.settings.set_recent_files(
+                recent for recent in self.settings.recent_files() if recent != path
+            )
+            self.settings.sync()
+            self._rebuild_recent_files_menu()
+            return
+        self.load_path(path)
 
     def _show_zoom_message(self) -> None:
         self.statusBar().showMessage(

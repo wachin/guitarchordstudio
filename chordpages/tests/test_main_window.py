@@ -800,3 +800,38 @@ def test_dark_theme_updates_every_open_tab(qtbot, tmp_path):
             assert "#f1f3f4" in editor.page.styleSheet()
     finally:
         window.set_theme(THEME_LIGHT)
+
+
+def test_main_window_shows_encoding_and_line_endings(qtbot, tmp_path):
+    path = tmp_path / "song.pro"
+    path.write_bytes("C    G\r\nletra\r\n".encode("utf-8"))
+    window = MainWindow(settings=temporary_settings(tmp_path))
+    qtbot.addWidget(window)
+
+    window.load_path(path)
+
+    label = window.findChild(QLabel, "encodingLabel")
+    assert label is not None
+    assert "Encoding: utf-8" in label.text()
+    assert "Line endings: CRLF" in label.text()
+
+
+def test_main_window_recent_files_menu_opens_saved_document(qtbot, tmp_path):
+    path = tmp_path / "recent-song.pro"
+    path.write_text("C    G\nletra\n", encoding="utf-8")
+    window = MainWindow(settings=temporary_settings(tmp_path))
+    qtbot.addWidget(window)
+
+    window.load_path(path)
+    window.new_document()
+
+    recent_actions = [
+        action for action in window.recent_menu.actions() if action.isEnabled()
+    ]
+    assert recent_actions
+    assert recent_actions[0].text() == path.name
+
+    recent_actions[0].trigger()
+
+    assert window.current_path == path.resolve(strict=False)
+    assert window.editor.text() == "C    G\nletra\n"
