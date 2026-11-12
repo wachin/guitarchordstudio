@@ -607,14 +607,16 @@ def test_page_editor_highlights_misspellings_and_ignores_chords(
     assert _spell_underline_ranges(page.editor) == [(1, 10), (1, 10)]
 
 
-def test_dark_page_uses_a_high_contrast_misspelling_underline(qtbot):
+def test_dark_page_uses_a_thick_misspelling_wave(qtbot):
     page = PageWidget()
     qtbot.addWidget(page)
     try:
         page.set_dark_mode(True)
+        assert page.editor._thick_misspelling_wave
         decorator = getattr(page.editor, "_linguistic_decorator", None)
         if decorator is not None:
-            color = decorator.highlighter.misspelling_format.underlineColor().name()
-            assert color == "#ffd54f"
+            color = decorator.highlighter.misspelling_format.underlineColor()
+            assert color.alpha() == 0
     finally:
         page.set_dark_mode(False)
+    assert not page.editor._thick_misspelling_wave

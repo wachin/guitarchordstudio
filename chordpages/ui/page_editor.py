@@ -4,8 +4,17 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from PyQt6.QtCore import QSize, Qt, pyqtSignal
-from PyQt6.QtGui import QColor, QFont, QTextCursor, QTextDocument
+from PyQt6.QtCore import QPointF, QSize, Qt, pyqtSignal
+from PyQt6.QtGui import (
+    QColor,
+    QFont,
+    QPainter,
+    QPainterPath,
+    QPen,
+    QTextCharFormat,
+    QTextCursor,
+    QTextDocument,
+)
 from PyQt6.QtWidgets import (
     QFrame,
     QGridLayout,
@@ -33,6 +42,105 @@ MISSPELLING_COLOR_LIGHT = "#d02020"
 MISSPELLING_COLOR_DARK = "#ffd54f"
 
 
+class PageTextEdit(QTextEdit):
+    """Text editor that draws a thicker wave for dark-mode misspellings."""
+
+    def __init__(self, parent: QWidget | None = None):
+        super().__init__(parent)
+        self._thick_misspelling_wave = False
+
+    def set_thick_misspelling_wave(self, enabled: bool) -> None:
+        enabled = bool(enabled)
+        if enabled == self._thick_misspelling_wave:
+            return
+        self._thick_misspelling_wave = enabled
+        self.viewport().update()
+
+    def paintEvent(self, event) -> None:  # noqa: ANN001 - Qt override
+        super().paintEvent(event)
+        if self._thick_misspelling_wave:
+            self._paint_thick_misspellings()
+
+    def _paint_thick_misspellings(self) -> None:
+        document = self.document()
+        layout = document.documentLayout()
+        if layout is None:
+            return
+        viewport_height = self.viewport().height()
+        scroll_x = self.horizontalScrollBar().value()
+        scroll_y = self.verticalScrollBar().value()
+        painter = QPainter(self.viewport())
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+        pen = QPen(QColor(MISSPELLING_COLOR_DARK))
+        pen.setWidthF(2.2)
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+        painter.setPen(pen)
+        block = document.firstBlock()
+        try:
+            while block.isValid():
+                block_rect = layout.blockBoundingRect(block)
+                top = block_rect.top() - scroll_y
+                if top > viewport_height:
+                    break
+                if top + block_rect.height() >= 0:
+                    self._paint_block_waves(
+                        painter,
+                        block,
+                        scroll_x,
+                        scroll_y,
+                    )
+                block = block.next()
+        finally:
+            painter.end()
+
+    def _paint_block_waves(self, painter, block, scroll_x, scroll_y) -> None:
+        text_layout = block.layout()
+        if text_layout is None:
+            return
+        formats = text_layout.formats()
+        if not formats:
+            return
+        block_position = text_layout.position()
+        for format_range in formats:
+            text_format = format_range.format
+            if (
+                text_format.underlineStyle()
+                != QTextCharFormat.UnderlineStyle.SpellCheckUnderline
+            ):
+                continue
+            start = format_range.start
+            end = start + format_range.length
+            for line_index in range(text_layout.lineCount()):
+                line = text_layout.lineAt(line_index)
+                line_start = line.textStart()
+                line_end = line_start + line.textLength()
+                segment_start = max(start, line_start)
+                segment_end = min(end, line_end)
+                if segment_start >= segment_end:
+                    continue
+                x1 = block_position.x() + line.cursorToX(segment_start)[0] - scroll_x
+                x2 = block_position.x() + line.cursorToX(segment_end)[0] - scroll_x
+                y = block_position.y() + line.y() + line.ascent() + 2.0 - scroll_y
+                if x2 - x1 >= 1.0:
+                    painter.drawPath(_wave_path(x1, x2, y))
+
+
+def _wave_path(left: float, right: float, baseline: float) -> QPainterPath:
+    path = QPainterPath(QPointF(left, baseline))
+    step = 4.0
+    amplitude = 1.5
+    x = left
+    toggle = True
+    while x < right:
+        next_x = min(x + step, right)
+        control_y = baseline - amplitude if toggle else baseline + amplitude
+        path.quadTo((x + next_x) / 2.0, control_y, next_x, baseline)
+        x = next_x
+        toggle = not toggle
+    return path
+
+
 class PageWidget(QFrame):
     """Visual page frame with a writable text area inside the margins."""
 
@@ -49,7 +157,7 @@ class PageWidget(QFrame):
         self._zoom = 1.0
         self._dark_mode = bool(dark_mode)
         self._base_font = QFont(editor_font or default_editor_font())
-        self.editor = QTextEdit(self)
+        self.editor = PageTextEdit(self)
         self.editor.setObjectName("pageTextEditor")
         self.editor.setFrameShape(QFrame.Shape.NoFrame)
         self.editor.setAcceptRichText(False)
@@ -59,12 +167,8 @@ class PageWidget(QFrame):
         if decorator is not None:
             decorator.add_token_filter(is_chord_token)
         self._apply_misspelling_color()
-        self.editor.setVerticalScrollBarPolicy(
-            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
-        )
-        self.editor.setHorizontalScrollBarPolicy(
-            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
-        )
+        self.editor.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.editor.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.editor.setPlaceholderText(self.tr("Write your song here..."))
         self.safe_area_frame = QFrame(self)
         self.safe_area_frame.setObjectName("printerSafeAreaFrame")
@@ -94,18 +198,18 @@ class PageWidget(QFrame):
 
     def _apply_misspelling_color(self) -> None:
         """Use a high-contrast wave underline on dark paper."""
+        self.editor.set_thick_misspelling_wave(self._dark_mode)
         decorator = getattr(self.editor, "_linguistic_decorator", None)
         if decorator is None:
             return
         try:
             highlighter = decorator.highlighter
             text_format = highlighter.misspelling_format
+            self.editor.set_thick_misspelling_wave(self._dark_mode)
             text_format.setUnderlineColor(
-                QColor(
-                    MISSPELLING_COLOR_DARK
-                    if self._dark_mode
-                    else MISSPELLING_COLOR_LIGHT
-                )
+                QColor(0, 0, 0, 0)
+                if self._dark_mode
+                else QColor(MISSPELLING_COLOR_LIGHT)
             )
             highlighter.set_misspelling_format(text_format)
         except (AttributeError, RuntimeError):
