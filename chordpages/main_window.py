@@ -177,8 +177,10 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget()
         self.tabs.setObjectName("documentTabs")
         self.tabs.setStyleSheet(
-            "QTabBar::tab { padding: 2px 8px; min-height: 16px; }"
+            "QTabBar::tab { padding: 0px 8px; min-height: 14px; max-height: 18px; } "
+            "QTabBar::close-button { width: 12px; height: 12px; }"
         )
+        self.tabs.tabBar().setMaximumHeight(20)
         self.tabs.setTabsClosable(True)
         self.tabs.setMovable(True)
         self.tabs.currentChanged.connect(self._handle_current_tab_changed)

@@ -195,8 +195,8 @@ def _stylesheet(
         }}
 
         QTabBar::tab {{
-            padding: 2px 8px;
-            min-height: 16px;
+            padding: 1px 8px;
+            min-height: 14px;
         }}
 
         QStatusBar {{
