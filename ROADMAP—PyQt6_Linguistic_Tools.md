@@ -1516,6 +1516,8 @@ Only integrate after the standalone library is functional.
 - [x] Match LibreOffice's thesaurus controls: current word, installed
   thesaurus language selector, numbered alternatives, editable replacement
   field, and Replace/Cancel actions.
+- [x] Move application catalogs to the shared root `translations/` directory
+  and add the ChordPages About dialog with credits and clickable links.
 - [x] Add ChordPages Options/Edit menus, configurable icon sizes, compact tabs
   and toolbar, 140% default zoom, page centering, and dark page colors.
 - [x] Store both applications' settings in `settings.json`, add optional

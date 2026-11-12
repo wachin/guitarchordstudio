@@ -20,7 +20,7 @@ include = ["chordpages*"]
 chordpages = ["assets/*.svg"]
 
 [tool.setuptools.data-files]
-"share/chordpages/translations" = ["translations/*.qm"]
+"share/chordpages/translations" = ["../translations/*.qm"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

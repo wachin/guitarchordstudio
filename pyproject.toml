@@ -25,5 +25,5 @@ chordflow = ["dicts/**/*.aff", "dicts/**/*.dic", "dicts/**/*.dat", "dicts/**/*.i
 chordpages = ["assets/*.svg", "assets/toolbar/*.svg"]
 
 [tool.setuptools.data-files]
-"share/chordflow/translations" = ["chordpages/translations/*.qm"]
+"share/chordflow/translations" = ["translations/*.qm"]
 "share/chordflow/resources" = ["resources/dicts/**/*"]

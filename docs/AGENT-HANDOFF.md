@@ -56,7 +56,7 @@ baseline rather than assertions that must never change.
   menu are covered. See
   `libs/pyqt6-linguistic-tools/docs/translations.md`.
 - Current toolkit fast suite: 318 passed, 12 skipped, 50 deselected; mypy clean
-  in 37 source files. ChordPages is at 210 tests and ChordFlow at 172. The main
+  in 37 source files. ChordPages is at 212 tests and ChordFlow at 172. The main
   screenshot is `libs/pyqt6-linguistic-tools/images/01-pyqt6-linguistic-tools.png`.
 - The dialog is now a normal modeless window with minimize/maximize/close,
   corner resizing, a screen-aware initial size and remembered geometry in
@@ -71,6 +71,10 @@ baseline rather than assertions that must never change.
 - The thesaurus dialog now copies HTML/RTF with bold meaning headings and
   synonym bullets for LibreOffice, plus Markdown (`**bold**` groups and `-`
   bullets) for Markdown editors.
+- Application catalogs now live in the root-level `translations/` directory
+  shared by the suite. ChordPages has a custom About dialog with the program
+  icon, description, author credit, GPL3 license, clickable email/website links,
+  and theme-aware link colors.
 - ChordPages now has an **Options** menu with the spell-checker language, a
   conventional Undo/Redo/Cut/Copy/Paste/Select All Edit menu, a tabbed
   preferences window with a **View** icon-size section, compact toolbar/tabs,
@@ -204,7 +208,7 @@ locally are now verified on Linux:
   to `libs/pyqt6-linguistic-tools/tools/fetch-dict-list.py`; the top-level
   `dictionaries.json` and `tools/fetch-dict-list.py` were removed.
 - Validation at this checkpoint: ChordFlow suite 172 passed; ChordPages suite
-  210 passed; toolkit fast suite 318 passed, 12 skipped, 50 deselected; toolkit
+  212 passed; toolkit fast suite 318 passed, 12 skipped, 50 deselected; toolkit
   `mypy` clean in 36 source files. The ChordPages suite no longer depends on
   the host locale: `chordpages/tests/conftest.py` installs the
   source-language UI before each test, so a Spanish desktop no longer fails

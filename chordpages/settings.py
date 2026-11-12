@@ -16,7 +16,7 @@ from guitarchordstudio_paths import app_config_dir
 
 
 ORGANIZATION_NAME = "ChordFlow"
-APPLICATION_NAME = "ChordFlow"
+APPLICATION_NAME = "ChordPages"
 WINDOW_TITLE_NAME = "ChordPages"
 
 # Configuration directory — shared across the suite

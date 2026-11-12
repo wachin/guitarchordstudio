@@ -51,7 +51,7 @@ def test_build_application_sets_application_icon(qtbot, tmp_path):
 
     app = build_application([], settings=settings)
 
-    assert app.applicationName() == "ChordFlow"
+    assert app.applicationName() == "ChordPages"
     assert app.organizationName() == ORGANIZATION_NAME
     assert app.applicationName() == APPLICATION_NAME
     assert app.applicationVersion() == __version__
@@ -199,7 +199,7 @@ def test_main_window_has_about_dialog_action(qtbot, tmp_path):
 
     menu_titles = [action.text() for action in window.menuBar().actions()]
     assert "Help" in menu_titles
-    assert window.about_action.text() == "About ChordFlow"
+    assert window.about_action.text() == "About ChordPages"
 
     help_action = next(action for action in window.menuBar().actions() if action.text() == "Help")
     help_menu = help_action.menu()
@@ -427,27 +427,25 @@ def test_main_window_exposes_preferences_action(qtbot, tmp_path):
     assert window.preferences_action.text() == "Preferences..."
 
 
-def test_about_dialog_shows_version_and_toolkit_details(qtbot, monkeypatch, tmp_path):
+def test_about_dialog_opens_with_the_current_theme(qtbot, monkeypatch, tmp_path):
     captured = {}
 
-    class FakeMessageBox:
-        @staticmethod
-        def about(parent, title, text):
+    class FakeAboutDialog:
+        def __init__(self, parent, *, dark_mode):
             captured["parent"] = parent
-            captured["title"] = title
-            captured["text"] = text
+            captured["dark_mode"] = dark_mode
 
-    monkeypatch.setattr(main_window_module, "QMessageBox", FakeMessageBox)
+        def exec(self):
+            return 0
+
+    monkeypatch.setattr(main_window_module, "AboutDialog", FakeAboutDialog)
 
     window = MainWindow(settings=temporary_settings(tmp_path))
     qtbot.addWidget(window)
     window.show_about_dialog()
 
     assert captured["parent"] is window
-    assert captured["title"] == "About ChordFlow"
-    assert f"ChordFlow {__version__}" in captured["text"]
-    assert "Qt:" in captured["text"]
-    assert "PyQt:" in captured["text"]
+    assert captured["dark_mode"] is False
 
 
 def test_preferences_dialog_persists_selected_language(qtbot, monkeypatch, tmp_path):

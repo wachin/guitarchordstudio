@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from PyQt6.QtCore import PYQT_VERSION_STR, QT_VERSION_STR, QMarginsF, QSize, QSizeF, Qt, QTimer
+from PyQt6.QtCore import QMarginsF, QSize, QSizeF, Qt, QTimer
 from PyQt6.QtGui import (
     QAction,
     QActionGroup,
@@ -31,7 +31,6 @@ from PyQt6.QtWidgets import (
     QToolBar,
 )
 
-from chordpages import __version__
 from chordpages.autosave import DEFAULT_AUTOSAVE_INTERVAL_MS, AutosaveManager
 from chordpages.backup import BackupManager
 from chordpages.document import ChordPagesDocument
@@ -71,6 +70,7 @@ from chordpages.ui.page_editor import (
     PageEditor,
     SINGLE_PAGE_VIEW_COLUMNS,
 )
+from chordpages.ui.about_dialog import AboutDialog
 from chordpages.ui.preferences_dialog import PreferencesDialog
 from chordpages.ui.recovery_dialog import RecoveryDialog
 
@@ -490,11 +490,8 @@ class MainWindow(QMainWindow):
         )
 
     def show_about_dialog(self) -> None:
-        QMessageBox.about(
-            self,
-            self.tr("About {application_name}").format(application_name=APPLICATION_NAME),
-            self._about_text(),
-        )
+        dialog = AboutDialog(self, dark_mode=self._is_dark_theme())
+        dialog.exec()
 
     def _active_editor(self):
         if not hasattr(self, "editor"):
@@ -737,19 +734,6 @@ class MainWindow(QMainWindow):
         self.recovery_manager.discard(draft)
         self.statusBar().showMessage(self.tr("Recovered autosaved draft"))
         return True
-
-    def _about_text(self) -> str:
-        return self.tr(
-            "<h2>{application_name} {version}</h2>"
-            "<p>A lightweight WYSIWYG ChordPro-oriented word processor.</p>"
-            "<p>Designed for page layout, worship songs, and Git-friendly music documents.</p>"
-            "<p><b>Qt:</b> {qt_version}<br><b>PyQt:</b> {pyqt_version}</p>"
-        ).format(
-            application_name=APPLICATION_NAME,
-            version=__version__,
-            qt_version=QT_VERSION_STR,
-            pyqt_version=PYQT_VERSION_STR,
-        )
 
     def _create_actions(self) -> None:
         self.new_action = QAction(self.tr("New"), self)
