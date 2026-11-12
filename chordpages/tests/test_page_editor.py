@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QRect, QSize, Qt
 from PyQt6.QtGui import QFont, QTextCharFormat, QTextCursor
 import pytest
-from PyQt6.QtWidgets import QGraphicsDropShadowEffect, QScrollArea
+from PyQt6.QtWidgets import QApplication, QGraphicsDropShadowEffect, QScrollArea
 
 from chordpages.document import CUSTOM_PAGE_SIZE, PageLayout, PageMargins
 from chordpages.document.page import DEFAULT_SCREEN_DPI, mm_to_px
@@ -618,3 +618,27 @@ def test_dark_page_uses_a_high_contrast_misspelling_underline(qtbot):
             assert color == "#ffd54f"
     finally:
         page.set_dark_mode(False)
+
+
+def test_ctrl_wheel_requests_zoom(qtbot):
+    from PyQt6.QtCore import QPoint, QPointF
+    from PyQt6.QtGui import QWheelEvent
+
+    editor = PageEditor()
+    qtbot.addWidget(editor)
+    requested: list[int] = []
+    editor.zoom_wheel_requested.connect(requested.append)
+
+    event = QWheelEvent(
+        QPointF(20, 20),
+        QPointF(20, 20),
+        QPoint(0, 0),
+        QPoint(0, 120),
+        Qt.MouseButton.NoButton,
+        Qt.KeyboardModifier.ControlModifier,
+        Qt.ScrollPhase.NoScrollPhase,
+        False,
+    )
+    QApplication.sendEvent(editor.page.editor, event)
+
+    assert requested == [1]

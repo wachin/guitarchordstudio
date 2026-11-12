@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from PyQt6.QtCore import QSize, Qt, pyqtSignal
+from PyQt6.QtCore import QEvent, QSize, Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QFont, QTextCursor, QTextDocument
 from PyQt6.QtWidgets import (
     QFrame,
@@ -274,6 +274,7 @@ class PageEditor(QWidget):
     """Scrollable editor that presents a real page boundary."""
 
     textChanged = pyqtSignal()
+    zoom_wheel_requested = pyqtSignal(int)
 
     def __init__(
         self,
@@ -307,6 +308,7 @@ class PageEditor(QWidget):
         )
         self._content_layout.setSpacing(PAGE_SPACING_PX)
         self._scroll_area.setWidget(self._content)
+        self._scroll_area.viewport().installEventFilter(self)
         self.page = self._append_page(PageLayout(), editable=True)
 
         layout = QVBoxLayout(self)
@@ -316,6 +318,17 @@ class PageEditor(QWidget):
         self.page.editor.document().contentsChanged.connect(
             lambda page=self.page: self._handle_page_text_changed(page)
         )
+
+    def eventFilter(self, watched, event):  # noqa: ANN001 - Qt override
+        if event.type() == QEvent.Type.Wheel and (
+            event.modifiers() & Qt.KeyboardModifier.ControlModifier
+        ):
+            delta = event.angleDelta().y() or event.angleDelta().x()
+            if delta:
+                self.zoom_wheel_requested.emit(1 if delta > 0 else -1)
+            event.accept()
+            return True
+        return super().eventFilter(watched, event)
 
     def center_page(self) -> None:
         """Center the current page horizontally after a viewport change."""
@@ -459,6 +472,7 @@ class PageEditor(QWidget):
             dark_mode=self._dark_mode,
             parent=self._content,
         )
+        page.editor.installEventFilter(self)
         page.editor.document().contentsChanged.connect(
             lambda page=page: self._handle_page_text_changed(page)
         )

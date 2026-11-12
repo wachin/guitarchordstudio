@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from PyQt6.QtCore import QMarginsF, QSize, QSizeF, Qt, QTimer
+from PyQt6.QtCore import QMarginsF, QPoint, QSize, QSizeF, Qt, QTimer
 from PyQt6.QtGui import (
     QAction,
     QActionGroup,
@@ -26,6 +26,7 @@ from PyQt6.QtWidgets import (
     QFontComboBox,
     QLabel,
     QMainWindow,
+    QMenu,
     QMessageBox,
     QTabWidget,
     QToolBar,
@@ -84,6 +85,12 @@ DEFAULT_FILE_TYPE = "text"
 
 # Toolbar actions that receive an icon, in display order.
 TOOLBAR_ICON_ACTIONS: tuple[tuple[str, str], ...] = (
+    ("undo_action", "undo"),
+    ("redo_action", "redo"),
+    ("cut_action", "cut"),
+    ("copy_action", "copy"),
+    ("paste_action", "paste"),
+    ("select_all_action", "select-all"),
     ("new_action", "new"),
     ("open_action", "open"),
     ("save_action", "save"),
@@ -93,8 +100,38 @@ TOOLBAR_ICON_ACTIONS: tuple[tuple[str, str], ...] = (
     ("transpose_up_action", "transpose-up"),
     ("zoom_out_action", "zoom-out"),
     ("zoom_in_action", "zoom-in"),
-    ("fit_width_action", "fit-width"),
 )
+
+
+class ZoomLabel(QLabel):
+    """Clickable zoom percentage that opens a preset menu."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._menu: QMenu | None = None
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
+    def setMenu(self, menu: QMenu) -> None:
+        self._menu = menu
+
+    def menu(self) -> QMenu | None:
+        return self._menu
+
+    def mousePressEvent(self, event) -> None:  # noqa: ANN001 - Qt override
+        if event.button() == Qt.MouseButton.LeftButton and self._menu is not None:
+            self._menu.popup(self.mapToGlobal(QPoint(0, self.height())))
+            event.accept()
+            return
+        super().mousePressEvent(event)
+
+    def keyPressEvent(self, event) -> None:  # noqa: ANN001 - Qt override
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter, Qt.Key.Key_Space):
+            if self._menu is not None:
+                self._menu.popup(self.mapToGlobal(QPoint(0, self.height())))
+                event.accept()
+                return
+        super().keyPressEvent(event)
 
 
 @dataclass(slots=True)
@@ -189,6 +226,9 @@ class MainWindow(QMainWindow):
         editor.set_zoom(self._default_zoom)
         editor.set_pages_per_row(self._default_pages_per_row)
         editor.textChanged.connect(lambda editor=editor: self._handle_editor_text_changed(editor))
+        editor.zoom_wheel_requested.connect(
+            lambda steps, editor=editor: self._handle_zoom_wheel(editor, steps)
+        )
         metadata = DocumentTab(
             editor=editor,
             path=path,
@@ -572,6 +612,12 @@ class MainWindow(QMainWindow):
         self._sync_zoom_actions()
         self._sync_zoom_display()
         self._show_zoom_message()
+
+    def _handle_zoom_wheel(self, editor, steps: int) -> None:
+        """Zoom the page under a Ctrl+wheel gesture and persist it."""
+        if editor is not self.editor:
+            self.tabs.setCurrentWidget(editor)
+        self.set_zoom(round(self.editor.zoom() + steps * ZOOM_STEP, 2))
 
     def zoom_in(self) -> None:
         self.set_zoom(round(self.editor.zoom() + ZOOM_STEP, 2))
@@ -1075,8 +1121,8 @@ class MainWindow(QMainWindow):
         self.toolbar.setObjectName("mainToolbar")
         self.toolbar.setMovable(False)
         self.toolbar.setStyleSheet(
-            "QToolBar { spacing: 2px; padding: 1px; } "
-            "QToolButton { padding: 1px; margin: 0; }"
+            "QToolBar { spacing: 0px; padding: 0px; } "
+            "QToolButton { padding: 0px; margin: 0px; }"
         )
         # Fall back to text labels when the icons cannot be rendered.
         has_icons = not self.new_action.icon().isNull()
@@ -1085,6 +1131,13 @@ class MainWindow(QMainWindow):
             if has_icons
             else Qt.ToolButtonStyle.ToolButtonTextOnly
         )
+        self.toolbar.addAction(self.undo_action)
+        self.toolbar.addAction(self.redo_action)
+        self.toolbar.addAction(self.cut_action)
+        self.toolbar.addAction(self.copy_action)
+        self.toolbar.addAction(self.paste_action)
+        self.toolbar.addAction(self.select_all_action)
+        self.toolbar.addSeparator()
         self.toolbar.addAction(self.new_action)
         self.toolbar.addAction(self.open_action)
         self.toolbar.addAction(self.save_action)
@@ -1096,12 +1149,23 @@ class MainWindow(QMainWindow):
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.zoom_out_action)
         self.toolbar.addAction(self.zoom_in_action)
-        self.toolbar.addAction(self.fit_width_action)
-        self.zoom_label = QLabel(self.toolbar)
+        self.zoom_label = ZoomLabel(self.toolbar)
         self.zoom_label.setObjectName("zoomLabel")
         self.zoom_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.zoom_label.setMinimumWidth(48)
-        self.zoom_label.setToolTip(self.tr("Current zoom"))
+        self.zoom_label.setMinimumWidth(52)
+        self.zoom_label.setToolTip(self.tr("Choose zoom"))
+        self.zoom_percent_menu = QMenu(self.zoom_label)
+        self._zoom_choices: list[QAction] = []
+        for percent in range(200, 90, -10):
+            zoom_action = QAction(f"{percent}%", self.zoom_percent_menu)
+            zoom_action.setCheckable(True)
+            zoom_action.setData(percent)
+            zoom_action.triggered.connect(
+                lambda checked=False, value=percent: self.set_zoom(value / 100)
+            )
+            self.zoom_percent_menu.addAction(zoom_action)
+            self._zoom_choices.append(zoom_action)
+        self.zoom_label.setMenu(self.zoom_percent_menu)
         self.toolbar.addWidget(self.zoom_label)
         self.toolbar.addSeparator()
         self.font_family_combo = QFontComboBox(self.toolbar)
@@ -1123,7 +1187,7 @@ class MainWindow(QMainWindow):
         self.font_size_spin.setToolTip(self.tr("Font size"))
         self.font_size_spin.valueChanged.connect(self.set_editor_font_size)
         self.toolbar.addWidget(self.font_size_spin)
-        self.toolbar.setContentsMargins(2, 1, 2, 1)
+        self.toolbar.setContentsMargins(1, 0, 1, 0)
         self.addToolBar(self.toolbar)
         self._apply_icon_size(self._icon_size)
 
@@ -1143,7 +1207,15 @@ class MainWindow(QMainWindow):
             return
         pixels = self._icon_size_pixels()
         self.toolbar.setIconSize(QSize(pixels, pixels))
-        self.toolbar.setMinimumHeight(pixels + 6)
+        self.toolbar.setMinimumHeight(pixels + 4)
+        compact_height = pixels + 4
+        for control in (
+            getattr(self, "font_family_combo", None),
+            getattr(self, "font_size_spin", None),
+        ):
+            if control is not None:
+                control.setMinimumHeight(compact_height)
+                control.setMaximumHeight(compact_height)
         self._refresh_toolbar_icons()
         for editor in self._documents:
             QTimer.singleShot(0, editor.center_page)
@@ -1197,7 +1269,10 @@ class MainWindow(QMainWindow):
 
     def _sync_zoom_display(self) -> None:
         if hasattr(self, "zoom_label"):
-            self.zoom_label.setText(f"{self._zoom_percent()}%")
+            percent = self._zoom_percent()
+            self.zoom_label.setText(f"{percent}%")
+            for action in getattr(self, "_zoom_choices", []):
+                action.setChecked(action.data() == percent)
 
     def _sync_page_view_actions(self) -> None:
         pages_per_row = self.editor.pages_per_row()

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QToolBar
@@ -78,3 +80,53 @@ def test_icons_follow_the_theme(qtbot, tmp_path) -> None:
         assert _stroke_color(window.save_action.icon()) == "#e8eaed"
     finally:
         window.set_theme(THEME_LIGHT)
+
+
+def test_edit_actions_have_icons_and_are_in_the_toolbar(qtbot, tmp_path) -> None:
+    window = _window(tmp_path)
+    qtbot.addWidget(window)
+
+    toolbar_actions = window.toolbar.actions()
+    for attribute in (
+        "undo_action",
+        "redo_action",
+        "cut_action",
+        "copy_action",
+        "paste_action",
+        "select_all_action",
+    ):
+        action = getattr(window, attribute)
+        assert action in toolbar_actions
+        assert not action.icon().isNull()
+        assert action.text()
+
+
+def test_fit_width_is_not_in_the_toolbar(qtbot, tmp_path) -> None:
+    window = _window(tmp_path)
+    qtbot.addWidget(window)
+
+    assert window.fit_width_action not in window.toolbar.actions()
+
+
+def test_zoom_label_opens_the_percentage_menu(qtbot, tmp_path) -> None:
+    window = _window(tmp_path)
+    qtbot.addWidget(window)
+
+    assert window.zoom_label.text() == "140%"
+    assert window.zoom_label.menu() is not None
+    labels = [action.text() for action in window.zoom_label.menu().actions()]
+    assert labels == [
+        "200%",
+        "190%",
+        "180%",
+        "170%",
+        "160%",
+        "150%",
+        "140%",
+        "130%",
+        "120%",
+        "110%",
+        "100%",
+    ]
+    window.zoom_label.menu().actions()[5].trigger()
+    assert window.editor.zoom() == pytest.approx(1.5)
