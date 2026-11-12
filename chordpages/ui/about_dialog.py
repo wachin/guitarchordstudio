@@ -41,16 +41,16 @@ class AboutDialog(QDialog):
                 application_name=WINDOW_TITLE_NAME
             )
         )
-        self.resize(660, 470)
-        self.setMinimumSize(560, 400)
+        self.resize(720, 330)
+        self.setMinimumSize(600, 310)
 
         icon_label = QLabel(self)
         icon_label.setObjectName("aboutIcon")
-        icon_label.setFixedSize(128, 128)
+        icon_label.setFixedSize(224, 224)
         icon_label.setAlignment(
-            Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter
         )
-        icon_label.setPixmap(app_icon().pixmap(112, 112))
+        icon_label.setPixmap(app_icon().pixmap(224, 224))
 
         text_panel = QWidget(self)
         text_layout = QVBoxLayout(text_panel)
@@ -126,8 +126,9 @@ class AboutDialog(QDialog):
         text_layout.addStretch(1)
 
         body = QHBoxLayout()
-        body.setSpacing(20)
-        body.addWidget(icon_label, 0, Qt.AlignmentFlag.AlignTop)
+        body.setSpacing(18)
+        body.setContentsMargins(4, 4, 4, 0)
+        body.addWidget(icon_label, 0, Qt.AlignmentFlag.AlignVCenter)
         body.addWidget(text_panel, 1)
 
         buttons = QDialogButtonBox(
