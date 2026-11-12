@@ -408,7 +408,7 @@ pytest -q chordpages/tests/
 
 ## Translation Workflow
 
-ChordPages uses Qt Linguist for translations. The catalogs live in the shared
+ChordPages and ChordFlow use Qt Linguist for translations. The catalogs live in the shared
 root-level `translations/` directory so ChordFlow, ChordPages, and future
 applications can keep their own `<application>_<locale>.ts` files side by side.
 Update translation files after changing user-visible strings:
@@ -424,6 +424,13 @@ Edit with Qt Linguist and compile:
 linguist-qt6 translations/chordpages_es.ts
 lrelease translations/chordpages_es.ts -qm translations/chordpages_es.qm
 lrelease translations/chordpages_en.ts -qm translations/chordpages_en.qm
+```
+
+ChordFlow's About dialog has its own catalog:
+
+```bash
+pylupdate6 chordflow/ui/about_dialog.py --ts translations/chordflow_es.ts
+lrelease translations/chordflow_es.ts -qm translations/chordflow_es.qm
 ```
 
 ---

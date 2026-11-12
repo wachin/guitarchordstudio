@@ -56,7 +56,7 @@ baseline rather than assertions that must never change.
   menu are covered. See
   `libs/pyqt6-linguistic-tools/docs/translations.md`.
 - Current toolkit fast suite: 318 passed, 12 skipped, 50 deselected; mypy clean
-  in 37 source files. ChordPages is at 212 tests and ChordFlow at 172. The main
+  in 37 source files. ChordPages is at 212 tests and ChordFlow at 177. The main
   screenshot is `libs/pyqt6-linguistic-tools/images/01-pyqt6-linguistic-tools.png`.
 - The dialog is now a normal modeless window with minimize/maximize/close,
   corner resizing, a screen-aware initial size and remembered geometry in
@@ -71,6 +71,9 @@ baseline rather than assertions that must never change.
 - The thesaurus dialog now copies HTML/RTF with bold meaning headings and
   synonym bullets for LibreOffice, plus Markdown (`**bold**` groups and `-`
   bullets) for Markdown editors.
+- ChordFlow now has a persisted `Ver > Tema` selector, a functional dark
+  palette/stylesheet, dark-mode spelling underlines, and a two-column About
+  dialog with the same credits, GPL3, links, and theme-aware link colors.
 - Application catalogs now live in the root-level `translations/` directory
   shared by the suite. ChordPages has a custom About dialog with the program
   icon, description, author credit, GPL3 license, clickable email/website links,
@@ -207,7 +210,7 @@ locally are now verified on Linux:
   and is loaded with `load_bundled_dictionary_catalog()`. Its generator moved
   to `libs/pyqt6-linguistic-tools/tools/fetch-dict-list.py`; the top-level
   `dictionaries.json` and `tools/fetch-dict-list.py` were removed.
-- Validation at this checkpoint: ChordFlow suite 172 passed; ChordPages suite
+- Validation at this checkpoint: ChordFlow suite 177 passed; ChordPages suite
   212 passed; toolkit fast suite 318 passed, 12 skipped, 50 deselected; toolkit
   `mypy` clean in 36 source files. The ChordPages suite no longer depends on
   the host locale: `chordpages/tests/conftest.py` installs the

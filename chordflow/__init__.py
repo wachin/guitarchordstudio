@@ -1,5 +1,7 @@
 """ChordFlow application package."""
 
+__version__ = "0.1.0"
+
 from .app import main
 from .chord_transposer import is_chord_line, transpose_chord, transpose_text
 from .config_manager import ConfigManager

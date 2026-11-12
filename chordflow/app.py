@@ -6,6 +6,7 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
+from .i18n import install_translations
 from .main_window import TextScrollerApp
 from .resources import app_icon
 
@@ -16,6 +17,7 @@ def build_application(argv=None) -> QApplication:
     if app is None:
         app = QApplication(list(argv) if argv is not None else sys.argv)
     app.setWindowIcon(app_icon())
+    install_translations(app, "es")
     try:
         from pyqt6_linguistic_tools.qt import install_toolkit_translations
 

@@ -44,6 +44,7 @@ from .chord_token_filter import is_chord_token as _is_chord_token
 from .chord_transposer import transpose_text
 from .config_manager import ConfigManager
 from .dict_manager import list_available, download_and_install, uninstall
+from .i18n import install_translations
 from .file_operations import (
     add_to_recent_files,
     detect_encoding,
@@ -53,7 +54,16 @@ from .file_operations import (
 from .linguistic_service import create_linguistic_service
 from .resources import app_icon
 from .search_dialog import FindInFilesDialog, SynonymsDialog
+from .ui.about_dialog import AboutDialog
 from .spellcheck import build_language_menu, install_spell_checker
+from .theme import (
+    THEME_DARK,
+    THEME_LIGHT,
+    THEME_SYSTEM,
+    apply_theme,
+    effective_theme,
+    normalize_theme,
+)
 from .thesaurus import MythesThesaurus
 
 # Try to import the toolkit's enhanced integration; fall back to the
@@ -77,30 +87,16 @@ class CustomTextEdit(QTextEdit):
 
 class TextScrollerApp(QMainWindow):
     def show_about_dialog(self):
-        about_text = (
-            "<h2><b>Chord autoscroll</b></h2>"
-            "<p>Este programa sirve para la transposicion de acordes. "
-            "Podras cargar tus canciones que contengan letras y acordes para "
-            "transportarlas facilmente y desplazarte automaticamente por el texto "
-            "durante tus ensayos.</p>"
-            "<p>Copyright 2025 (c) Washington Indacochea Delgado.<br>"
-            "wachin.id@gmail.com<br>"
-            "Licencia GPL 3</p>"
-            "<p>Para mas informacion revisa:</p>"
-            '<a href="https://github.com/wachin/py_chord_autoscroll">'
-            "https://github.com/wachin/py_chord_autoscroll</a>"
-        )
-
-        dialog = QMessageBox(self)
-        dialog.setWindowTitle("Acerca de Chord Autoscroll")
-        dialog.setTextFormat(Qt.TextFormat.RichText)
-        dialog.setText(about_text)
-        dialog.setStandardButtons(QMessageBox.StandardButton.Ok)
-        dialog.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+        app = QApplication.instance()
+        dark = isinstance(app, QApplication) and effective_theme(app) == THEME_DARK
+        dialog = AboutDialog(self, dark_mode=dark)
         dialog.exec()
 
     def __init__(self):
         super().__init__()
+        app = QApplication.instance()
+        if isinstance(app, QApplication):
+            install_translations(app, "es")
         self.translator = QTranslator()
 
         translations_path = QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)
@@ -119,6 +115,11 @@ class TextScrollerApp(QMainWindow):
         self.opened_files = {}
         self.file_encodings = {}
         self.config = self.config_manager.load()
+        self.theme = normalize_theme(self.config.get("theme"))
+        self.config["theme"] = self.theme
+        app = QApplication.instance()
+        if isinstance(app, QApplication):
+            apply_theme(app, self.theme)
         self._linguistic_service = create_linguistic_service() if _HAS_TOOLKIT else None
         self._decorators: dict[int, object] = {}
         self.thesaurus = MythesThesaurus()
@@ -334,7 +335,13 @@ class TextScrollerApp(QMainWindow):
 
             selection = QTextEdit.ExtraSelection()
             selection.cursor = cursor
-            selection.format.setBackground(QColor("#fff59d"))
+            dark = effective_theme(QApplication.instance()) == THEME_DARK
+            selection.format.setBackground(
+                QColor("#665c00" if dark else "#fff59d")
+            )
+            selection.format.setForeground(
+                QColor("#ffffff" if dark else "#202124")
+            )
             selections.append(selection)
 
         editor.setExtraSelections(selections)
@@ -403,6 +410,7 @@ class TextScrollerApp(QMainWindow):
         text_widget.textChanged.connect(self.on_text_changed)
 
         # Attach the toolkit's linguistic decorator when available
+        decorator = None
         if self._linguistic_service is not None:
             decorator = LinguisticTextEditDecorator(
                 text_widget, self._linguistic_service
@@ -429,6 +437,7 @@ class TextScrollerApp(QMainWindow):
 
         if self._linguistic_service is not None:
             self._decorators[index] = decorator
+        self._apply_spellcheck_theme(text_widget, decorator)
 
         if file_path:
             self.opened_files[index] = file_path
@@ -618,6 +627,26 @@ class TextScrollerApp(QMainWindow):
         select_all_action.setShortcut("Ctrl+A")
         edit_menu.addAction(select_all_action)
 
+        self.view_menu = menu_bar.addMenu("Ver")
+        self.theme_menu = self.view_menu.addMenu("Tema")
+        self._theme_actions = {}
+        theme_group = QActionGroup(self)
+        theme_group.setExclusive(True)
+        for theme_code, theme_label in (
+            (THEME_SYSTEM, "Sistema"),
+            (THEME_LIGHT, "Claro"),
+            (THEME_DARK, "Oscuro"),
+        ):
+            action = QAction(theme_label, self)
+            action.setCheckable(True)
+            action.setChecked(self.theme == theme_code)
+            action.triggered.connect(
+                lambda _checked, code=theme_code: self.set_theme(code)
+            )
+            theme_group.addAction(action)
+            self.theme_menu.addAction(action)
+            self._theme_actions[theme_code] = action
+
         tools_menu = menu_bar.addMenu("Herramientas")
 
         synonyms_action = QAction("Sinonimos...", self)
@@ -672,10 +701,9 @@ class TextScrollerApp(QMainWindow):
 
         help_menu = menu_bar.addMenu("Ayuda")
 
-        about_action = QAction("Acerca de...", self)
-        about_action.triggered.connect(self.show_about_dialog)
-        about_action.setShortcut("Ctrl+H")
-        help_menu.addAction(about_action)
+        self.about_action = QAction("Acerca de ChordFlow", self)
+        self.about_action.triggered.connect(self.show_about_dialog)
+        help_menu.addAction(self.about_action)
 
     def selected_word_for_synonyms(self):
         text_widget = self.get_current_text_widget()
@@ -1138,6 +1166,63 @@ class TextScrollerApp(QMainWindow):
     def transpose_text(self, text, semitones):
         return transpose_text(text, semitones, self.config["use_sharps"])
 
+    def set_theme(self, theme: str) -> None:
+        """Apply and persist a system, light or dark theme."""
+        self.theme = normalize_theme(theme)
+        self.config["theme"] = self.theme
+        app = QApplication.instance()
+        if isinstance(app, QApplication):
+            apply_theme(app, self.theme)
+        self._sync_theme_actions()
+        self._apply_spellcheck_theme()
+        self.save_config()
+        labels = {
+            THEME_SYSTEM: "Sistema",
+            THEME_LIGHT: "Claro",
+            THEME_DARK: "Oscuro",
+        }
+        self.statusBar().showMessage(
+            f"Tema: {labels.get(self.theme, labels[THEME_SYSTEM])}"
+        )
+
+    def _sync_theme_actions(self) -> None:
+        for theme_code, action in getattr(self, "_theme_actions", {}).items():
+            action.setChecked(theme_code == self.theme)
+
+    def _apply_spellcheck_theme(self, editor=None, decorator=None) -> None:
+        """Use a readable spelling underline color in both themes."""
+        app = QApplication.instance()
+        dark = isinstance(app, QApplication) and effective_theme(app) == THEME_DARK
+        color = QColor("#ffd54f" if dark else "#d02020")
+
+        if editor is not None:
+            self._set_editor_underline_color(editor, decorator, color)
+
+        if hasattr(self, "tab_widget"):
+            for index in range(self.tab_widget.count()):
+                known_editor = self.tab_widget.widget(index)
+                if known_editor is not editor:
+                    self._set_editor_underline_color(
+                        known_editor,
+                        getattr(known_editor, "_linguistic_decorator", None),
+                        color,
+                    )
+
+    def _set_editor_underline_color(self, editor, decorator, color: QColor) -> None:
+        if decorator is not None:
+            try:
+                highlighter = decorator.highlighter
+                text_format = highlighter.misspelling_format
+                text_format.setUnderlineColor(color)
+                highlighter.set_misspelling_format(text_format)
+            except (AttributeError, RuntimeError):
+                pass
+
+        highlighter = getattr(editor, "_spell_highlighter", None)
+        if highlighter is not None:
+            highlighter._fmt.setUnderlineColor(color)
+            highlighter.rehighlight()
+
     def save_config(self):
         self.config_manager.save(self.config)
 
@@ -1251,7 +1336,10 @@ class _DictManagerDialog(QDialog):
             label = QLabel(status)
             label.setEnabled(False)
             if d["installed"]:
-                label.setStyleSheet("color: green;")
+                dark = effective_theme(QApplication.instance()) == THEME_DARK
+                label.setStyleSheet(
+                    f"color: {'#7bd88f' if dark else 'green'};"
+                )
             self.table.addWidget(cb, row, 0)
             self.table.addWidget(label, row, 1)
             self._dict_map[row] = d

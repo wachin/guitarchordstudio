@@ -1516,6 +1516,8 @@ Only integrate after the standalone library is functional.
 - [x] Match LibreOffice's thesaurus controls: current word, installed
   thesaurus language selector, numbered alternatives, editable replacement
   field, and Replace/Cancel actions.
+- [x] Add ChordFlow's persisted dark/light/system theme selector and a matching
+  About dialog with credits, clickable links, and theme-aware colors.
 - [x] Move application catalogs to the shared root `translations/` directory
   and add the ChordPages About dialog with credits and clickable links.
 - [x] Add ChordPages Options/Edit menus, configurable icon sizes, compact tabs

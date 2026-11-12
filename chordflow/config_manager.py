@@ -17,6 +17,7 @@ DEFAULT_CONFIG: dict = {
     "font_size": 10,
     "last_opened_path": "",
     "use_sharps": True,
+    "theme": "system",
 }
 
 
